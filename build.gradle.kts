@@ -1,24 +1,9 @@
 plugins {
-    kotlin("jvm") version "1.9.23"
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false
     id("org.sonarqube") version "6.0.1.5171"
-}
-
-group = "org.catutd"
-version = "1.0-SNAPSHOT"
-
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    testImplementation(kotlin("test"))
-}
-
-tasks.test {
-    useJUnitPlatform()
-}
-kotlin {
-    jvmToolchain(21)
+    jacoco
 }
 
 sonar {
@@ -26,5 +11,6 @@ sonar {
         property("sonar.projectKey", "CataniaUnited_catania-united-app")
         property("sonar.organization", "cataniaunited")
         property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "app/build/reports/jacoco/testDebugUnitTestCoverage/testDebugUnitTestCoverage.xml")
     }
 }

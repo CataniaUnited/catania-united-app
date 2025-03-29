@@ -17,12 +17,14 @@ import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 
 class MainActivity : ComponentActivity() {
 
+    lateinit var webSocketManager: WebSocketManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         //TODO: example connection to server, remove on correct implementation
-        val wsManager = (application as MainApplication).webSocketManager
-        wsManager.sendMessage("Hallo from Catania United App!")
+        webSocketManager = (application as MainApplication).webSocketManager
+        webSocketManager.sendMessage("Hallo from Catania United App!")
 
         enableEdgeToEdge()
         setContent {
@@ -35,6 +37,11 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        webSocketManager.close()
     }
 }
 

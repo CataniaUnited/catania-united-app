@@ -6,11 +6,16 @@ import com.example.cataniaunited.ws.WebSocketManager
 
 class MainApplication : Application() {
 
-    var webSocketManager: WebSocketManager = WebSocketManager()
+    var webSocketManager: WebSocketManager = WebSocketManager(BuildConfig.SERVER_URL)
 
     override fun onCreate() {
         super.onCreate()
         //Initialize web socket manager
-        webSocketManager.connect(BuildConfig.SERVER_URL, WebSocketListenerImpl())
+        webSocketManager.connect(WebSocketListenerImpl())
+    }
+
+    override fun onTerminate() {
+        super.onTerminate()
+        webSocketManager.close()
     }
 }

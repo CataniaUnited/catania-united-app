@@ -40,6 +40,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     testOptions {
         unitTests {
@@ -48,6 +49,10 @@ android {
                 it.finalizedBy(tasks.named("jacocoTestReport"))
             }
         }
+    }
+
+    defaultConfig {
+        buildConfigField("String", "SERVER_URL", "\"${project.properties["SERVER_URL"]}\"")
     }
 }
 
@@ -111,5 +116,5 @@ dependencies {
     testImplementation(libs.jupiter.junit.jupiter)
     testImplementation(libs.mockk)
     testImplementation(libs.kotlinx.coroutines.test)
-
+    implementation(libs.okhttp)
 }

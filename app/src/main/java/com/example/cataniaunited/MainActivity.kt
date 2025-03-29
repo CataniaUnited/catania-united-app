@@ -11,11 +11,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.cataniaunited.ws.WebSocketListenerImpl
+import com.example.cataniaunited.ws.WebSocketManager
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        //TODO: example connection to server, remove on correct implementation
+        val wsManager = (application as MainApplication).webSocketManager
+        wsManager.sendMessage("Hallo from Catania United App!")
+
         enableEdgeToEdge()
         setContent {
             CataniaUnitedTheme {

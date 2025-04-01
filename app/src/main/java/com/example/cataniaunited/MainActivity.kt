@@ -11,20 +11,19 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.cataniaunited.ws.WebSocketListenerImpl
-import com.example.cataniaunited.ws.WebSocketManager
+import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 
 class MainActivity : ComponentActivity() {
 
-    lateinit var webSocketManager: WebSocketManager
+    lateinit var webSocketClient: WebSocketClient
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         //TODO: example connection to server, remove on correct implementation
-        webSocketManager = (application as MainApplication).webSocketManager
-        webSocketManager.sendMessage("Hallo from Catania United App!")
+        webSocketClient = (application as MainApplication).webSocketClient
+        webSocketClient.sendMessage("Hallo from Catania United App!")
 
         enableEdgeToEdge()
         setContent {
@@ -41,7 +40,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
-        webSocketManager.close()
+        webSocketClient.close()
     }
 }
 

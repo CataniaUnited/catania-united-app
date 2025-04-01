@@ -6,7 +6,7 @@ import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 import okio.ByteString
 
-class WebSocketListenerImpl : WebSocketListener() {
+open class WebSocketListenerImpl : WebSocketListener() {
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         Log.d("WebSocket", "Opened connection")

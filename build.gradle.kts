@@ -12,9 +12,8 @@ sonar {
         property("sonar.organization", "cataniaunited")
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.java.coveragePlugin", "jacoco")
-        property(
-            "sonar.coverage.jacoco.xmlReportPaths",
-            "${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"
-        )
+        property("sonar.coverage.jacoco.xmlReportPaths",
+            "${project.layout.projectDirectory.asFile}/app/build/reports/jacoco/jacocoUnitTestReport/jacocoUnitTestReport.xml," +
+                    "${project.layout.projectDirectory.asFile}/app/build/reports/jacoco/jacocoAndroidTestReport/jacocoAndroidTestReport.xml")
     }
 }

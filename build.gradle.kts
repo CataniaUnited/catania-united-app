@@ -13,7 +13,7 @@ sonar {
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.java.coveragePlugin", "jacoco")
         property("sonar.coverage.jacoco.xmlReportPaths",
-            "${project.layout.projectDirectory.asFile}/build/reports/jacoco/jacocoUnitTestReport/jacocoUnitTestReport.xml," +
-                    "${project.layout.projectDirectory.asFile}/build/reports/jacoco/jacocoAndroidTestReport/jacocoAndroidTestReport.xml")
+            "${project.layout.projectDirectory.asFile}/app/build/reports/jacoco/jacocoUnitTestReport/jacocoUnitTestReport.xml," +
+                    "${project.layout.projectDirectory.asFile}/app/build/reports/jacoco/jacocoAndroidTestReport/jacocoAndroidTestReport.xml")
     }
 }

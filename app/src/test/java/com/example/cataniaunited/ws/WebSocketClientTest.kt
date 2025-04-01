@@ -8,13 +8,16 @@ import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 
-class WebSocketManagerTest {
+class WebSocketClientTest {
 
     private lateinit var mockWebServer: MockWebServer;
-    private lateinit var webSocketManager: WebSocketManager
+    private lateinit var webSocketClient: WebSocketClient
 
     @BeforeEach
     fun setup() {
@@ -23,7 +26,7 @@ class WebSocketManagerTest {
 
         val wsUrl: String = mockWebServer.url("/")
             .toString().replace("http", "ws")
-        webSocketManager = WebSocketManager(wsUrl)
+        webSocketClient = WebSocketClient(wsUrl)
 
     }
 
@@ -34,7 +37,8 @@ class WebSocketManagerTest {
         var receivedMessage: String? = null;
 
         //Setup mock server response
-        mockWebServer.enqueue(MockResponse().withWebSocketUpgrade(
+        mockWebServer.enqueue(
+            MockResponse().withWebSocketUpgrade(
             object : WebSocketListener() {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     webSocket.send(expectedMessage)
@@ -54,7 +58,7 @@ class WebSocketManagerTest {
             }
         }
 
-        webSocketManager.connect(listener)
+        webSocketClient.connect(listener)
         messageCountDown.await(5, TimeUnit.SECONDS);
 
         Assertions.assertEquals(expectedMessage, receivedMessage)
@@ -70,7 +74,8 @@ class WebSocketManagerTest {
         val receivedMessage = mutableListOf<String>()
 
         //Setup mock server response
-        mockWebServer.enqueue(MockResponse().withWebSocketUpgrade(
+        mockWebServer.enqueue(
+            MockResponse().withWebSocketUpgrade(
             object : WebSocketListener() {
                 override fun onMessage(webSocket: WebSocket, text: String) {
                     receivedMessage.add(text);
@@ -85,13 +90,40 @@ class WebSocketManagerTest {
             }
         }
 
-        webSocketManager.connect(listener)
-        webSocketManager.sendMessage(expectedMessage1)
-        webSocketManager.sendMessage(expectedMessage2)
+        webSocketClient.connect(listener)
+        webSocketClient.sendMessage(expectedMessage1)
+        webSocketClient.sendMessage(expectedMessage2)
         messageCountDown.await(5, TimeUnit.SECONDS);
 
         Assertions.assertEquals(expecteMessageCount, receivedMessage.size)
         Assertions.assertEquals(expectedMessage1, receivedMessage[0])
         Assertions.assertEquals(expectedMessage2, receivedMessage[1])
+    }
+
+    @Test
+    fun `close() should terminate WebSocket connection`() {
+        val mockWebSocket: WebSocket = mock()
+        val manager = WebSocketClient("ws://dummy-url")
+
+        // Use reflection to set private web socket field
+        val field = manager::class.java.getDeclaredField("webSocket")
+        field.isAccessible = true
+        field.set(manager, mockWebSocket)  // Hier wird der Mock gesetzt, nicht das Field-Objekt
+
+        manager.close()
+
+        verify(mockWebSocket).close(1000, "Client closed connection")
+    }
+
+    @Test
+    fun `close() should do nothing if WebSocket is null`() {
+        val manager = WebSocketClient("ws://dummy-url")
+        assertDoesNotThrow { manager.close() }
+    }
+
+    @Test
+    fun `sendMessage() should do nothing if WebSocket is null`() {
+        val manager = WebSocketClient("ws://dummy-url")
+        assertDoesNotThrow { manager.sendMessage("Test") }
     }
 }

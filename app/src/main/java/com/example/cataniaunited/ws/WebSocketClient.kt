@@ -5,7 +5,7 @@ import okhttp3.Request
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
-class WebSocketManager(private val serverUrl: String) {
+open class WebSocketClient(private val serverUrl: String) {
     private val client = OkHttpClient()
     private var webSocket: WebSocket? = null
 

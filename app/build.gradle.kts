@@ -48,19 +48,18 @@ android {
         unitTests {
             all {
                 it.useJUnitPlatform()
-                it.finalizedBy(tasks.named("jacocoTestReport"))
+                it.finalizedBy(tasks.named("jacocoUnitTestReport"))
             }
         }
     }
 }
 
-tasks.register<JacocoReport>("jacocoTestReport") {
+tasks.register<JacocoReport>("jacocoUnitTestReport") {
     dependsOn("testDebugUnitTest")
 
     reports {
         xml.required.set(true)
         html.required.set(true)
-        xml.outputLocation.set(file("${project.projectDir}/build/reports/jacoco/jacocoTestReport/jacocoTestReport.xml"))
     }
 
     val fileFilter = listOf(
@@ -92,6 +91,34 @@ tasks.register<JacocoReport>("jacocoTestReport") {
     executionData.setFrom(fileTree(project.layout.buildDirectory.get().asFile) {
         include("jacoco/testDebugUnitTest.exec")
         include("outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec")
+    })
+}
+
+tasks.register<JacocoReport>("jacocoAndroidTestReport") {
+    dependsOn("connectedDebugAndroidTest")
+
+    reports {
+        xml.required.set(true)  // Wichtig für SonarCloud!
+        html.required.set(true)
+    }
+
+    val fileFilter = listOf(
+        "**/R.class",
+        "**/R$*.class",
+        "**/BuildConfig.*",
+        "**/Manifest*.*",
+        "**/*Test*.*",
+        "android/**/*.*"
+    )
+
+    val debugTree = fileTree("${project.layout.buildDirectory.get().asFile}/tmp/kotlin-classes/debug") {
+        exclude(fileFilter)
+    }
+
+    sourceDirectories.setFrom(files("${project.projectDir}/src/main/java"))
+    classDirectories.setFrom(files(debugTree))
+    executionData.setFrom(fileTree(project.layout.buildDirectory.get().asFile)  {
+        include("outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec")
     })
 }
 

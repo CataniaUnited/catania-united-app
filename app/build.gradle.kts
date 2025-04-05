@@ -148,4 +148,6 @@ dependencies {
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockwebserver)
     testImplementation(libs.mockito.core)
+    implementation(libs.androidx.navigation.compose)
+
 }

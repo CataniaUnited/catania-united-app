@@ -1,7 +1,9 @@
 package com.example.cataniaunited.ui.startingpage
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -18,17 +20,42 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
+import com.example.cataniaunited.R
+import com.example.cataniaunited.ui.theme.catanRessourceBar
+
 
 class StartingScreen {
 
     @Composable // UI component
     fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit){
 
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(catanClay)){
+        Box(modifier = Modifier.fillMaxSize()){
+
+            Image(
+                painter = painterResource(id = R.drawable.catan_starting_page_background),
+                contentDescription = "Starting Page Background",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.Crop
+            )
+
+            Box(
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .width(430.dp)
+                    .height(340.dp)
+                    .border(
+                        width = 9.dp,
+                        color = catanRessourceBar,
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                    .background(catanClay.copy(alpha = 0.9f),
+                        shape = RoundedCornerShape(20.dp)
+                    )
+            )
 
             Column(modifier = Modifier
                 .fillMaxSize()
@@ -41,7 +68,7 @@ class StartingScreen {
                     style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
                     color = catanGold,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 40.dp)
+                    modifier = Modifier.padding(bottom = 30.dp)
                 )
 
                 val buttonShape = RoundedCornerShape(30.dp)
@@ -55,10 +82,10 @@ class StartingScreen {
                         .width(300.dp)
                         .height(56.dp)
                         .shadow(
-                            elevation = 8.dp,
+                            elevation = 13.dp,
                             shape = buttonShape,
-                            ambientColor = Color.Black.copy(alpha = 1f),
-                            spotColor = Color.Black.copy(alpha = 1f)
+                            ambientColor = Color.Black,
+                            spotColor = Color.Black
                         )
                 ){
                     Text(
@@ -84,10 +111,10 @@ class StartingScreen {
                         .width(300.dp)
                         .height(56.dp)
                         .shadow(
-                            elevation = 8.dp,
+                            elevation = 13.dp,
                             shape = buttonShape,
-                            ambientColor = Color.Black.copy(alpha = 1f),
-                            spotColor = Color.Black.copy(alpha = 1f)
+                            ambientColor = Color.Black,
+                            spotColor = Color.Black
                         )
                 ){
                     Text(

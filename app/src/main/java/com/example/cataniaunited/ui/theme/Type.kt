@@ -24,7 +24,7 @@ val appTypography = Typography(
     titleLarge = TextStyle(
         fontFamily = cardoFontFamily,
         fontWeight = FontWeight.Bold,
-        fontSize = 22.sp,
+        fontSize = 30.sp,
         lineHeight = 28.sp,
         letterSpacing = 0.sp
     ),

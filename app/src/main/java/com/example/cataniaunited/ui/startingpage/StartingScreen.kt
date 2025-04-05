@@ -14,7 +14,9 @@ import com.example.cataniaunited.ui.theme.catanClay
 import com.example.cataniaunited.ui.theme.catanGold
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 
 class StartingScreen {
 
@@ -25,20 +27,61 @@ class StartingScreen {
             .fillMaxSize()
             .background(catanClay)){
 
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Text(
+                    text = "CATAN UNIVERSE",
+                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
+                    color = catanGold,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
+
+                Button(
+                    onClick = onLearnClick, // calls onLearnClick when pressed
+                    colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                    modifier = Modifier
+                        .width(300.dp)
+                        .height(56.dp)
+                ){
+                    Text(
+                        text = "LEARN",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                }
+
+                Text(
+                    text = "OR",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.padding(top = 15.dp)
+                )
+
+                
+
+            }
+
         }
     }
 
     @Preview(
         name = "Starting Screen - Landscape",
-        widthDp = 640,
-        heightDp = 360,
+        widthDp = 891,
+        heightDp = 411,
         showBackground = true
     )
     @Composable
-    fun StartingScreenLandscapePreview() {
-        StartingScreen(
-            onLearnClick = {},
-            onStartClick = {}
-        )
+    fun StartingScreenPreview() {
+        CataniaUnitedTheme(darkTheme = false, dynamicColor = false){
+            StartingScreen(
+                onLearnClick = {},
+                onStartClick = {}
+            )
+        }
     }
 }

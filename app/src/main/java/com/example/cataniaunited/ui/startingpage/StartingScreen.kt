@@ -1,7 +1,9 @@
 package com.example.cataniaunited.ui.startingpage
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
@@ -14,6 +16,7 @@ import com.example.cataniaunited.ui.theme.catanClay
 import com.example.cataniaunited.ui.theme.catanGold
 import androidx.compose.ui.unit.sp
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
@@ -38,15 +41,25 @@ class StartingScreen {
                     style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
                     color = catanGold,
                     textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 24.dp)
+                    modifier = Modifier.padding(bottom = 40.dp)
                 )
+
+                val buttonShape = RoundedCornerShape(30.dp)
 
                 Button(
                     onClick = onLearnClick, // calls onLearnClick when pressed
+                    shape = buttonShape,
                     colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                    border = BorderStroke(1.dp, Color.Black),
                     modifier = Modifier
                         .width(300.dp)
                         .height(56.dp)
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = buttonShape,
+                            ambientColor = Color.Black.copy(alpha = 1f),
+                            spotColor = Color.Black.copy(alpha = 1f)
+                        )
                 ){
                     Text(
                         text = "LEARN",
@@ -59,13 +72,31 @@ class StartingScreen {
                     text = "OR",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.padding(top = 15.dp)
+                    modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
                 )
 
-                
-
+                Button(
+                    onClick = onStartClick,
+                    shape = buttonShape,
+                    colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                    border = BorderStroke(1.dp, Color.Black),
+                    modifier = Modifier
+                        .width(300.dp)
+                        .height(56.dp)
+                        .shadow(
+                            elevation = 8.dp,
+                            shape = buttonShape,
+                            ambientColor = Color.Black.copy(alpha = 1f),
+                            spotColor = Color.Black.copy(alpha = 1f)
+                        )
+                ){
+                    Text(
+                        text = "START GAME",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                    )
+                }
             }
-
         }
     }
 

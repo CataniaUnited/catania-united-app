@@ -124,6 +124,7 @@ tasks.register<JacocoReport>("jacocoAndroidTestReport") {
 
 dependencies {
 
+
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
@@ -149,5 +150,6 @@ dependencies {
     testImplementation(libs.mockwebserver)
     testImplementation(libs.mockito.core)
     implementation(libs.androidx.navigation.compose)
+
 
 }

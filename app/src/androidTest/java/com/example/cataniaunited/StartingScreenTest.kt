@@ -51,5 +51,4 @@ class StartingScreenTest {
         assertTrue(startClicked)
     }
 
-
 }

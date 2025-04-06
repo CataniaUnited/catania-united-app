@@ -22,8 +22,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.theme.catanRessourceBar
 
@@ -127,18 +125,4 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit) {
     }
 }
 
-@Preview(
-    name = "Starting Screen - Landscape",
-    widthDp = 891,
-    heightDp = 411,
-    showBackground = true
-)
-@Composable
-fun StartingScreenPreview() {
-    CataniaUnitedTheme(darkTheme = false, dynamicColor = false) {
-        StartingScreen(
-            onLearnClick = {},
-            onStartClick = {}
-        )
-    }
-}
+

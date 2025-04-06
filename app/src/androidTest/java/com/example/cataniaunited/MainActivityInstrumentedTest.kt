@@ -23,4 +23,13 @@ class MainActivityInstrumentedTest {
         composeTestRule.onNodeWithText("Tutorial Screen").assertIsDisplayed()
     }
 
+    @Test
+    fun appDoesNotNavigateWhenStartGameIsClicked() { // change when StartGame page is implemented
+        composeTestRule.onNodeWithText("CATAN UNIVERSE").assertIsDisplayed()
+        composeTestRule.onNodeWithText("START GAME").performClick()
+        composeTestRule.onNodeWithText("Tutorial Screen").assertDoesNotExist()
+    }
+
+
+
 }

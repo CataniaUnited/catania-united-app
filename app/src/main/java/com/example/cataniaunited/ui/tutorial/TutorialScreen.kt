@@ -9,30 +9,28 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 
-class TutorialScreen {
 
-    @Composable
-    fun TutorialScreen() {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(text = "Tutorial Screen")
-        }
+@Composable
+fun TutorialScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(text = "Tutorial Screen")
     }
-
-    @Preview(
-        name = "Starting Screen - Landscape",
-        widthDp = 891,
-        heightDp = 411,
-        showBackground = true
-    )
-    @Composable
-    fun StartingScreenPreview() {
-        CataniaUnitedTheme(darkTheme = false, dynamicColor = false){
-            TutorialScreen()
-        }
-    }
-
-
 }
+
+@Preview(
+    name = "Starting Screen - Landscape",
+    widthDp = 891,
+    heightDp = 411,
+    showBackground = true
+)
+@Composable
+fun StartingScreenPreview() {
+    CataniaUnitedTheme(darkTheme = false, dynamicColor = false) {
+        TutorialScreen()
+    }
+}
+
+

@@ -13,7 +13,6 @@ import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
 
 
-
 class MainActivity : ComponentActivity() {
 
     lateinit var webSocketClient: WebSocketClient

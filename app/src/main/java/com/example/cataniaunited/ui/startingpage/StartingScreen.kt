@@ -28,8 +28,6 @@ import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.theme.catanRessourceBar
 
 
-class StartingScreen {
-
     @Composable // UI component
     fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit){
 
@@ -74,7 +72,7 @@ class StartingScreen {
                 val buttonShape = RoundedCornerShape(30.dp)
 
                 Button(
-                    onClick = onLearnClick, // calls onLearnClick when pressed
+                    onClick = onLearnClick,
                     shape = buttonShape,
                     colors = ButtonDefaults.buttonColors(containerColor = catanGold),
                     border = BorderStroke(1.dp, Color.Black),
@@ -142,4 +140,3 @@ class StartingScreen {
             )
         }
     }
-}

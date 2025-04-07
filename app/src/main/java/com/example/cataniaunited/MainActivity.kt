@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                      composable("tutorial"){
-                         TutorialScreen()
+                         TutorialScreen(onBackClick = {navController.navigateUp()})
                      }
                 }
             }

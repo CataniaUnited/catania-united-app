@@ -81,7 +81,7 @@ fun TutorialScreen(onBackClick: () -> Unit) {
                 GeneralSubheading("2.\tRoads")
                 GeneralParagraph(
                     "o\tRoads connect your settlements and cities. You can only build a new settlement on an intersection if it’s connected to your existing road network and it respects the “distance rule” (see below).\n" + "\n" +
-                            "o\tThere’s a special award called Longest Road. Once you have a continuous path of 5 or more road pieces, you earn 2 extra VPs. Another player who later builds an even longer road takes the Longest Road card (and its VPs) from you.\n"
+                            "o\tThere’s a special award called Longest Road. Once you have a continuous path of 5 or more road pieces, you earn 2 extra VPs. Another player who later builds an even longer road (at least n+1 roads) takes the Longest Road card (and its VPs) from you.\n"
                 )
                 GeneralSubheading("3.\tDistance Rule")
                 GeneralParagraph("o\tA settlement must be placed at least 2 intersections away from any other settlement or city. Essentially, you cannot build a new settlement if another settlement or city is directly next door.")
@@ -102,7 +102,7 @@ fun TutorialScreen(onBackClick: () -> Unit) {
                 GeneralParagraph(
                     "o\tYou can buy development cards (like Knight, Progress, or Victory Point) with resources (1 Wool, 1 Grain, 1 Ore).\n" +
                             "\n" +
-                            "o\tKnights allow you to move the Robber (like rolling a 7). If you play 3 Knight cards, you earn the Largest Army award (+2 VPs), which can be taken by a player who later has more knights face-up than you.\n" +
+                            "o\tKnights allow you to move the Robber (like rolling a 7). If you play 3 Knight cards, you earn the Largest Army award (+2 VPs), which can be taken by a player who later has more knights (at least n+1 knights) than you.\n" +
                             "\n" +
                             "o\tProgress cards provide immediate special effects (e.g., build free roads, monopolize a resource, etc.).\n" +
                             "\n" +

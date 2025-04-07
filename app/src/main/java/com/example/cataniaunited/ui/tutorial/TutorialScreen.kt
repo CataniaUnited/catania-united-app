@@ -65,6 +65,9 @@ fun TutorialScreen() {
                 horizontalAlignment = Alignment.CenterHorizontally
             ){
                 TutorialHeading("TUTORIAL")
+                TutorialParagraph("In Catan, each player aims to become the most successful settler by reaching 10 Victory Points (VPs)." +
+                        " You start with 2 points by placing 2 settlements, and you gain more VPs by building additional settlements, upgrading them to cities, or acquiring special cards / achievements. " +
+                        "The first player to reach 10 VPs on their turn immediately wins the game.")
 
 
         }
@@ -93,6 +96,22 @@ fun TutorialHeading(title: String){
 
         )
     }
+}
+
+@Composable
+fun TutorialParagraph(text: String){
+
+    Text(
+        text = text,
+        color = Color.Black,
+        style = MaterialTheme.typography.bodyLarge,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = 15.dp, top = 15.dp, end = 0.dp, bottom = 10.dp),
+        textAlign = TextAlign.Justify
+
+    )
+
 }
 
 @Preview(

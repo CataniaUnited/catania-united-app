@@ -10,11 +10,15 @@ data class MessageDTO(
     val type: MessageType,
     val player: String? = null,
     val lobbyId: String? = null,
+    val players: List<String>? = null,
     val message: JsonObject? = null
 ) {
 
     companion object {
-        private val jsonFormat = Json { ignoreUnknownKeys = true }
+        private val jsonFormat = Json {
+            ignoreUnknownKeys = true
+            isLenient = true
+        }
 
         fun fromJson(jsonString: String): MessageDTO {
             return jsonFormat.decodeFromString(jsonString)

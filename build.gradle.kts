@@ -15,5 +15,6 @@ sonar {
         property("sonar.coverage.jacoco.xmlReportPaths",
             "${project.layout.projectDirectory.asFile}/app/build/reports/jacoco/jacocoUnitTestReport/jacocoUnitTestReport.xml," +
                     "${project.layout.projectDirectory.asFile}/app/build/reports/jacoco/jacocoAndroidTestReport/jacocoAndroidTestReport.xml")
+        property("sonar.coverage.exclusions", "**/com/example/cataniaunited/ui/**,**/com/example/cataniaunited/MainActivity*")
     }
 }

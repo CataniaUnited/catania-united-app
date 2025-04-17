@@ -1,36 +1,39 @@
-package com.example.cataniaunited.ui.startingpage
+package com.example.cataniaunited.ui.test
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import com.example.cataniaunited.ui.theme.catanClay
-import com.example.cataniaunited.ui.theme.catanGold
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import com.example.cataniaunited.R
+import com.example.cataniaunited.ui.theme.catanClay
+import com.example.cataniaunited.ui.theme.catanGold
 import com.example.cataniaunited.ui.theme.catanRessourceBar
+import com.example.cataniaunited.viewmodel.TestPageViewModel
 
-
-@Composable // UI component
-fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit, onTestClick: () -> Unit) {
-
+@Composable
+fun TestPage(testPageViewModel: TestPageViewModel = TestPageViewModel()){
     Box(modifier = Modifier.fillMaxSize()) {
-
         Image(
             painter = painterResource(id = R.drawable.catan_starting_page_background),
             contentDescription = "Starting Page Background",
@@ -38,10 +41,12 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit, onTestCli
             contentScale = ContentScale.Crop
         )
 
+        val buttonShape = RoundedCornerShape(30.dp)
+
         Box(
             modifier = Modifier
+                .fillMaxWidth()
                 .align(Alignment.Center)
-                .width(430.dp)
                 .height(340.dp)
                 .border(
                     width = 9.dp,
@@ -61,23 +66,13 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit, onTestCli
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "CATAN UNIVERSE",
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
-                color = catanGold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 30.dp)
-            )
-
-            val buttonShape = RoundedCornerShape(30.dp)
-
             Button(
-                onClick = onLearnClick,
+                onClick = { testPageViewModel.onPlaceSettlementClick(1, "lobby1") },
                 shape = buttonShape,
                 colors = ButtonDefaults.buttonColors(containerColor = catanGold),
                 border = BorderStroke(1.dp, Color.Black),
                 modifier = Modifier
-                    .width(300.dp)
+                    .fillMaxWidth()
                     .height(56.dp)
                     .shadow(
                         elevation = 13.dp,
@@ -87,48 +82,19 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit, onTestCli
                     )
             ) {
                 Text(
-                    text = "LEARN",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
-            }
-
-            Text(
-                text = "OR",
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
-            )
-
-            Button(
-                onClick = onStartClick,
-                shape = buttonShape,
-                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
-                border = BorderStroke(1.dp, Color.Black),
-                modifier = Modifier
-                    .width(300.dp)
-                    .height(56.dp)
-                    .shadow(
-                        elevation = 13.dp,
-                        shape = buttonShape,
-                        ambientColor = Color.Black,
-                        spotColor = Color.Black
-                    )
-            ) {
-                Text(
-                    text = "START GAME",
+                    text = "TEST PLACE SETTLEMENT",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             }
 
             Button(
-                onClick = onTestClick,
+                onClick = { testPageViewModel.onPlaceRoadClick(1, "lobby1") },
                 shape = buttonShape,
                 colors = ButtonDefaults.buttonColors(containerColor = catanGold),
                 border = BorderStroke(1.dp, Color.Black),
                 modifier = Modifier
-                    .width(300.dp)
+                    .fillMaxWidth()
                     .height(56.dp)
                     .shadow(
                         elevation = 13.dp,
@@ -138,7 +104,7 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit, onTestCli
                     )
             ) {
                 Text(
-                    text = "TEST PAGE",
+                    text = "TEST PLACE ROAD",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -146,5 +112,3 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit, onTestCli
         }
     }
 }
-
-

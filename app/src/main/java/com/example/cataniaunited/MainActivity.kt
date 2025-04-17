@@ -4,25 +4,22 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import com.example.cataniaunited.ws.WebSocketClient
-import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.cataniaunited.logic.dto.MessageDTO
+import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.ui.startingpage.StartingScreen
+import com.example.cataniaunited.ui.test.TestPage
+import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
+import com.example.cataniaunited.ws.WebSocketClient
 
 
 class MainActivity : ComponentActivity() {
 
-    lateinit var webSocketClient: WebSocketClient
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        //TODO: example connection to server, remove on correct implementation
-        webSocketClient = (application as MainApplication).webSocketClient
-        webSocketClient.sendMessage("Hallo from Catania United App!")
 
         enableEdgeToEdge()
         setContent {
@@ -32,15 +29,19 @@ class MainActivity : ComponentActivity() {
                     navController = navController,
                     startDestination = "starting"
                 ) {
-                    composable("starting"){
+                    composable("starting") {
                         StartingScreen(
-                            onLearnClick = { navController.navigate("tutorial")},
-                            onStartClick = {} // add page "host or join game"
+                            onLearnClick = { navController.navigate("tutorial") },
+                            onStartClick = {}, // add page "host or join game"
+                            onTestClick = {navController.navigate("test")}
                         )
                     }
-                     composable("tutorial"){
-                         TutorialScreen(onBackClick = {navController.navigateUp()})
-                     }
+                    composable("tutorial") {
+                        TutorialScreen(onBackClick = { navController.navigateUp() })
+                    }
+                    composable("test"){
+                        TestPage()
+                    }
                 }
             }
         }
@@ -48,7 +49,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onStop() {
         super.onStop()
-        webSocketClient.close()
     }
 }
 

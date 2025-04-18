@@ -10,11 +10,10 @@ import kotlinx.serialization.json.put
 import okhttp3.WebSocket
 import org.junit.Assert
 import org.junit.Before
-import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mockito.mock
-import org.mockito.junit.MockitoJUnit
+import org.mockito.kotlin.verify
 
 @RunWith(AndroidJUnit4::class)
 class WebSocketListenerImplInstrumentedTest {
@@ -39,5 +38,11 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageDTO.toString())
         Assert.assertEquals(expectedPlayerId, MainApplication.getInstance().getPlayerId())
+    }
+
+    @Test
+    fun testOnClosing() {
+        webSocketListener.onClosing(mockWebSocket, 1000, "Closed")
+        verify(mockWebSocket).close(1000, null)
     }
 }

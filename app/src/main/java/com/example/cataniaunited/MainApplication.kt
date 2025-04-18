@@ -7,7 +7,7 @@ import com.example.cataniaunited.ws.WebSocketClient
 
 open class MainApplication : Application() {
 
-    private var webSocketClient: WebSocketClient = WebSocketClient(BuildConfig.SERVER_URL)
+    internal var webSocketClient: WebSocketClient = WebSocketClient(BuildConfig.SERVER_URL)
     private var _playerId: String? = null
 
     companion object {
@@ -19,18 +19,18 @@ open class MainApplication : Application() {
         super.onCreate()
         instance = this
         //Initialize web socket manager
-        webSocketClient.connect(WebSocketListenerImpl(this))
+        webSocketClient.connect(WebSocketListenerImpl())
     }
 
     fun getPlayerId(): String {
         return _playerId ?: throw IllegalStateException("Player Id not initialized")
     }
 
-    fun setPlayerId(token: String) {
-        _playerId = token
+    fun setPlayerId(playerId: String) {
+        _playerId = playerId
     }
 
-    fun sendMessage(messageDTO: MessageDTO){
-        webSocketClient.sendMessage(messageDTO.toString())
+    fun getWebSocketClient(): WebSocketClient {
+        return webSocketClient;
     }
 }

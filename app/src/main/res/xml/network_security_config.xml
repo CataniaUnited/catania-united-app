@@ -4,5 +4,6 @@
         <!-- Allow cleartext traffic on HTTP connections to localhost -->
         <domain includeSubdomains="true">127.0.0.1</domain>
         <domain includeSubdomains="true">10.0.2.2</domain> <!-- Emulator -->
+        <domain includeSubdomains="true">localhost</domain>
     </domain-config>
 </network-security-config>

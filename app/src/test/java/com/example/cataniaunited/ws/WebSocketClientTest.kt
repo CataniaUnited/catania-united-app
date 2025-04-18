@@ -1,5 +1,7 @@
 package com.example.cataniaunited.ws
 
+import com.example.cataniaunited.logic.dto.MessageDTO
+import com.example.cataniaunited.logic.dto.MessageType
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
@@ -67,9 +69,9 @@ class WebSocketClientTest {
     @Test
     fun testWebSocketManagerSendMessage() {
 
-        var expecteMessageCount = 2;
-        val expectedMessage1 = "First message";
-        val expectedMessage2 = "Second message"
+        val expecteMessageCount = 2;
+        val expectedMessage1 = MessageDTO(MessageType.CREATE_LOBBY, "player1", "lobby1");
+        val expectedMessage2 = MessageDTO(MessageType.SET_USERNAME, "player2", "lobby1")
         val messageCountDown = CountDownLatch(expecteMessageCount);
         val receivedMessage = mutableListOf<String>()
 
@@ -96,8 +98,8 @@ class WebSocketClientTest {
         messageCountDown.await(5, TimeUnit.SECONDS);
 
         Assertions.assertEquals(expecteMessageCount, receivedMessage.size)
-        Assertions.assertEquals(expectedMessage1, receivedMessage[0])
-        Assertions.assertEquals(expectedMessage2, receivedMessage[1])
+        Assertions.assertEquals(expectedMessage1.toString(), receivedMessage[0])
+        Assertions.assertEquals(expectedMessage2.toString(), receivedMessage[1])
     }
 
     @Test
@@ -108,7 +110,7 @@ class WebSocketClientTest {
         // Use reflection to set private web socket field
         val field = manager::class.java.getDeclaredField("webSocket")
         field.isAccessible = true
-        field.set(manager, mockWebSocket)  // Hier wird der Mock gesetzt, nicht das Field-Objekt
+        field.set(manager, mockWebSocket)
 
         manager.close()
 
@@ -124,6 +126,6 @@ class WebSocketClientTest {
     @Test
     fun `sendMessage() should do nothing if WebSocket is null`() {
         val manager = WebSocketClient("ws://dummy-url")
-        assertDoesNotThrow { manager.sendMessage("Test") }
+        assertDoesNotThrow { manager.sendMessage(MessageDTO(MessageType.ERROR)) }
     }
 }

@@ -13,8 +13,8 @@ class GameBoard {
         val message = buildJsonObject {
             put("settlementPositionId", settlementPositionId)
         }
-        MainApplication.getInstance()
-            .sendMessage(MessageDTO(MessageType.PLACE_SETTLEMENT, playerId, lobbyId, null, message))
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_SETTLEMENT, playerId, lobbyId, null, message))
     }
 
     fun placeRoad(roadId: Int, lobbyId: String) {
@@ -22,7 +22,7 @@ class GameBoard {
         val message = buildJsonObject {
             put("roadId", roadId)
         }
-        MainApplication.getInstance()
-            .sendMessage(MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, message))
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, message))
     }
 }

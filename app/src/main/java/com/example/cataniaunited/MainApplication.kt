@@ -1,9 +1,8 @@
 package com.example.cataniaunited
 
 import android.app.Application
-import com.example.cataniaunited.logic.dto.MessageDTO
-import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.WebSocketClient
+import com.example.cataniaunited.ws.WebSocketListenerImpl
 
 open class MainApplication : Application() {
 

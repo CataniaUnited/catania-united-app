@@ -21,7 +21,8 @@ class StartingScreenTest {
             CataniaUnitedTheme(darkTheme = false, dynamicColor = false) {
                 StartingScreen(
                     onLearnClick = {},
-                    onStartClick = {}
+                    onStartClick = {},
+                    onTestClick = {},
                 )
             }
         }
@@ -40,7 +41,8 @@ class StartingScreenTest {
             CataniaUnitedTheme(darkTheme = false, dynamicColor = false) {
                 StartingScreen(
                     onLearnClick = { learnClicked = true },
-                    onStartClick = { startClicked = true }
+                    onStartClick = { startClicked = true },
+                    onTestClick = { }
                 )
             }
         }

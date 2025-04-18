@@ -1,5 +1,6 @@
 package com.example.cataniaunited.ws
 
+import com.example.cataniaunited.logic.dto.MessageDTO
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
@@ -9,13 +10,13 @@ open class WebSocketClient(private val serverUrl: String) {
     private val client = OkHttpClient()
     private var webSocket: WebSocket? = null
 
-    fun connect(listener: WebSocketListener) {
+    open fun connect(listener: WebSocketListener) {
         val request = Request.Builder().url(serverUrl).build()
         webSocket = client.newWebSocket(request, listener)
     }
 
-    fun sendMessage(message: String) {
-        webSocket?.send(message)
+    fun sendMessage(messageDTO: MessageDTO){
+        webSocket?.send(messageDTO.toString())
     }
 
     fun close() {

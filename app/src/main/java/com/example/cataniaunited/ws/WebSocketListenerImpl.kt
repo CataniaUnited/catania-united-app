@@ -1,10 +1,13 @@
 package com.example.cataniaunited.ws
 
 import android.util.Log
+import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.logic.dto.MessageDTO
+import com.example.cataniaunited.logic.dto.MessageType
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
-import okio.ByteString
 
 open class WebSocketListenerImpl : WebSocketListener() {
 
@@ -12,12 +15,22 @@ open class WebSocketListenerImpl : WebSocketListener() {
         Log.d("WebSocket", "Opened connection")
     }
 
-    override fun onMessage(webSocket: WebSocket, text: String) {
-        Log.d("WebSocket", "Received message: $text")
+    /**
+     * Callback endpoint which retrieves messages from the server
+     */
+    override fun onMessage(webSocket: WebSocket, message: String) {
+        val messageDTO: MessageDTO = MessageDTO.fromJson(message);
+        Log.d("WebSocket", "Received message: $messageDTO")
+
+        if(MessageType.CONNECTION_SUCCESSFUL == messageDTO.type){
+            setPlayerId(messageDTO)
+        }
     }
 
-    override fun onMessage(webSocket: WebSocket, bytes: ByteString) {
-        Log.d("WebSocket", "Received message: ${bytes.hex()}")
+    fun setPlayerId(messageDTO: MessageDTO) {
+        val playerId: String = messageDTO.message?.get("playerId")?.jsonPrimitive?.content!!
+        Log.d("WebSocket", "Setting player id: playerId=$playerId")
+        MainApplication.getInstance().setPlayerId(playerId)
     }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {

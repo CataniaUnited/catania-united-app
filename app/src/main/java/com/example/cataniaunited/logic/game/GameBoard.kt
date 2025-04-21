@@ -25,4 +25,15 @@ class GameBoard {
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, message))
     }
+
+    fun rollDice(dice1: Int, dice2: Int, lobbyId: String) {
+        val playerId = MainApplication.getInstance().getPlayerId()
+        val message = buildJsonObject {
+            put("dice1", dice1)
+            put("dice2", dice2)
+            put("Result", dice1+dice2)
+        }
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        webSocketClient.sendMessage(MessageDTO(MessageType.ROLL_DICE, playerId, lobbyId, null, message))
+    }
 }

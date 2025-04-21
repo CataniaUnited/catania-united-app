@@ -17,6 +17,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -25,13 +27,21 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.cataniaunited.R
+import com.example.cataniaunited.ui.dice.DiceRollerPopup
+import com.example.cataniaunited.ui.dice.ShakeDetector
 import com.example.cataniaunited.ui.theme.catanClay
 import com.example.cataniaunited.ui.theme.catanGold
 import com.example.cataniaunited.ui.theme.catanRessourceBar
 import com.example.cataniaunited.viewmodel.TestPageViewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 
 @Composable
 fun TestPage(testPageViewModel: TestPageViewModel = TestPageViewModel()) {
+    var showDicePopup by remember { mutableStateOf(false) }
+
+    ShakeDetector(onShake = { showDicePopup = true })
+
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.catan_starting_page_background),
@@ -108,6 +118,36 @@ fun TestPage(testPageViewModel: TestPageViewModel = TestPageViewModel()) {
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             }
+
+            Button(
+                onClick = { showDicePopup = true },
+                shape = buttonShape,
+                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .shadow(
+                        elevation = 13.dp,
+                        shape = buttonShape,
+                        ambientColor = Color.Black,
+                        spotColor = Color.Black
+                    )
+            ) {
+                Text(
+                    text = "ROLL DICE",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
         }
+    }
+    if (showDicePopup) {
+        DiceRollerPopup(
+            onDiceRolled = { dice1, dice2 ->
+                testPageViewModel.onDiceRoll(dice1, dice2, "lobby1")
+            },
+            onClose = { showDicePopup = false }
+        )
     }
 }

@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.cataniaunited.ui.lobby.LobbyScreen
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.test.TestPage
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
@@ -35,6 +36,12 @@ class MainActivity : ComponentActivity() {
                     }
                     composable("tutorial") {
                         TutorialScreen(onBackClick = { navController.navigateUp() })
+                    }
+                    composable("lobby"){
+                        LobbyScreen(
+                            onCancelClick = { /*TODO*/ },
+                            onStartGameClick = { /*TODO*/ },
+                        )
                     }
                     composable("test") {
                         TestPage()

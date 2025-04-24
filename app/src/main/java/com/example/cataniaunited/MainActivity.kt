@@ -11,6 +11,7 @@ import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.test.TestPage
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
+import com.example.cataniaunited.ui.game_borad.GameScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -29,12 +30,15 @@ class MainActivity : ComponentActivity() {
                     composable("starting") {
                         StartingScreen(
                             onLearnClick = { navController.navigate("tutorial") },
-                            onStartClick = {}, // add page "host or join game"
+                            onStartClick = { navController.navigate("game") },
                             onTestClick = { navController.navigate("test") }
                         )
                     }
                     composable("tutorial") {
                         TutorialScreen(onBackClick = { navController.navigateUp() })
+                    }
+                    composable("game") {
+                        GameScreen()
                     }
                     composable("test") {
                         TestPage()

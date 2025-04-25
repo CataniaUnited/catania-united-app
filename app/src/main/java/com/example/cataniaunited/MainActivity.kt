@@ -11,7 +11,7 @@ import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.test.TestPage
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
-import com.example.cataniaunited.ui.game_borad.GameScreen
+import com.example.cataniaunited.ui.game_board.board.GameScreen
 
 
 class MainActivity : ComponentActivity() {

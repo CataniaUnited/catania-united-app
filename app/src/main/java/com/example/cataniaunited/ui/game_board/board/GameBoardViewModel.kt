@@ -1,4 +1,4 @@
-package com.example.cataniaunited.ui.game_borad
+package com.example.cataniaunited.ui.game_board.board
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

@@ -1,4 +1,4 @@
-package com.example.cataniaunited.ui.game_borad
+package com.example.cataniaunited.ui.game_board.tile
 
 //draw a single hexagon tile with its color and number.
 
@@ -12,7 +12,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -77,13 +76,6 @@ fun HexagonTile(
                 path = hexagonPath,
                 color = getTileColor(tile.type)
             )
-            /*
-            // Draw the border
-            drawPath(
-                path = hexagonPath,
-                color = Color.Black,
-                style = Stroke(width = 1.dp.toPx())
-            )*/
         }
 
         // Draw the number circle and text (only if not desert/waste)

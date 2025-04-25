@@ -2,6 +2,7 @@ package com.example.cataniaunited.ui.game_board.settlementPosition
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -17,7 +18,8 @@ import com.example.cataniaunited.data.model.SettlementPosition
 fun SettlementComposable(
     modifier: Modifier = Modifier,
     settlementPosition: SettlementPosition,
-    size: Dp = 15.dp // Adjust size
+    size: Dp,
+    onSettlementClick: (SettlementPosition) -> Unit = {}
 ) {
     // TODO: Later, check settlementPosition.building to display different icons/colors
     val buildingColor = when (settlementPosition.building) {
@@ -32,6 +34,7 @@ fun SettlementComposable(
     Box(
         modifier = modifier
             .size(size)
+            .clickable { onSettlementClick(settlementPosition) }
             .clip(CircleShape)
             .background(buildingColor)
             .border(1.dp, borderColor, CircleShape)

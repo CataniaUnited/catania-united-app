@@ -2,6 +2,7 @@ package com.example.cataniaunited.ui.game_board.road
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
@@ -22,7 +23,8 @@ fun RoadComposable(
     modifier: Modifier = Modifier,
     road: Road,
     length: Dp,
-    thickness: Dp = 6.dp // TODO: Adjust thickness
+    thickness: Dp,
+    onRoadClick: (Road) -> Unit = {}
 ) {
     // TODO: Later, check road.owner to display different colors
     val roadColor = when (road.owner) {
@@ -34,12 +36,13 @@ fun RoadComposable(
 
     Box(
         modifier = modifier
-            .width(length) // The length connects two settlement points
+            .width(length)
+            .clickable { onRoadClick(road) }
             .height(thickness)
             .graphicsLayer(
                 rotationZ = road.rotationAngle.toDegrees() // Convert radians to degrees
             )
             .background(roadColor)
-            .border(1.dp, borderColor) // Show border for placeholder visibility
+            .border(1.dp, borderColor)
     )
 }

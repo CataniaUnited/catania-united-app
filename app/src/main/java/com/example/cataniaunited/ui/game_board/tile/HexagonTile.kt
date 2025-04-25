@@ -4,6 +4,7 @@ package com.example.cataniaunited.ui.game_board.tile
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Text
@@ -13,9 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
@@ -63,10 +62,13 @@ fun createHexagonPath(size: Size): Path {
 fun HexagonTile(
     modifier: Modifier = Modifier,
     tile: Tile,
-    size: Dp = 60.dp // TODO: calculate this based on screen size/zoom
+    size: Dp,
+    onTileClick: (Tile) -> Unit = {}
 ) {
     Box(
-        modifier = modifier.size(size),
+        modifier = modifier
+            .size(size)
+            .clickable { onTileClick(tile) },
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
@@ -108,16 +110,5 @@ fun HexagonTile(
                 )
             }
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewHexagonTile() {
-    Row {
-        HexagonTile(tile = Tile(1, TileType.WOOD, 11, listOf(0.0, 0.0)))
-        HexagonTile(tile = Tile(2, TileType.ORE, 8, listOf(0.0, 0.0)))
-        HexagonTile(tile = Tile(3, TileType.WASTE, 0, listOf(0.0, 0.0)))
     }
 }

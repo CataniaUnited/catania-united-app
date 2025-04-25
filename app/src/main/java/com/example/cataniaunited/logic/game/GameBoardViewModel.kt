@@ -1,9 +1,12 @@
-package com.example.cataniaunited.ui.game_board.board
+package com.example.cataniaunited.logic.game
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cataniaunited.data.model.GameBoardModel as GameBoard
+import com.example.cataniaunited.data.model.Road
+import com.example.cataniaunited.data.model.SettlementPosition
+import com.example.cataniaunited.data.model.Tile
+import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.util.parseGameBoard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -12,8 +15,9 @@ import kotlinx.coroutines.launch
 
 class GameViewModel : ViewModel() {
 
-    private val _gameBoardState = MutableStateFlow<GameBoard?>(null)
-    val gameBoardState: StateFlow<GameBoard?> = _gameBoardState.asStateFlow()
+    private val _gameBoardState = MutableStateFlow<GameBoardModel?>(null)
+    val gameBoardState: StateFlow<GameBoardModel?> = _gameBoardState.asStateFlow()
+    private var currentLobbyId: String = "lobby123" // TODO: replace placeholder
 
     init {
         // Load initial state for testing if needed
@@ -1308,7 +1312,7 @@ class GameViewModel : ViewModel() {
     }
 
     // TODO: DELETE IF NOT If the parser returns the object directly
-    fun updateGameBoard(newBoard: GameBoard?) {
+    fun updateGameBoard(newBoard: GameBoardModel?) {
         viewModelScope.launch {
             _gameBoardState.value = newBoard
             if (newBoard != null) {
@@ -1317,6 +1321,37 @@ class GameViewModel : ViewModel() {
                 Log.w("GameViewModel", "Received null game board object for update.")
             }
         }
+    }
+
+
+    // --- Placeholder Click Handlers ---
+
+    fun handleTileClick(tile: Tile) {
+        Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
+        // TODO: Implement logic for tile click (e.g., move robber phase)
+        // 1) Check game state (is it robber phase?)
+        // 2) Validate if the tile is a valid target
+        // 3) call gameBoardLogic....
+    }
+
+    fun handleSettlementClick(settlementPosition: SettlementPosition) {
+        Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}")
+        // TODO: Implement logic for placing/upgrading settlement DON'T FORGET UPGRADE XD
+        // 1) Check game state (setup or not? your turn?)
+        // 2) Check resources
+        // 3) Validate placement rules (distance, road connection)
+        // 4) Get lobbyId and PlayerId
+        // 5) Call gameBoardLogic.placeSettlement(settlementPosition.id, currentLobbyId)
+    }
+
+    fun handleRoadClick(road: Road) {
+        Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
+        // TODO: Implement logic for placing road
+        // 1) Check game state (setup or not? your turn?)
+        // 2) Check resources
+        // 3) Validate placement rules (road connection, empty)
+        // 4) Get lobbyId and PlayerId
+        // 5) Call gameBoardLogic.placeRoad(road.id, currentLobbyId)
     }
 
 

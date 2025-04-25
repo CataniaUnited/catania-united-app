@@ -1,6 +1,7 @@
 package com.example.cataniaunited.ui.game_board.board
 
 import android.util.Log
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
@@ -54,7 +55,10 @@ fun CatanBoard(
     settlementPositions: List<SettlementPosition>,
     roads: List<Road>,
     outerMarginDp: Dp = 16.dp,
-    boardBackgroundColor: Color = Color(0xff177fde)
+    boardBackgroundColor: Color = Color(0xff177fde),
+    onTileClicked: (Tile) -> Unit = {},
+    onSettlementClicked: (SettlementPosition) -> Unit = {},
+    onRoadClicked: (Road) -> Unit = {}
 ) {
     // Check if essential data is present
     if (tiles.isEmpty() || settlementPositions.isEmpty()) {
@@ -196,7 +200,8 @@ fun CatanBoard(
                     HexagonTile(
                         modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
                         tile = tile,
-                        size = baseParams.initialHexSizeDp // Use initial size
+                        size = baseParams.initialHexSizeDp, // Use initial size
+                        onTileClick = onTileClicked // Pass down the handler
                     )
                 }
 
@@ -213,7 +218,8 @@ fun CatanBoard(
                     SettlementComposable(
                         modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
                         settlementPosition = position,
-                        size = baseParams.initialSettlementSizeDp // Use initial size
+                        size = baseParams.initialSettlementSizeDp, // Use initial size
+                        onSettlementClick = onSettlementClicked // Pass down the handler
                     )
                 }
 
@@ -234,7 +240,8 @@ fun CatanBoard(
                         modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
                         road = road,
                         length = baseParams.initialDrawableRoadLengthDp, // Use initial size
-                        thickness = roadThicknessDp
+                        thickness = roadThicknessDp,
+                        onRoadClick = onRoadClicked // Pass down the handler
                     )
                 }
             }

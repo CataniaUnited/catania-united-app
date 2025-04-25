@@ -1,12 +1,15 @@
 package com.example.cataniaunited
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.test.TestPage
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
@@ -30,16 +33,33 @@ class MainActivity : ComponentActivity() {
                     composable("starting") {
                         StartingScreen(
                             onLearnClick = { navController.navigate("tutorial") },
-                            onStartClick = { navController.navigate("game") },
+                            onStartClick = {
+                                val testLobbyId = "lobby_test_123"// TODO Replace Placeholder with real logic on fetching game logic
+                                navController.navigate("game/$testLobbyId")
+                            },
                             onTestClick = { navController.navigate("test") }
                         )
                     }
                     composable("tutorial") {
                         TutorialScreen(onBackClick = { navController.navigateUp() })
                     }
-                    composable("game") {
-                        GameScreen()
+
+                    composable(
+                        route = "game/{lobbyId}",
+                        arguments = listOf(navArgument("lobbyId") { type = NavType.StringType })
+                    ) { backStackEntry ->
+                        // Retrieve lobby ID
+                        val lobbyIdArg = backStackEntry.arguments?.getString("lobbyId")
+                        if (lobbyIdArg == null) {
+                            // Handle error: Lobby ID missing, maybe navigate back or show error
+                            Log.e("Navigation", "Lobby ID missing in arguments for game route!")
+                            navController.navigateUp() // Go back if ID is missing
+                        } else {
+                            // Pass the retrieved lobbyId to the GameScreen
+                            GameScreen(lobbyId = lobbyIdArg)
+                        }
                     }
+
                     composable("test") {
                         TestPage()
                     }
@@ -52,4 +72,3 @@ class MainActivity : ComponentActivity() {
         super.onStop()
     }
 }
-

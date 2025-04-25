@@ -14,6 +14,7 @@ import com.example.cataniaunited.logic.game.GameViewModel
 
 @Composable
 fun GameScreen(
+    lobbyId: String,
     gameViewModel: GameViewModel = viewModel(),
 ) {
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
@@ -36,15 +37,15 @@ fun GameScreen(
                     // Add click handlers
                     onTileClicked = { tile ->
                         Log.d("GameScreen", "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}")
-                        gameViewModel.handleTileClick(tile)
+                        gameViewModel.handleTileClick(tile, lobbyId)
                     },
                     onSettlementClicked = { settlementPos ->
                         Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
-                        gameViewModel.handleSettlementClick(settlementPos)
+                        gameViewModel.handleSettlementClick(settlementPos, lobbyId)
                     },
                     onRoadClicked = { road ->
                         Log.d("GameScreen", "Road Clicked: ID=${road.id}")
-                        gameViewModel.handleRoadClick(road)
+                        gameViewModel.handleRoadClick(road, lobbyId)
                     }
                 )
             }

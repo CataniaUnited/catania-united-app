@@ -17,7 +17,6 @@ class GameViewModel : ViewModel() {
 
     private val _gameBoardState = MutableStateFlow<GameBoardModel?>(null)
     val gameBoardState: StateFlow<GameBoardModel?> = _gameBoardState.asStateFlow()
-    private var currentLobbyId: String = "lobby123" // TODO: replace placeholder
 
     init {
         // Load initial state for testing if needed
@@ -1326,7 +1325,7 @@ class GameViewModel : ViewModel() {
 
     // --- Placeholder Click Handlers ---
 
-    fun handleTileClick(tile: Tile) {
+    fun handleTileClick(tile: Tile, lobbyId: String) {
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
         // TODO: Implement logic for tile click (e.g., move robber phase)
         // 1) Check game state (is it robber phase?)
@@ -1334,7 +1333,7 @@ class GameViewModel : ViewModel() {
         // 3) call gameBoardLogic....
     }
 
-    fun handleSettlementClick(settlementPosition: SettlementPosition) {
+    fun handleSettlementClick(settlementPosition: SettlementPosition, lobbyId: String) {
         Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}")
         // TODO: Implement logic for placing/upgrading settlement DON'T FORGET UPGRADE XD
         // 1) Check game state (setup or not? your turn?)
@@ -1344,7 +1343,7 @@ class GameViewModel : ViewModel() {
         // 5) Call gameBoardLogic.placeSettlement(settlementPosition.id, currentLobbyId)
     }
 
-    fun handleRoadClick(road: Road) {
+    fun handleRoadClick(road: Road, lobbyId: String) {
         Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
         // TODO: Implement logic for placing road
         // 1) Check game state (setup or not? your turn?)

@@ -2,12 +2,16 @@ package com.example.cataniaunited.ui.game_board.board
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
@@ -19,24 +23,25 @@ import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.ui.game_board.road.RoadComposable
 import com.example.cataniaunited.ui.game_board.settlementPosition.SettlementComposable
 import com.example.cataniaunited.ui.game_board.tile.HexagonTile
-import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
-import kotlin.math.sqrt
 
 
 private const val LOGICAL_HEX_RADIUS = 10.0f
-private val LOGICAL_HEX_WIDTH = (LOGICAL_HEX_RADIUS * sqrt(3.0)).toFloat() // Approx 17.32
-private val LOGICAL_HEX_HEIGHT = LOGICAL_HEX_RADIUS * 2.0f            // Approx 20.0
+private val LOGICAL_HEX_DIAMETER = LOGICAL_HEX_RADIUS * 2.0f
 
-// Helper data class for calculated bounds and scale
-private data class BoardLayoutParams(
-    val scale: Float = 1.0f,
-    val boardOffsetX: Float = 0f,
-    val boardOffsetY: Float = 0f,
-    val hexSizeDp: Dp = 60.dp,
-    val settlementSizeDp: Dp = 15.dp,
-    val drawableRoadLengthDp: Dp = 40.dp
+// Base layout parameters calculated once to fit the initial view
+private data class BoardBaseLayoutParams(
+    val minX: Float = 0.0f,
+    val maxX: Float = 0.0f,
+    val minY: Float = 0.0f,
+    val maxY: Float = 0.0f,
+    val initialScale: Float = 1.0f,
+    val initialBoardOffsetX: Float = 0f,
+    val initialBoardOffsetY: Float = 0f,
+    val initialHexSizeDp: Dp = 60.dp,
+    val initialSettlementSizeDp: Dp = 15.dp,
+    val initialDrawableRoadLengthDp: Dp = 40.dp,
 )
 
 // Helper to convert Px to Dp within LaunchedEffect/Density scope
@@ -48,196 +53,194 @@ fun CatanBoard(
     tiles: List<Tile>,
     settlementPositions: List<SettlementPosition>,
     roads: List<Road>,
-    padding: Dp = 16.dp,
+    outerMarginDp: Dp = 16.dp,
     boardBackgroundColor: Color = Color(0xff177fde)
 ) {
-    if (tiles.isEmpty()) {
-        // Apply background to the empty state box
-        Box(modifier = modifier.fillMaxSize().background(boardBackgroundColor), contentAlignment = Alignment.Center) {
-            Text("No board data", color = Color.White)
+    // Check if essential data is present
+    if (tiles.isEmpty() || settlementPositions.isEmpty()) {
+        Box(
+            modifier = modifier.fillMaxSize().background(boardBackgroundColor),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Insufficient board data", color = Color.White)
         }
         return
     }
 
-    var layoutParams by remember { mutableStateOf<BoardLayoutParams?>(null) }
+    // State for zoom and pan from gestures
+    var scale by remember { mutableFloatStateOf(1f) }
+    var offset by remember { mutableStateOf(Offset.Zero) }
 
-    // Apply the background color to the main BoxWithConstraints
-    BoxWithConstraints(modifier = modifier.background(boardBackgroundColor)) {
-        val density = LocalDensity.current
-        val availableWidthPx = with(density) { maxWidth.toPx() }
-        val availableHeightPx = with(density) { maxHeight.toPx() }
-        val paddingPx = with(density) { padding.toPx() }
+    // State to hold the calculated base layout parameters
+    var baseLayoutParams by remember { mutableStateOf<BoardBaseLayoutParams?>(null) }
 
-        // Calculate effective available space *after* accounting for padding
-        val effectiveAvailableWidthPx = max(0f, availableWidthPx - 2 * paddingPx)
-        val effectiveAvailableHeightPx = max(0f, availableHeightPx - 2 * paddingPx)
+    val density = LocalDensity.current
 
+    // --- Base Layout Calculation ---
+    // This effect calculates the initial fit and centering ONCE or when inputs change. Its not dependant on the gestures
+    LaunchedEffect(tiles, settlementPositions, outerMarginDp, density) {
+        baseLayoutParams = null
+    }
 
-        LaunchedEffect(tiles, maxWidth, maxHeight, density, padding) { // Add padding as a key
-            // Ensure we have tiles and *effective* space to draw in
-            if (tiles.isNotEmpty() && effectiveAvailableWidthPx > 0 && effectiveAvailableHeightPx > 0) {
+    BoxWithConstraints(
+        modifier = modifier
+            .background(boardBackgroundColor)
+            .pointerInput(Unit) {
+                detectTransformGestures { centroid, pan, zoom, _ ->
+                    val oldScale = scale
+                    val newScale = (scale * zoom).coerceIn(0.5f, 3f) // Limit zoom levels
 
-                // --- Basic Coordinates & Bounds (Tile Centers Only) ---
-                val coordsX = tiles.map { it.coordinates[0].toFloat() }
-                val coordsY = tiles.map { it.coordinates[1].toFloat() }
-                val minX = coordsX.minOrNull() ?: 0f
-                val maxX = coordsX.maxOrNull() ?: 0f
-                val minY = coordsY.minOrNull() ?: 0f
-                val maxY = coordsY.maxOrNull() ?: 0f
+                    // Calculate the offset adjustment needed to keep the centroid stable
+                    offset = (offset + centroid - (centroid / oldScale) * newScale) + pan
 
-                val logicalWidthCenters = (maxX - minX).coerceAtLeast(0f)
-                val logicalHeightCenters = (maxY - minY).coerceAtLeast(0f)
+                    scale = newScale
 
-                val logicalWidthForScale = if (logicalWidthCenters == 0f && logicalHeightCenters == 0f) 1f else logicalWidthCenters
-                val logicalHeightForScale = if (logicalWidthCenters == 0f && logicalHeightCenters == 0f) 1f else logicalHeightCenters
-
-                if (logicalWidthForScale <= 0 && logicalHeightForScale <= 0) {
-                    Log.w("CatanBoard", "Both logical dimensions are zero or negative.")
-                    layoutParams = null
-                    return@LaunchedEffect
                 }
+            }
+    ) {
+        // Recalculate base layout if it's null (first composition or input change)
+        if (baseLayoutParams == null) {
+            val availableWidthPx = constraints.maxWidth.toFloat()
+            val availableHeightPx = constraints.maxHeight.toFloat()
 
-                // --- Scaling ---
-                val scaleX = if (logicalWidthForScale > 0) effectiveAvailableWidthPx / logicalWidthForScale else Float.MAX_VALUE
-                val scaleY = if (logicalHeightForScale > 0) effectiveAvailableHeightPx / logicalHeightForScale else Float.MAX_VALUE
-                var scale = min(scaleX, scaleY).coerceAtLeast(0.01f)
+            if (tiles.isNotEmpty() && settlementPositions.isNotEmpty() && availableWidthPx > 0 && availableHeightPx > 0) {
+                // --- Calculate Effective Available Space (minus outer margin) ---
+                val outerMarginPx = with(density) { outerMarginDp.toPx() }
+                val effectiveAvailableWidthPx = (availableWidthPx - 2 * outerMarginPx).coerceAtLeast(0f)
+                val effectiveAvailableHeightPx = (availableHeightPx - 2 * outerMarginPx).coerceAtLeast(0f)
 
-                // --- Calculate Sizes ---
-                fun calculateSizes(currentScale: Float): Triple<Dp, Dp, Dp> {
-                    val scaledHexRadiusPx = LOGICAL_HEX_RADIUS * currentScale
-                    val hexSizeDp = (2 * scaledHexRadiusPx).toDp(density)
-                    val settlementSizeDp = hexSizeDp * 0.25f
-                    val settlementDiameterPx = with(density) { settlementSizeDp.toPx() }
-                    val centerToCenterRoadLengthPx = LOGICAL_HEX_RADIUS * currentScale
-                    val drawableRoadLengthPx = (centerToCenterRoadLengthPx - settlementDiameterPx).coerceAtLeast(1f)
-                    val drawableRoadLengthDp = drawableRoadLengthPx.toDp(density)
-                    return Triple(hexSizeDp, settlementSizeDp, drawableRoadLengthDp)
+                if (effectiveAvailableWidthPx > 0 && effectiveAvailableHeightPx > 0) {
+                    // --- Calculate Bounds based on ALL relevant elements ---
+                    val allCoordsX = tiles.map { it.coordinates[0].toFloat() } +
+                            settlementPositions.map { it.coordinates[0].toFloat() }
+                    val allCoordsY = tiles.map { it.coordinates[1].toFloat() } +
+                            settlementPositions.map { it.coordinates[1].toFloat() }
+
+                    val minX = allCoordsX.minOrNull() ?: 0f
+                    val maxX = allCoordsX.maxOrNull() ?: 0f
+                    val minY = allCoordsY.minOrNull() ?: 0f
+                    val maxY = allCoordsY.maxOrNull() ?: 0f
+
+                    val logicalWidthCenters = (maxX - minX).coerceAtLeast(0f)
+                    val logicalHeightCenters = (maxY - minY).coerceAtLeast(0f)
+
+                    if (logicalWidthCenters > 0 || logicalHeightCenters > 0) {
+                        // --- Calculate Initial Scale ---
+                        val totalLogicalWidth = (logicalWidthCenters + LOGICAL_HEX_DIAMETER).coerceAtLeast(0.01f)
+                        val totalLogicalHeight = (logicalHeightCenters + LOGICAL_HEX_DIAMETER).coerceAtLeast(0.01f)
+                        val scaleX = effectiveAvailableWidthPx / totalLogicalWidth
+                        val scaleY = effectiveAvailableHeightPx / totalLogicalHeight
+                        val initialFitScale = min(scaleX, scaleY).coerceAtLeast(0.01f)
+
+                        // --- Calculate Component Sizes at Initial Scale ---
+                        val initialScaledHexRadiusPx = LOGICAL_HEX_RADIUS * initialFitScale
+                        val initialHexSizeDp = (LOGICAL_HEX_DIAMETER * initialFitScale).toDp(density)
+                        val initialSettlementSizeDp = initialHexSizeDp * 0.25f
+                        val initialSettlementDiameterPx = with(density) { initialSettlementSizeDp.toPx() }
+                        val initialCenterToCenterRoadLengthPx = LOGICAL_HEX_RADIUS * initialFitScale
+                        val initialDrawableRoadLengthPx = (initialCenterToCenterRoadLengthPx - initialSettlementDiameterPx).coerceAtLeast(1f)
+                        val initialDrawableRoadLengthDp = initialDrawableRoadLengthPx.toDp(density)
+
+                        // --- Calculate Initial Offset for Centering ---
+                        val initialInternalPaddingNeededPx = initialScaledHexRadiusPx
+                        val visualMinX = (minX * initialFitScale) - initialInternalPaddingNeededPx
+                        val visualMinY = (minY * initialFitScale) - initialInternalPaddingNeededPx
+                        val visualMaxX = (maxX * initialFitScale) + initialInternalPaddingNeededPx
+                        val visualMaxY = (maxY * initialFitScale) + initialInternalPaddingNeededPx
+                        val visualBoardWidthPx = visualMaxX - visualMinX
+                        val visualBoardHeightPx = visualMaxY - visualMinY
+                        val centeringOffsetX = (effectiveAvailableWidthPx - visualBoardWidthPx) / 2f
+                        val centeringOffsetY = (effectiveAvailableHeightPx - visualBoardHeightPx) / 2f
+                        val finalInitialBoardOffsetX = centeringOffsetX - visualMinX + outerMarginPx
+                        val finalInitialBoardOffsetY = centeringOffsetY - visualMinY + outerMarginPx
+
+                        // --- Store Base Layout Params ---
+                        baseLayoutParams = BoardBaseLayoutParams(
+                            minX = minX, maxX = maxX, minY = minY, maxY = maxY, // Store bounds
+                            initialScale = initialFitScale,
+                            initialBoardOffsetX = finalInitialBoardOffsetX,
+                            initialBoardOffsetY = finalInitialBoardOffsetY,
+                            initialHexSizeDp = initialHexSizeDp,
+                            initialSettlementSizeDp = initialSettlementSizeDp,
+                            initialDrawableRoadLengthDp = initialDrawableRoadLengthDp,
+                        )
+                        Log.d("CatanBoardLayout", "Base layout calculated: InitialScale=${baseLayoutParams?.initialScale}")
+                    }
                 }
-
-                var (hexSizeDp, settlementSizeDp, drawableRoadLengthDp) = calculateSizes(scale)
-
-                // --- Element Padding ---
-                val scaledHexWidthPx = LOGICAL_HEX_WIDTH * scale
-                val scaledHexHeightPx = LOGICAL_HEX_HEIGHT * scale
-                val elementPaddingNeededX = scaledHexWidthPx / 2f
-                val elementPaddingNeededY = scaledHexHeightPx / 2f
-
-                // --- Re-evaluate Scale ---
-                val requiredWidthWithElementPadding = (logicalWidthCenters * scale) + (elementPaddingNeededX * 2)
-                val requiredHeightWithElementPadding = (logicalHeightCenters * scale) + (elementPaddingNeededY * 2)
-
-                if (requiredWidthWithElementPadding > effectiveAvailableWidthPx || requiredHeightWithElementPadding > effectiveAvailableHeightPx) {
-                    val scaleCorrectionX = if (requiredWidthWithElementPadding > 0) effectiveAvailableWidthPx / requiredWidthWithElementPadding else 1f
-                    val scaleCorrectionY = if (requiredHeightWithElementPadding > 0) effectiveAvailableHeightPx / requiredHeightWithElementPadding else 1f
-                    val scaleCorrection = min(scaleCorrectionX, scaleCorrectionY)
-                    scale *= scaleCorrection
-
-                    val (correctedHexSizeDp, correctedSettlementSizeDp, correctedDrawableRoadLengthDp) = calculateSizes(scale)
-                    hexSizeDp = correctedHexSizeDp
-                    settlementSizeDp = correctedSettlementSizeDp
-                    drawableRoadLengthDp = correctedDrawableRoadLengthDp
-                }
-
-                // --- Visual Bounds & Offset ---
-                val finalElementPaddingNeededX = (LOGICAL_HEX_WIDTH * scale) / 2f // Use corrected scale
-                val finalElementPaddingNeededY = (LOGICAL_HEX_HEIGHT * scale) / 2f // Use corrected scale
-
-                val visualMinX = (minX * scale) - finalElementPaddingNeededX
-                val visualMaxX = (maxX * scale) + finalElementPaddingNeededX
-                val visualMinY = (minY * scale) - finalElementPaddingNeededY
-                val visualMaxY = (maxY * scale) + finalElementPaddingNeededY
-
-                val visualBoardWidthPx = visualMaxX - visualMinX
-                val visualBoardHeightPx = visualMaxY - visualMinY
-
-                val centeringOffsetX = (effectiveAvailableWidthPx - visualBoardWidthPx) / 2f
-                val centeringOffsetY = (effectiveAvailableHeightPx - visualBoardHeightPx) / 2f
-
-                val finalBoardOffsetX = paddingPx + centeringOffsetX - visualMinX
-                val finalBoardOffsetY = paddingPx + centeringOffsetY - visualMinY
-
-                // --- Update Layout Params ---
-                layoutParams = BoardLayoutParams(
-                    scale = scale,
-                    boardOffsetX = finalBoardOffsetX,
-                    boardOffsetY = finalBoardOffsetY,
-                    hexSizeDp = hexSizeDp,
-                    settlementSizeDp = settlementSizeDp,
-                    drawableRoadLengthDp = drawableRoadLengthDp
-                )
-
-            } else { // End of calculation if error
-                layoutParams = null
-                if (tiles.isEmpty()) Log.w("CatanBoard", "Tile list is empty.")
-                if (effectiveAvailableWidthPx <= 0) Log.w("CatanBoard", "Effective available width is zero or negative (check padding).")
-                if (effectiveAvailableHeightPx <= 0) Log.w("CatanBoard", "Effective available height is zero or negative (check padding).")
             }
         }
 
+        // --- Drawing ---
+        // Draw elements only if base layout is calculated
+        baseLayoutParams?.let { baseParams ->
+            // Apply zoom/pan transformation using graphicsLayer to a Box containing all elements
+            Box(
+                modifier = Modifier
+                    .graphicsLayer(
+                        scaleX = scale,
+                        scaleY = scale,
+                        translationX = offset.x,
+                        translationY = offset.y
+                    )
+            ) {
+                // Draw Tiles
+                val currentHexSizePx = with(density) { baseParams.initialHexSizeDp.toPx() }
+                tiles.forEach { tile ->
+                    val scaledX = tile.coordinates[0].toFloat() * baseParams.initialScale
+                    val scaledY = tile.coordinates[1].toFloat() * baseParams.initialScale
+                    val finalX = baseParams.initialBoardOffsetX + scaledX
+                    val finalY = baseParams.initialBoardOffsetY + scaledY
+                    val composableOffsetX = finalX - (currentHexSizePx / 2f)
+                    val composableOffsetY = finalY - (currentHexSizePx / 2f)
 
+                    HexagonTile(
+                        modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
+                        tile = tile,
+                        size = baseParams.initialHexSizeDp // Use initial size
+                    )
+                }
 
-        // Draw the elements if layout is calculated
-        layoutParams?.let { params ->
-            val density = LocalDensity.current
+                // Draw Settlements
+                val settlementSizePx = with(density) { baseParams.initialSettlementSizeDp.toPx() }
+                settlementPositions.forEach { position ->
+                    val scaledX = position.coordinates[0].toFloat() * baseParams.initialScale
+                    val scaledY = position.coordinates[1].toFloat() * baseParams.initialScale
+                    val finalX = baseParams.initialBoardOffsetX + scaledX
+                    val finalY = baseParams.initialBoardOffsetY + scaledY
+                    val composableOffsetX = finalX - (settlementSizePx / 2f)
+                    val composableOffsetY = finalY - (settlementSizePx / 2f)
 
-            // --- Draw Tiles ---
-            val currentHexSizePx = with(density) { params.hexSizeDp.toPx() }
-            tiles.forEach { tile ->
-                val scaledX = tile.coordinates[0].toFloat() * params.scale
-                val scaledY = tile.coordinates[1].toFloat() * params.scale
-                val finalX = params.boardOffsetX + scaledX
-                val finalY = params.boardOffsetY + scaledY
-                val composableOffsetX = finalX - (currentHexSizePx / 2f)
-                val composableOffsetY = finalY - (currentHexSizePx / 2f)
+                    SettlementComposable(
+                        modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
+                        settlementPosition = position,
+                        size = baseParams.initialSettlementSizeDp // Use initial size
+                    )
+                }
 
-                HexagonTile(
-                    modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
-                    tile = tile,
-                    size = params.hexSizeDp
-                )
-            }
+                // Draw Roads
+                val roadLengthPx = with(density) { baseParams.initialDrawableRoadLengthDp.toPx() }
+                val roadThicknessDp = baseParams.initialSettlementSizeDp * 0.4f // Relative to initial size
+                val roadThicknessPx = with(density) { roadThicknessDp.toPx() }
 
-            // --- Draw Settlements ---
-            val settlementSizePx = with(density) { params.settlementSizeDp.toPx() }
-            settlementPositions.forEach { position ->
-                val scaledX = position.coordinates[0].toFloat() * params.scale
-                val scaledY = position.coordinates[1].toFloat() * params.scale
-                val finalX = params.boardOffsetX + scaledX
-                val finalY = params.boardOffsetY + scaledY
-                val composableOffsetX = finalX - (settlementSizePx / 2f)
-                val composableOffsetY = finalY - (settlementSizePx / 2f)
+                roads.forEach { road ->
+                    val scaledX = road.coordinates[0].toFloat() * baseParams.initialScale
+                    val scaledY = road.coordinates[1].toFloat() * baseParams.initialScale
+                    val finalX = baseParams.initialBoardOffsetX + scaledX
+                    val finalY = baseParams.initialBoardOffsetY + scaledY
+                    val composableOffsetX = finalX - (roadLengthPx / 2f)
+                    val composableOffsetY = finalY - (roadThicknessPx / 2f)
 
-                SettlementComposable(
-                    modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
-                    settlementPosition = position,
-                    size = params.settlementSizeDp
-                )
-            }
-
-            // --- Draw Roads ---
-            val roadLengthPx = with(density) { params.drawableRoadLengthDp.toPx() }
-            val roadThicknessDp = params.settlementSizeDp * 0.4f
-            val roadThicknessPx = with(density) { roadThicknessDp.toPx() }
-
-            roads.forEach { road ->
-                val scaledX = road.coordinates[0].toFloat() * params.scale
-                val scaledY = road.coordinates[1].toFloat() * params.scale
-                val finalX = params.boardOffsetX + scaledX
-                val finalY = params.boardOffsetY + scaledY
-                val composableOffsetX = finalX - (roadLengthPx / 2f)
-                val composableOffsetY = finalY - (roadThicknessPx / 2f)
-
-                RoadComposable(
-                    modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
-                    road = road,
-                    length = params.drawableRoadLengthDp,
-                    thickness = roadThicknessDp
-                )
+                    RoadComposable(
+                        modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
+                        road = road,
+                        length = baseParams.initialDrawableRoadLengthDp, // Use initial size
+                        thickness = roadThicknessDp
+                    )
+                }
             }
         } ?: run {
-            // Apply background to the loading state box
-            Box(Modifier.fillMaxSize().background(boardBackgroundColor), contentAlignment = Alignment.Center) {
-                Text("Calculating layout...", color = Color.White) // Make text visible
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("Calculating layout...", color = Color.White)
             }
         }
     }

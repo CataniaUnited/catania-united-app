@@ -28,8 +28,33 @@ class GameBoardLogic {
         } else { Log.e("GameBoardLogic", "WS not connected for placeRoad") }
     }
 
+    fun requestCreateLobby() {
+        val playerId = try {
+            MainApplication.getInstance().getPlayerId()
+        } catch (e: IllegalStateException) {
+            Log.e("GameBoardLogic", "Player ID not initialized when requesting lobby creation.", e)
+            return
+        }
 
-    fun requestNewGameBoard(playerCount: Int, lobbyId: String) { // Keep lobbyId parameter for now
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+
+        if (webSocketClient.isConnected()) {
+            val messageToSend = MessageDTO(
+                type = MessageType.CREATE_LOBBY,
+                player = playerId,
+                lobbyId = null,
+                players = null,
+                message = null
+            )
+            webSocketClient.sendMessage(messageToSend)
+            Log.i("GameBoardLogic", "Sent CREATE_LOBBY request.")
+        } else {
+            Log.e("GameBoardLogic", "WebSocket not connected when trying to create lobby.")
+        }
+    }
+
+
+    fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4) { // Default player count
         val playerId = try {
             MainApplication.getInstance().getPlayerId()
         } catch (e: IllegalStateException) {
@@ -37,7 +62,6 @@ class GameBoardLogic {
             return // Cannot proceed without player ID
         }
 
-        // The payload only contains playerCount based on backend need described earlier
         val messagePayload = buildJsonObject {
             put("playerCount", playerCount)
         }

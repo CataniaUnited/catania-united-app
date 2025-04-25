@@ -8,6 +8,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 
@@ -23,22 +26,27 @@ open class MainApplication : Application() {
     var latestBoardJson: String? = null
         private set
 
+
+    private val _currentLobbyIdFlow = MutableStateFlow<String?>(null) // Private Mutable StateFlow
+    val currentLobbyIdFlow: StateFlow<String?> = _currentLobbyIdFlow.asStateFlow() // Public Immutable StateFlow
+
+    var currentLobbyId: String?
+        get() = _currentLobbyIdFlow.value // Getter reads from flow
+        private set(value) { // Setter updates the flow
+            _currentLobbyIdFlow.value = value
+        }
+
     companion object {
         @Volatile // Ensure visibility across threads
         private lateinit var instance: MainApplication
-
-        fun getInstance(): MainApplication {
-            return instance
-        }
+        fun getInstance(): MainApplication = instance
     }
 
     override fun onCreate() {
         super.onCreate()
         instance = this
         Log.i("MainApplication", "onCreate: Application instance initialized.")
-
         webSocketClient = WebSocketClient(BuildConfig.SERVER_URL)
-
         Log.i("MainApplication", "onCreate: Initializing WebSocket connection.")
 
         val listener = WebSocketListenerImpl(
@@ -46,17 +54,25 @@ open class MainApplication : Application() {
                 Log.d("MainApplication", "Callback: onConnectionSuccess. Player ID: $playerId")
                 setPlayerId(playerId)
             },
+            onLobbyCreated = { lobbyId ->
+                Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId")
+                currentLobbyId = lobbyId
+                Log.d("MainApplication", ">>> _currentLobbyIdFlow value is now: ${_currentLobbyIdFlow.value}")
+            },
             onGameBoardReceived = { lobbyId, boardJson ->
                 Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId.")
                 latestBoardJson = boardJson
-                // Use the applicationScope to launch the coroutine for sending to channel
-                applicationScope.launch {
-                    try {
-                        _navigateToGameChannel.send(lobbyId) // Use suspend 'send'
-                        Log.d("MainApplication", "Sent lobbyId $lobbyId to navigation channel.")
-                    } catch (e: Exception) {
-                        Log.e("MainApplication", "Error sending navigation event for lobby $lobbyId", e)
+                if (lobbyId == _currentLobbyIdFlow.value) {
+                    applicationScope.launch {
+                        try {
+                            _navigateToGameChannel.send(lobbyId)
+                            Log.d("MainApplication", "Sent lobbyId $lobbyId to navigation channel.")
+                        } catch (e: Exception) {
+                            Log.e("MainApplication", "Error sending navigation event for lobby $lobbyId", e)
+                        }
                     }
+                } else {
+                    Log.w("MainApplication", "Received board for lobby $lobbyId, but current lobby flow value is ${_currentLobbyIdFlow.value}. Ignoring navigation.")
                 }
             },
             onError = { error ->
@@ -64,10 +80,12 @@ open class MainApplication : Application() {
             },
             onClosed = { code, reason ->
                 Log.w("MainApplication", "Callback: onClosed. Code=$code, Reason=$reason")
+                // Reset state on disconnect
+                _playerId = null
+                currentLobbyId = null
+                latestBoardJson = null
             }
         )
-
-        // Connect using the configured listener
         webSocketClient.connect(listener)
     }
 
@@ -80,16 +98,22 @@ open class MainApplication : Application() {
         Log.i("MainApplication", "Player ID set to: $playerId")
     }
 
-
     fun getWebSocketClient(): WebSocketClient {
+        // Ensure webSocketClient is initialized before returning
         if (!::webSocketClient.isInitialized) {
             throw IllegalStateException("WebSocketClient accessed before initialization in onCreate")
         }
         return webSocketClient
     }
 
-    fun clearGameBoardData() {
+    fun clearGameData() {
         latestBoardJson = null
-        Log.d("MainApplication", "Cleared latest game board JSON.")
+        Log.d("MainApplication", "Cleared game board JSON.")
+    }
+
+    fun clearLobbyData() {
+        currentLobbyId = null
+        latestBoardJson = null
+        Log.d("MainApplication", "Cleared lobby data.")
     }
 }

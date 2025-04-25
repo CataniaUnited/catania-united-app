@@ -1,11 +1,13 @@
 package com.example.cataniaunited
 
+import androidx.compose.runtime.*
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -32,23 +34,26 @@ class MainActivity : ComponentActivity() {
         setContent {
             CataniaUnitedTheme(darkTheme = false, dynamicColor = false) {
                 val navController = rememberNavController()
-                val application = application as MainApplication // Get app instance
+                val application = application as MainApplication
 
-                // --- Listen for Navigation Events ---
-                // This handles the navigation *after* the board JSON is received
-                LaunchedEffect(Unit) { // Launch only once per composition lifecycle
+                val currentLobbyIdState by application.currentLobbyIdFlow.collectAsState()
+
+                LaunchedEffect(currentLobbyIdState) {
+                    Log.d("MainActivity", "Collected Lobby ID State changed: $currentLobbyIdState")
+                }
+
+
+
+                LaunchedEffect(Unit) {
                     Log.d("MainActivity", "Setting up navigation listener.")
                     application.navigateToGameFlow
                         .onEach { lobbyId ->
                             Log.i("MainActivity", "Received navigation trigger for Lobby: $lobbyId")
-                            // Ensure we're on the main thread if required by NavController, though usually okay from lifecycleScope
-                            // withContext(Dispatchers.Main) {
                             navController.navigate("game/$lobbyId") {
-                                popUpTo("starting") { inclusive = true } // Remove starting screen from backstack
+                                popUpTo("starting") { inclusive = true }
                             }
-                            // }
                         }
-                        .launchIn(lifecycleScope) // Use the Activity's lifecycle scope
+                        .launchIn(lifecycleScope)
                 }
 
                 NavHost(
@@ -58,16 +63,29 @@ class MainActivity : ComponentActivity() {
                     composable("starting") {
                         StartingScreen(
                             onLearnClick = { navController.navigate("tutorial") },
-                            onStartClick = {
-                                val testLobbyId = "lobby_test_123" // TODO: use real LobbyID
-                                Log.i("MainActivity", "Start Game clicked. Requesting board for lobby: $testLobbyId")
+                            onCreateLobbyClick = {
+                                Log.i("MainActivity", "Create Lobby button clicked.")
                                 try {
-                                    gameBoardLogic.requestNewGameBoard(playerCount = 4, lobbyId = testLobbyId)
+                                    gameBoardLogic.requestCreateLobby()
                                 } catch (e: Exception) {
-                                    Log.e("MainActivity", "Error requesting new game board", e)
+                                    Log.e("MainActivity", "Error requesting lobby creation", e)
                                 }
                             },
-                            onTestClick = { navController.navigate("test") }
+                            onStartClick = {
+                                val lobbyToStart = currentLobbyIdState // Use collected state
+                                if (lobbyToStart != null) {
+                                    Log.i("MainActivity", "Start Game button clicked for known lobby: $lobbyToStart")
+                                    try {
+                                        gameBoardLogic.requestBoardForLobby(lobbyId = lobbyToStart, playerCount = 4)
+                                    } catch (e: Exception) {
+                                        Log.e("MainActivity", "Error requesting board for lobby", e)
+                                    }
+                                } else {
+                                    Log.e("MainActivity", "Start Game clicked, but no current Lobby ID state!")
+                                }
+                            },
+                            onTestClick = { navController.navigate("test") },
+                            currentLobbyId = currentLobbyIdState // Pass the collected state
                         )
                     }
                     composable("tutorial") {
@@ -76,25 +94,17 @@ class MainActivity : ComponentActivity() {
 
                     composable(
                         route = "game/{lobbyId}",
-                        arguments = listOf(navArgument("lobbyId") { type = NavType.StringType })
+
                     ) { backStackEntry ->
                         val lobbyIdArg = backStackEntry.arguments?.getString("lobbyId")
                         if (lobbyIdArg == null) {
-                            Log.e("Navigation", "Lobby ID missing in arguments for game route! Navigating back.")
-                            LaunchedEffect(Unit) { // Navigate safely after composition
-                                navController.navigateUp()
-                            }
+                            Log.e("Navigation", "Lobby ID missing! Navigating back.")
+                            LaunchedEffect(Unit) { navController.navigateUp() }
                         } else {
                             Log.d("Navigation", "Navigating to GameScreen for lobby: $lobbyIdArg")
-                            // Clear previous board data *before* loading new screen's ViewModel
-                            application.clearGameBoardData()
-                            // Pass the retrieved lobbyId to the GameScreen
+                            // application.clearGameData()
                             GameScreen(lobbyId = lobbyIdArg)
                         }
-                    }
-
-                    composable("test") {
-                        TestPage()
                     }
                 }
             }

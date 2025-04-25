@@ -3,6 +3,7 @@ package com.example.cataniaunited.logic.game
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
@@ -18,16 +19,89 @@ class GameViewModel : ViewModel() {
     private val _gameBoardState = MutableStateFlow<GameBoardModel?>(null)
     val gameBoardState: StateFlow<GameBoardModel?> = _gameBoardState.asStateFlow()
 
+    private val gameBoardLogic = GameBoardLogic() // Keep instance for actions
+
     init {
-        // Load initial state for testing if needed
-        // Later, wait for WebSocket connection/message
-        // loadGameBoardFromJson(initialTestJson)
-        Log.d("GameViewModel", "ViewModel Initialized. Waiting for board data...")
+        Log.d("GameViewModel", "ViewModel Initialized. Attempting to load initial board.")
+        // --- Load Initial Board from Application ---
+        loadInitialBoard() // Call the loading function
+    }
+
+    private fun loadInitialBoard() {
+        // Get the JSON that was stored by the WebSocket listener
+        val initialJson = MainApplication.getInstance().latestBoardJson
+        if (initialJson != null) {
+            Log.i("GameViewModel", "Found initial board JSON in Application state. Parsing...")
+            loadGameBoardFromJson(initialJson)
+            // MainApplication.getInstance().clearGameBoardData() maybe clear
+        } else {
+            Log.e("GameViewModel", "Initial board JSON was null in MainApplication when ViewModel initialized! Cannot load board from server.")
+            // Set state to null (UI shows loading/error)
+            _gameBoardState.value = null
+            // loadGameBoardFromJson(getHardcodedTestJson()) // debugging
+        }
+    }
+
+    fun loadGameBoardFromJson(jsonString: String) {
+        viewModelScope.launch {
+            val board = parseGameBoard(jsonString)
+            if (board != null) {
+                _gameBoardState.value = board
+                Log.d("GameViewModel", "Game board loaded/updated successfully.")
+            } else {
+                Log.e("GameViewModel", "Failed to parse game board from JSON string.")
+                _gameBoardState.value = null
+            }
+        }
+    }
+
+    // TODO: DELETE IF NOT If the parser returns the object directly
+    fun updateGameBoard(newBoard: GameBoardModel?) {
+        viewModelScope.launch {
+            _gameBoardState.value = newBoard
+            if (newBoard != null) {
+                Log.d("GameViewModel", "Game board updated directly with object.")
+            } else {
+                Log.w("GameViewModel", "Received null game board object for update.")
+            }
+        }
+    }
 
 
-        // Hardcoded JSON only for initial testing
-        val initialTestJson = """
-{
+    // --- Placeholder Click Handlers ---
+
+    fun handleTileClick(tile: Tile, lobbyId: String) {
+        Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
+        // TODO: Implement logic for tile click (e.g., move robber phase)
+        // 1) Check game state (is it robber phase?)
+        // 2) Validate if the tile is a valid target
+        // 3) call gameBoardLogic....
+    }
+
+    fun handleSettlementClick(settlementPosition: SettlementPosition, lobbyId: String) {
+        Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}")
+        // TODO: Implement logic for placing/upgrading settlement DON'T FORGET UPGRADE XD
+        // 1) Check game state (setup or not? your turn?)
+        // 2) Check resources
+        // 3) Validate placement rules (distance, road connection)
+        // 4) Get lobbyId and PlayerId
+        // 5) Call gameBoardLogic.placeSettlement(settlementPosition.id, currentLobbyId)
+    }
+
+    fun handleRoadClick(road: Road, lobbyId: String) {
+        Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
+        // TODO: Implement logic for placing road
+        // 1) Check game state (setup or not? your turn?)
+        // 2) Check resources
+        // 3) Validate placement rules (road connection, empty)
+        // 4) Get lobbyId and PlayerId
+        // 5) Call gameBoardLogic.placeRoad(road.id, currentLobbyId)
+    }
+
+
+    private fun getHardcodedTestJson(): String {
+        return """
+            {
    "tiles":[
       {
          "id":1,
@@ -1288,71 +1362,7 @@ class GameViewModel : ViewModel() {
    "ringsOfBoard":3,
    "sizeOfHex":6
 }
-"""
-
-
-
-
-        loadGameBoardFromJson(initialTestJson)
+            """
     }
-
-
-    fun loadGameBoardFromJson(jsonString: String) {
-        viewModelScope.launch {
-            val board = parseGameBoard(jsonString)
-            if (board != null) {
-                _gameBoardState.value = board
-                Log.d("GameViewModel", "Game board loaded/updated successfully.")
-            } else {
-                Log.e("GameViewModel", "Failed to parse game board from JSON string.")
-                _gameBoardState.value = null
-            }
-        }
-    }
-
-    // TODO: DELETE IF NOT If the parser returns the object directly
-    fun updateGameBoard(newBoard: GameBoardModel?) {
-        viewModelScope.launch {
-            _gameBoardState.value = newBoard
-            if (newBoard != null) {
-                Log.d("GameViewModel", "Game board updated directly with object.")
-            } else {
-                Log.w("GameViewModel", "Received null game board object for update.")
-            }
-        }
-    }
-
-
-    // --- Placeholder Click Handlers ---
-
-    fun handleTileClick(tile: Tile, lobbyId: String) {
-        Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
-        // TODO: Implement logic for tile click (e.g., move robber phase)
-        // 1) Check game state (is it robber phase?)
-        // 2) Validate if the tile is a valid target
-        // 3) call gameBoardLogic....
-    }
-
-    fun handleSettlementClick(settlementPosition: SettlementPosition, lobbyId: String) {
-        Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}")
-        // TODO: Implement logic for placing/upgrading settlement DON'T FORGET UPGRADE XD
-        // 1) Check game state (setup or not? your turn?)
-        // 2) Check resources
-        // 3) Validate placement rules (distance, road connection)
-        // 4) Get lobbyId and PlayerId
-        // 5) Call gameBoardLogic.placeSettlement(settlementPosition.id, currentLobbyId)
-    }
-
-    fun handleRoadClick(road: Road, lobbyId: String) {
-        Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
-        // TODO: Implement logic for placing road
-        // 1) Check game state (setup or not? your turn?)
-        // 2) Check resources
-        // 3) Validate placement rules (road connection, empty)
-        // 4) Get lobbyId and PlayerId
-        // 5) Call gameBoardLogic.placeRoad(road.id, currentLobbyId)
-    }
-
-
 }
 

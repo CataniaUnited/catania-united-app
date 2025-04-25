@@ -18,7 +18,8 @@ open class WebSocketListenerImpl(
     private val onConnectionSuccess: (playerId: String) -> Unit,
     private val onGameBoardReceived: (lobbyId: String, boardJson: String) -> Unit,
     private val onError: (error: Throwable) -> Unit,
-    private val onClosed: (code: Int, reason: String) -> Unit
+    private val onClosed: (code: Int, reason: String) -> Unit,
+    private val onLobbyCreated: (lobbyId: String) -> Unit,
 ) : WebSocketListener() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
@@ -36,6 +37,7 @@ open class WebSocketListenerImpl(
             when (messageDTO.type) {
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
                 MessageType.GAME_BOARD_JSON -> handleGameBoardJson(messageDTO)
+                MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
                 // TODO: Other Messages
 
                 MessageType.ERROR -> {
@@ -76,7 +78,7 @@ open class WebSocketListenerImpl(
             }
         } else {
             Log.e("WebSocketListener", "GAME_BOARD_JSON missing lobbyId ('${lobbyId}') or message object ('${boardJsonObject}')")
-            onError(IllegalArgumentException("Invalid GAME_BOARD_JSON format")) 
+            onError(IllegalArgumentException("Invalid GAME_BOARD_JSON format"))
         }
     }
 
@@ -93,5 +95,16 @@ open class WebSocketListenerImpl(
         val responseMsg = response?.message ?: "No response"
         Log.e("WebSocketListener", "Failure: ${t.message}, Response: $responseMsg", t)
         onError(t) // Use callback
+    }
+
+    private fun handleLobbyCreated(messageDTO: MessageDTO) {
+        val lobbyId = messageDTO.lobbyId
+        if (lobbyId != null) {
+            Log.i("WebSocketListener", "Lobby Created successfully with ID: $lobbyId")
+            onLobbyCreated(lobbyId)
+        } else {
+            Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")
+            onError(IllegalArgumentException("Missing lobbyId in LOBBY_CREATED message"))
+        }
     }
 }

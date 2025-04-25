@@ -6,7 +6,7 @@ import com.example.cataniaunited.logic.dto.MessageType
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 
-class GameBoard {
+class GameBoardLogic {
 
     fun placeSettlement(settlementPositionId: Int, lobbyId: String) {
         val playerId = MainApplication.getInstance().getPlayerId()

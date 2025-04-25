@@ -29,7 +29,7 @@ class GameBoardInstrumentedTest {
     private lateinit var mainApplication: MainApplication
     private lateinit var realClient: WebSocketClient
     private lateinit var spyClient: WebSocketClient
-    private lateinit var gameBoard: GameBoard
+    private lateinit var gameBoardLogic: GameBoardLogic
     private lateinit var mockWebServer: MockWebServer;
     private val playerId: String = "TestPlayer"
 
@@ -47,7 +47,7 @@ class GameBoardInstrumentedTest {
         spyClient = spy(WebSocketClient(wsUrl))
         mainApplication.webSocketClient = spyClient
         mainApplication.setPlayerId(playerId)
-        gameBoard = GameBoard()
+        gameBoardLogic = GameBoardLogic()
     }
 
     @After
@@ -82,7 +82,7 @@ class GameBoardInstrumentedTest {
         spyClient.connect(object : WebSocketListenerImpl() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 // Test action after connection is established
-                gameBoard.placeSettlement(settlementPositionId, lobbyId)
+                gameBoardLogic.placeSettlement(settlementPositionId, lobbyId)
             }
         })
 
@@ -116,7 +116,7 @@ class GameBoardInstrumentedTest {
         spyClient.connect(object : WebSocketListenerImpl() {
             override fun onOpen(webSocket: WebSocket, response: Response) {
                 // Test action after connection is established
-                gameBoard.placeRoad(roadId, lobbyId)
+                gameBoardLogic.placeRoad(roadId, lobbyId)
             }
         })
 

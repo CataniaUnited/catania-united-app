@@ -21,11 +21,9 @@ fun SettlementComposable(
     size: Dp,
     onSettlementClick: (SettlementPosition) -> Unit = {}
 ) {
-    // TODO: Later, check settlementPosition.building to display different icons/colors
     val buildingColor = when (settlementPosition.building) {
-        // TODO: Replace "null" string check later if backend sends actual null
         "null", null -> Color.Transparent // Nothing built yet
-        // Add more cases for cities, different players, etc.
+        // TODO Add more cases for cities, different players, etc.
         else -> Color.Red // ERROR
     }
 

@@ -1,7 +1,6 @@
 package com.example.cataniaunited.ui.game_board.board
 
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.*
@@ -29,7 +28,7 @@ import kotlin.math.roundToInt
 
 
 private const val LOGICAL_HEX_RADIUS = 10.0f
-private val LOGICAL_HEX_DIAMETER = LOGICAL_HEX_RADIUS * 2.0f
+private const val LOGICAL_HEX_DIAMETER = LOGICAL_HEX_RADIUS * 2.0f
 
 // Base layout parameters calculated once to fit the initial view
 private data class BoardBaseLayoutParams(

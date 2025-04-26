@@ -9,6 +9,12 @@ android {
     namespace = "com.example.cataniaunited"
     compileSdk = 35
 
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
+
     defaultConfig {
         applicationId = "com.example.cataniaunited"
         minSdk = 27

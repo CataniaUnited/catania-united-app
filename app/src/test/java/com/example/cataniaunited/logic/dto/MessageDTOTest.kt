@@ -1,8 +1,6 @@
 package com.example.cataniaunited.logic.dto
 
-import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.add
-import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray

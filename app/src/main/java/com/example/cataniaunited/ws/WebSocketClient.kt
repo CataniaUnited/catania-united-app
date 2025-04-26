@@ -2,8 +2,8 @@ package com.example.cataniaunited.ws
 
 import android.util.Log
 import com.example.cataniaunited.logic.dto.MessageDTO
-import kotlinx.serialization.encodeToString // Import encodeToString
-import kotlinx.serialization.json.Json // Import Json
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.WebSocket
@@ -43,5 +43,6 @@ open class WebSocketClient(private val serverUrl: String) {
 
     fun close() {
         webSocket?.close(1000, "Client closed connection")
+        webSocket = null
     }
 }

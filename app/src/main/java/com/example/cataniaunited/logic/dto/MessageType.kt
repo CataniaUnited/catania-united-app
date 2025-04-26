@@ -1,15 +1,17 @@
 package com.example.cataniaunited.logic.dto
 
 enum class MessageType {
-    //Server Messages
+    // ────── Server Messages ──────
     CONNECTION_SUCCESSFUL,
     CLIENT_DISCONNECTED,
     ERROR,
     LOBBY_UPDATED,
     PLAYER_JOINED,
     LOBBY_CREATED,
+    START_GAME,
+    GAME_BOARD_JSON,
 
-    //Client Messages
+    // ────── Client Messages ──────
     CREATE_LOBBY,
     JOIN_LOBBY,
     SET_USERNAME,

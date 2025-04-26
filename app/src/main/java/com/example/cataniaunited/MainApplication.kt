@@ -4,32 +4,43 @@ import android.app.Application
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 
-open class MainApplication : Application() {
-
-    internal var webSocketClient: WebSocketClient = WebSocketClient(BuildConfig.SERVER_URL)
-    private var _playerId: String? = null
+class MainApplication : Application() {
 
     companion object {
-        private lateinit var instance: MainApplication
-        fun getInstance() = instance
+        /** Global access to the app instance */
+        lateinit var instance: MainApplication
+            private set
     }
+
+    /** Your WebSocket client, initialized with the URL from BuildConfig */
+    private val _webSocketClient = WebSocketClient(BuildConfig.SERVER_URL)
+
+    /** Backing fields for playerId and lobbyId */
+    private var _playerId: String? = null
+    private var _lobbyId:  String? = null
 
     override fun onCreate() {
         super.onCreate()
         instance = this
-        //Initialize web socket manager
-        webSocketClient.connect(WebSocketListenerImpl())
+
+        // Kick off the WS connection immediately
+        _webSocketClient.connect(WebSocketListenerImpl())
     }
 
-    fun getPlayerId(): String {
-        return _playerId ?: throw IllegalStateException("Player Id not initialized")
-    }
+    /** Expose your WS client */
+    fun webSocketClient(): WebSocketClient = _webSocketClient
 
-    fun setPlayerId(playerId: String) {
-        _playerId = playerId
+    /** Player ID getter/setter */
+    fun setPlayerId(id: String) {
+        _playerId = id
     }
+    fun getPlayerId(): String =
+        _playerId ?: throw IllegalStateException("Player ID not initialized")
 
-    fun getWebSocketClient(): WebSocketClient {
-        return webSocketClient;
+    /** Lobby ID getter/setter */
+    fun setLobbyId(id: String) {
+        _lobbyId = id
     }
+    fun getLobbyId(): String =
+        _lobbyId ?: throw IllegalStateException("Lobby ID not initialized")
 }

@@ -1,22 +1,15 @@
 package com.example.cataniaunited.logic.game
 
 import android.util.Log
-
 import app.cash.turbine.test
-
 import com.example.cataniaunited.data.model.*
-import com.example.cataniaunited.data.util.parseGameBoard
-
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
-import io.mockk.verify
 import io.mockk.unmockkStatic
-
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.*
-
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach

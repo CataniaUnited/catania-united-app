@@ -1,10 +1,8 @@
 package com.example.cataniaunited.logic.game
 
-import android.app.Application
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
@@ -21,7 +19,6 @@ import javax.inject.Inject
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val gameBoardLogic: GameBoardLogic
-    // Remove 'application: Application'
 ) : ViewModel() {
 
     private val _gameBoardState = MutableStateFlow<GameBoardModel?>(null)

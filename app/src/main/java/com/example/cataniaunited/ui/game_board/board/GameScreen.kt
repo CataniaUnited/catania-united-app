@@ -5,19 +5,31 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.game.GameViewModel
+
 
 @Composable
 fun GameScreen(
     lobbyId: String,
-    gameViewModel: GameViewModel = viewModel(),
+    gameViewModel: GameViewModel = hiltViewModel(),
 ) {
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
+    val application = LocalContext.current.applicationContext as MainApplication // Get app instance
+
+    // Trigger initial load when the screen enters composition if state is null
+    LaunchedEffect(Unit) { // Run once when GameScreen enters composition
+        if (gameViewModel.gameBoardState.value == null) {
+            gameViewModel.initializeBoardState(application.latestBoardJson)
+        }
+    }
 
     Box(
         modifier = Modifier.fillMaxSize(),

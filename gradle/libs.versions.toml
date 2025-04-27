@@ -1,6 +1,9 @@
 [versions]
 agp = "8.9.1"
 coreKtxVersion = "1.12.0"
+coreTesting = "2.2.0"
+hiltAndroid = "2.51.1"
+hiltNavigationCompose = "1.2.0"
 junitJupiter = "5.11.4"
 kotlin = "2.0.21"
 coreKtx = "1.10.1"
@@ -23,10 +26,17 @@ mockwebserver = "4.11.0"
 okhttp = "4.12.0"
 robolectric = "4.14"
 jacoco = "0.8.11"
+robolectricVersion = "4.12.1"
+turbine = "1.1.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 androidx-core-ktx-v1120 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
+androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
+hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
+hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hiltAndroid" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltAndroid" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -57,6 +67,8 @@ mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version = "2.6.0" }
+robolectric-v4121 = { module = "org.robolectric:robolectric", version.ref = "robolectricVersion" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
 
 
 

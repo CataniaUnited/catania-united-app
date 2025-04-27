@@ -20,10 +20,11 @@ import com.example.cataniaunited.ui.test.TestPage
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
 import com.example.cataniaunited.ui.game_board.board.GameScreen
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
-
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val gameBoardLogic = GameBoardLogic()
 

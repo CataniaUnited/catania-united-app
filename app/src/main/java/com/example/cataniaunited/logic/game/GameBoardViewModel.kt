@@ -58,17 +58,6 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    fun updateGameBoard(newBoard: GameBoardModel?) {
-        viewModelScope.launch {
-            _gameBoardState.value = newBoard
-            if (newBoard != null) {
-                Log.d("GameViewModel", "Game board updated directly with object.")
-            } else {
-                Log.w("GameViewModel", "Received null game board object for update.")
-            }
-        }
-    }
-
 
     // --- Placeholder Click Handlers ---
 

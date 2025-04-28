@@ -24,8 +24,8 @@ class MainApplicationInstrumentedTest {
 
     @Before
     fun setup() {
-
         mainApplication = ApplicationProvider.getApplicationContext<MainApplication>()
+        mainApplication.onCreate()
 
         println("Setup: Resetting state...")
         mainApplication.clearLobbyData()

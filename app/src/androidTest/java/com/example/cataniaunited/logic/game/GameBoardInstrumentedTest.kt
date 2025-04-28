@@ -118,7 +118,7 @@ class GameBoardInstrumentedTest {
         )
 
         println("Connecting spyClient...")
-        thread {
+        val t = thread {
             spyClient.connect(object : WebSocketListenerImpl(
                 onConnectionSuccess = dummyOnConnectionSuccess,
                 onLobbyCreated = dummyOnLobbyCreated,
@@ -157,6 +157,7 @@ class GameBoardInstrumentedTest {
         assertTrue("Message not received by server within timeout", messageReceived)
         assertEquals("Expected exactly one message", 1, receivedMessage.size)
         assertEquals("Sent message JSON does not match expected", expectedJson, receivedMessage[0])
+        t.join()
         println("testPlaceSettlement finished successfully.")
     }
 
@@ -188,7 +189,7 @@ class GameBoardInstrumentedTest {
         )
 
         println("Connecting spyClient...")
-        thread {
+        val t = thread {
             spyClient.connect(object : WebSocketListenerImpl(
                 onConnectionSuccess = dummyOnConnectionSuccess,
                 onLobbyCreated = dummyOnLobbyCreated,
@@ -226,6 +227,7 @@ class GameBoardInstrumentedTest {
         assertTrue("Message not received by server within timeout", messageReceived)
         assertEquals("Expected exactly one message", 1, receivedMessage.size)
         assertEquals("Sent message JSON does not match expected", expectedJson, receivedMessage[0])
+        t.join()
         println("testPlaceRoad finished successfully.")
     }
 }

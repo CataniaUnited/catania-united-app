@@ -5,6 +5,8 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "1 0 * * 4"
 jobs:
   build:
     name: Build and analyze
@@ -55,9 +57,9 @@ jobs:
 
       - name: create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2.34.0
+        uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 28
+          api-level: 27
           force-avd-creation: false
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: false
@@ -67,17 +69,35 @@ jobs:
         run: ./gradlew testDebugUnitTest jacocoUnitTestReport
 
       - name: Run Android Tests
-        uses: reactivecircus/android-emulator-runner@v2.34.0
+        uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 28
+          api-level: 27
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: |
-            ./gradlew connectedDebugAndroidTest jacocoAndroidTestReport
-            adb emu kill || true
+          script: ./gradlew connectedDebugAndroidTest jacocoAndroidTestReport
 
       - name: Build and analyze
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew build sonar --info
+
+  clear-caches:
+    name: Clear Old Caches
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Gradle cache
+        uses: actions/cache/delete@v1
+        with:
+          key: ${{ runner.os }}-gradle-
+
+      - name: Delete SonarQube cache
+        uses: actions/cache/delete@v1
+        with:
+          key: ${{ runner.os }}-sonar
+
+      - name: Delete AVD cache
+        uses: actions/cache/delete@v1
+        with:
+          key: avd-27

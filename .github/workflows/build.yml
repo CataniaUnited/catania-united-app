@@ -55,7 +55,7 @@ jobs:
 
       - name: create AVD and generate snapshot for caching
         if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
+        uses: reactivecircus/android-emulator-runner@v2.34.0
         with:
           api-level: 27
           force-avd-creation: false
@@ -73,7 +73,9 @@ jobs:
           force-avd-creation: false
           emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
           disable-animations: true
-          script: ./gradlew connectedDebugAndroidTest jacocoAndroidTestReport
+          script: |
+            ./gradlew connectedDebugAndroidTest jacocoAndroidTestReport
+            adb emu kill || true
 
       - name: Build and analyze
         env:

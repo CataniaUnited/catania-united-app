@@ -176,6 +176,7 @@ dependencies {
     testImplementation(libs.hilt.android.testing)
     kaptTest(libs.hilt.compiler)
     testImplementation(libs.robolectric)
+    androidTestImplementation(libs.turbine)
 }
 
 kapt {

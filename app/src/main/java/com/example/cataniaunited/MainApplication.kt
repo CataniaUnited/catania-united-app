@@ -22,11 +22,10 @@ open class MainApplication : Application() {
 
     internal lateinit var webSocketClient: WebSocketClient
     private var _playerId: String? = null
-    private val _navigateToGameChannel = Channel<String>(Channel.BUFFERED)
+    val _navigateToGameChannel = Channel<String>(Channel.BUFFERED)
     val navigateToGameFlow = _navigateToGameChannel.receiveAsFlow()
 
     var latestBoardJson: String? = null
-        private set
 
 
     private val _currentLobbyIdFlow = MutableStateFlow<String?>(null) // Private Mutable StateFlow
@@ -34,7 +33,7 @@ open class MainApplication : Application() {
 
     var currentLobbyId: String?
         get() = _currentLobbyIdFlow.value // Getter reads from flow
-        private set(value) { // Setter updates the flow
+        set(value) { // Setter updates the flow
             _currentLobbyIdFlow.value = value
         }
 

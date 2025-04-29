@@ -1,16 +1,16 @@
 package com.example.cataniaunited.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.cataniaunited.logic.game.GameBoard
+import com.example.cataniaunited.logic.game.GameBoardLogic
 
 class TestPageViewModel : ViewModel() {
-    private val gameBoard : GameBoard = GameBoard()
+    private val gameBoardLogic : GameBoardLogic = GameBoardLogic()
 
     fun onPlaceSettlementClick(settlementPositionId: Int, lobbyId: String){
-        gameBoard.placeSettlement(settlementPositionId, lobbyId);
+        gameBoardLogic.placeSettlement(settlementPositionId, lobbyId);
     }
 
     fun onPlaceRoadClick(roadId: Int, lobbyId: String){
-        gameBoard.placeRoad(roadId, lobbyId);
+        gameBoardLogic.placeRoad(roadId, lobbyId);
     }
 }

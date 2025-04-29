@@ -13,9 +13,9 @@ sonar {
         property("sonar.organization", "cataniaunited")
         property("sonar.host.url", "https://sonarcloud.io")
         property("sonar.java.coveragePlugin", "jacoco")
+        property("sonar.coverage.exclusions", "**/com/example/cataniaunited/ui/**,**/com/example/cataniaunited/MainActivity.kt*")
         property("sonar.coverage.jacoco.xmlReportPaths",
             "${project.layout.projectDirectory.asFile}/app/build/reports/jacoco/jacocoUnitTestReport/jacocoUnitTestReport.xml," +
                     "${project.layout.projectDirectory.asFile}/app/build/reports/jacoco/jacocoAndroidTestReport/jacocoAndroidTestReport.xml")
-        property("sonar.coverage.exclusions", "**/com/example/cataniaunited/ui/**,**/com/example/cataniaunited/MainActivity*")
     }
 }

@@ -101,9 +101,8 @@ open class MainApplication : Application() {
 
     fun getWebSocketClient(): WebSocketClient {
         // Ensure webSocketClient is initialized before returning
-        if (!::webSocketClient.isInitialized) {
-            throw IllegalStateException("WebSocketClient accessed before initialization in onCreate")
-        }
+        check(::webSocketClient.isInitialized) { "WebSocketClient accessed before initialization in onCreate" }
+
         return webSocketClient
     }
 

@@ -99,7 +99,6 @@ class MainActivity : ComponentActivity() {
                             LaunchedEffect(Unit) { navController.navigateUp() }
                         } else {
                             Log.d("Navigation", "Navigating to GameScreen for lobby: $lobbyIdArg")
-                            // application.clearGameData()
                             GameScreen(lobbyId = lobbyIdArg)
                         }
                     }

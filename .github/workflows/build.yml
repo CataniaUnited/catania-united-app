@@ -5,6 +5,8 @@ on:
       - main
   pull_request:
     types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "1 0 * * 4"
 jobs:
   build:
     name: Build and analyze
@@ -79,3 +81,23 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         run: ./gradlew build sonar --info
+
+  clear-caches:
+    name: Clear Old Caches
+    if: github.event_name == 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Gradle cache
+        uses: actions/cache/delete@v1
+        with:
+          key: ${{ runner.os }}-gradle-
+
+      - name: Delete SonarQube cache
+        uses: actions/cache/delete@v1
+        with:
+          key: ${{ runner.os }}-sonar
+
+      - name: Delete AVD cache
+        uses: actions/cache/delete@v1
+        with:
+          key: avd-27

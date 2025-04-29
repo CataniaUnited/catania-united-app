@@ -182,11 +182,3 @@ dependencies {
 kapt {
     correctErrorTypes = true
 }
-
-/*
-afterEvaluate {
-    tasks.named("connectedDebugAndroidTest").configure {
-        finalizedBy(tasks.named("createDebugCoverageReport"))
-    }
-}
-*/

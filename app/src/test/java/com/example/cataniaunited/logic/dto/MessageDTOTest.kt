@@ -1,8 +1,6 @@
 package com.example.cataniaunited.logic.dto
 
-import kotlinx.serialization.json.JsonArrayBuilder
 import kotlinx.serialization.json.add
-import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -20,7 +18,7 @@ class MessageDTOTest {
             putJsonArray("numbers", {
                 add(1)
                 add(2)
-            });
+            })
         }
         val messageDTO = MessageDTO(MessageType.CREATE_LOBBY, "player1", "lobby1", listOf("player1", "player2"), message)
         val expected = """{"type":"CREATE_LOBBY","player":"player1","lobbyId":"lobby1","players":["player1","player2"],"message":{"attribute1":"attr1","number":3,"numbers":[1,2]}}"""
@@ -58,7 +56,7 @@ class MessageDTOTest {
                 add(2)
                 add(3)
                 add(4)
-            });
+            })
         }
 
         Assertions.assertEquals(MessageType.CONNECTION_SUCCESSFUL, messageDTO.type)

@@ -1,10 +1,12 @@
 package com.example.cataniaunited.logic.dto
 
+import android.annotation.SuppressLint
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 
+@SuppressLint("UnsafeOptInUsageError")
 @Serializable
 data class MessageDTO(
     val type: MessageType,

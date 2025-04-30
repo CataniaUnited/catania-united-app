@@ -11,7 +11,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
-
+import com.example.cataniaunited.ui.HostAndJoinScreen
+import com.example.cataniaunited.ui.JoinGameScreen
 
 class MainActivity : ComponentActivity() {
 
@@ -20,7 +21,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //TODO: example connection to server, remove on correct implementation
         webSocketClient = (application as MainApplication).webSocketClient
         webSocketClient.sendMessage("Hallo from Catania United App!")
 
@@ -28,19 +28,42 @@ class MainActivity : ComponentActivity() {
         setContent {
             CataniaUnitedTheme(darkTheme = false, dynamicColor = false) {
                 val navController = rememberNavController()
-                NavHost( // nav graph - shows the right screen depending on route
+                NavHost(
                     navController = navController,
                     startDestination = "starting"
                 ) {
-                    composable("starting"){
+                    composable("starting") {
                         StartingScreen(
-                            onLearnClick = { navController.navigate("tutorial")},
-                            onStartClick = {} // add page "host or join game"
+                            onLearnClick = { navController.navigate("tutorial") },
+                            onStartClick = { navController.navigate("hostandjoin") }
                         )
                     }
-                     composable("tutorial"){
-                         TutorialScreen(onBackClick = {navController.navigateUp()})
-                     }
+                    composable("tutorial") {
+                        TutorialScreen(
+                            onBackClick = { navController.navigateUp() }
+                        )
+                    }
+                    composable("hostandjoin") {
+                        HostAndJoinScreen(
+                            onBackClick = { navController.navigateUp() },
+                            onHostSelected = { navController.navigate("hostgame") },
+                            onJoinSelected = { navController.navigate("joingame") }
+                        )
+                    }
+                    composable("joingame") {
+                        JoinGameScreen(
+                            onBackClick = { navController.navigateUp() },
+                            onJoinClick = { /* Do something when user joins, or just leave empty for now */ }
+                        )
+                    }
+
+                    composable("hostgame") {
+                        HostAndJoinScreen(
+                            onBackClick = { navController.navigateUp() },
+                            onHostSelected = {},
+                            onJoinSelected = {}
+                        )
+                    }
                 }
             }
         }
@@ -51,4 +74,3 @@ class MainActivity : ComponentActivity() {
         webSocketClient.close()
     }
 }
-

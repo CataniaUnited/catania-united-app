@@ -39,6 +39,7 @@ class GameBoard {
     }
 
     /**
+     * check sonar cloud
      * Tell the server you want to place a road at [roadId]
      * in lobby [lobbyId].
      */

@@ -68,7 +68,7 @@ fun StartingScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "CATAN UNIVERSE",
+                text = "CATANIA UNITED",
                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
                 color = catanGold,
                 textAlign = TextAlign.Center,

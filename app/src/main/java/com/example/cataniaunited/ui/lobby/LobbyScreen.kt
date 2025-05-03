@@ -2,6 +2,7 @@ package com.example.cataniaunited.ui.lobby
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -20,24 +21,42 @@ fun LobbyScreen(onCancelClick: () -> Unit, onStartGameClick: () -> Unit) {
         modifier = Modifier
             .fillMaxSize()
             .background(catanClay)
-            .padding(16.dp)
     ){
-        Column (
-            modifier = Modifier.align(Alignment.Center),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 40.dp),
+                contentAlignment = Alignment.TopCenter
         ){
             Text(
-                text = "LOBBY",
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
+                text = "SEARCHING FOR OPPONENTS...",
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
                 color = catanGold
             )
+        }
 
-            Button(onClick = onStartGameClick) {
-
+        Column (
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 40.dp),
+            verticalArrangement = Arrangement.Bottom,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            Button(onClick = onStartGameClick,
+                modifier = Modifier
+                    .width(120.dp)
+                    .height(60.dp)
+            ) {
+                Text(text = "Start Game")
             }
 
-            Button(onClick = onCancelClick) {
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Button(onClick = onCancelClick,
+                modifier = Modifier
+                    .width(100.dp)
+                    .height(50.dp)
+            ) {
                 Text(text = "Cancel")
             }
         }

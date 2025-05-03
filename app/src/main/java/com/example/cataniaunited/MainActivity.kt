@@ -64,6 +64,7 @@ class MainActivity : ComponentActivity() {
                             onLearnClick = { navController.navigate("tutorial") },
                             onCreateLobbyClick = {
                                 Log.i("MainActivity", "Create Lobby button clicked.")
+                                navController.navigate("lobby")
                                 try {
                                     gameBoardLogic.requestCreateLobby()
                                 } catch (e: Exception) {
@@ -90,14 +91,24 @@ class MainActivity : ComponentActivity() {
                     composable("tutorial") {
                         TutorialScreen(onBackClick = { navController.navigateUp() })
                     }
-                    composable("lobby"){
-                        LobbyScreen(
-                            onCancelClick = { /*TODO*/ },
-                            onStartGameClick = { /*TODO*/ },
-                        )
-                    }
                     composable("test") {
                         TestPage()
+                    }
+                    composable("lobby") {
+                        LobbyScreen(
+                            onCancelClick = {navController.navigate("starting")},
+                            onStartGameClick = {
+                                val lobbyId = currentLobbyIdState
+                                if (lobbyId != null) {
+                                    Log.i("LobbyScreen", "Starting game for lobby: $lobbyId")
+                                    try {
+                                        gameBoardLogic.requestBoardForLobby(lobbyId = lobbyId, playerCount = 4)
+                                    } catch (e: Exception) {
+                                        Log.e("LobbyScreen", "Error requesting board for lobby", e)
+                                    }
+                                }
+                           }
+                        )
                     }
 
                     composable(

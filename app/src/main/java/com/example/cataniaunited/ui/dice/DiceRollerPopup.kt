@@ -1,7 +1,6 @@
 package com.example.cataniaunited.ui.dice
 
 import android.content.Context
-import android.os.Build
 import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.compose.animation.core.*
@@ -24,19 +23,21 @@ import com.example.cataniaunited.ui.theme.catanGold
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-import kotlin.random.Random
-
 @Composable
 fun DiceRollerPopup(
-    onDiceRolled: (dice1: Int, dice2: Int) -> Unit,
-    onClose: () -> Unit
+    onDiceRolled: () -> Unit,
+    onClose: () -> Unit,
+    dice1Result: Int?,
+    dice2Result: Int?
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
+    // Local state for animation
     var dice1 by remember { mutableStateOf(1) }
     var dice2 by remember { mutableStateOf(1) }
     var rolling by remember { mutableStateOf(false) }
+    var totalValue by remember { mutableStateOf(2) }
 
     val rotation = rememberInfiniteTransition()
     val angle by rotation.animateFloat(
@@ -47,16 +48,26 @@ fun DiceRollerPopup(
         )
     )
 
-    fun rollDice() {
-        scope.launch {
-            rolling = true
-            delay(600)
-            dice1 = Random.nextInt(1, 7)
-            dice2 = Random.nextInt(1, 7)
+    // Start rolling when popup opens
+    LaunchedEffect(Unit) {
+        rolling = true
+        // If no server values yet, simulate rolling animation
+        if (dice1Result == null || dice2Result == null) {
+            onDiceRolled()
+        }
+    }
+
+    // Handle server results
+    LaunchedEffect(dice1Result, dice2Result) {
+        if (dice1Result != null && dice2Result != null) {
+            // Wait a moment to show rolling animation
+            delay(1000)
+            dice1 = dice1Result
+            dice2 = dice2Result
+            totalValue = dice1Result + dice2Result
             rolling = false
             vibratePhone(context)
-            onDiceRolled(dice1, dice2)
-            delay(300)
+            delay(2000) // Show results for 2 seconds before closing
             onClose()
         }
     }
@@ -68,7 +79,10 @@ fun DiceRollerPopup(
                 .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Rolling Dice!", style = MaterialTheme.typography.titleLarge)
+            Text(
+                text = if (rolling) "Rolling Dice!" else "Dice Result!",
+                style = MaterialTheme.typography.titleLarge
+            )
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -79,12 +93,15 @@ fun DiceRollerPopup(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Total: ${dice1 + dice2}", style = MaterialTheme.typography.bodyLarge)
+            Text("Total: $totalValue", style = MaterialTheme.typography.bodyLarge)
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { rollDice() },
+                onClick = {
+                    rolling = true
+                    onDiceRolled()
+                },
                 enabled = !rolling,
                 colors = ButtonDefaults.buttonColors(containerColor = catanGold)
             ) {
@@ -96,9 +113,15 @@ fun DiceRollerPopup(
 
 @Composable
 private fun DiceImage(value: Int, rolling: Boolean, angle: Float) {
+    val displayValue = if (rolling) {
+        remember { (1..6).random() }
+    } else {
+        value
+    }
+
     Image(
-        painter = painterResource(id = getDiceImage(value)),
-        contentDescription = "Dice $value",
+        painter = painterResource(id = getDiceImage(displayValue)),
+        contentDescription = "Dice $displayValue",
         modifier = Modifier
             .size(100.dp)
             .graphicsLayer {
@@ -120,10 +143,5 @@ private fun getDiceImage(value: Int): Int {
 
 private fun vibratePhone(context: Context) {
     val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-        vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
-    } else {
-        @Suppress("DEPRECATION")
-        vibrator.vibrate(100)
-    }
+    vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
 }

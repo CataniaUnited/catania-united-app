@@ -2,6 +2,9 @@ package com.example.cataniaunited
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
+import com.example.cataniaunited.logic.lobby.LobbyColorManager
+import com.example.cataniaunited.ui.lobby.LobbyPlayer
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import dagger.hilt.android.HiltAndroidApp
@@ -22,6 +25,7 @@ open class MainApplication : Application() {
 
     internal lateinit var webSocketClient: WebSocketClient
     private var _playerId: String? = null
+    val playersInLobby = mutableStateListOf<LobbyPlayer>()
     val _navigateToGameChannel = Channel<String>(Channel.BUFFERED)
     val navigateToGameFlow = _navigateToGameChannel.receiveAsFlow()
 
@@ -58,6 +62,7 @@ open class MainApplication : Application() {
             onLobbyCreated = { lobbyId ->
                 Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId")
                 currentLobbyId = lobbyId
+                addHostToLobby(lobbyId)
                 Log.d("MainApplication", ">>> _currentLobbyIdFlow value is now: ${_currentLobbyIdFlow.value}")
             },
             onGameBoardReceived = { lobbyId, boardJson ->
@@ -115,5 +120,20 @@ open class MainApplication : Application() {
         currentLobbyId = null
         latestBoardJson = null
         Log.d("MainApplication", "Cleared lobby data.")
+    }
+
+    fun addHostToLobby(lobbyId: String) {
+        val hostUsername = "HostPlayer"
+        val hostColor = LobbyColorManager.assignColor(lobbyId, hostUsername)
+
+        if (hostColor != null) {
+            playersInLobby.clear()
+            playersInLobby.add(LobbyPlayer(username = hostUsername, color = hostColor))
+            Log.i("LobbySetup", "Host $hostUsername was added in lobby $lobbyId with color $hostColor")
+        }
+        else {
+            Log.e("LobbySetup", "ERROR: No more colors available for host $hostUsername in lobby $lobbyId")
+        }
+
     }
 }

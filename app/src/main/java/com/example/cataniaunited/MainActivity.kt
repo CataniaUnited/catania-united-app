@@ -7,6 +7,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -95,7 +96,9 @@ class MainActivity : ComponentActivity() {
                         TestPage()
                     }
                     composable("lobby") {
+                        val app = LocalContext.current.applicationContext as MainApplication
                         LobbyScreen(
+                            players = app.playersInLobby,
                             onCancelClick = {navController.navigate("starting")},
                             onStartGameClick = {
                                 val lobbyId = currentLobbyIdState

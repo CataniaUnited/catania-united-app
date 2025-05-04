@@ -10,6 +10,7 @@ open class WebSocketClient(private val serverUrl: String) {
     private val client = OkHttpClient()
     private var webSocket: WebSocket? = null
 
+    private lateinit var listener: WebSocketListenerImpl
     open fun connect(listener: WebSocketListener) {
         val request = Request.Builder().url(serverUrl).build()
         webSocket = client.newWebSocket(request, listener)
@@ -22,4 +23,9 @@ open class WebSocketClient(private val serverUrl: String) {
     fun close() {
         webSocket?.close(1000, "Client closed connection")
     }
+
+    fun setListener(listener: WebSocketListenerImpl) {
+        this.listener = listener
+    }
+
 }

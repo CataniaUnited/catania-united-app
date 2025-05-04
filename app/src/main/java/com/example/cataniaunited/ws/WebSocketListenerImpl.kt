@@ -11,6 +11,9 @@ import okhttp3.WebSocketListener
 
 open class WebSocketListenerImpl : WebSocketListener() {
 
+    // Callback for dice roll results
+    private var onDiceResult: ((dice1: Int, dice2: Int) -> Unit) = { _, _ -> }
+
     override fun onOpen(webSocket: WebSocket, response: Response) {
         Log.d("WebSocket", "Opened connection")
     }
@@ -19,11 +22,26 @@ open class WebSocketListenerImpl : WebSocketListener() {
      * Callback endpoint which retrieves messages from the server
      */
     override fun onMessage(webSocket: WebSocket, message: String) {
-        val messageDTO: MessageDTO = MessageDTO.fromJson(message);
+        val messageDTO: MessageDTO = MessageDTO.fromJson(message)
         Log.d("WebSocket", "Received message: $messageDTO")
 
-        if(MessageType.CONNECTION_SUCCESSFUL == messageDTO.type){
-            setPlayerId(messageDTO)
+        when (messageDTO.type) {
+            MessageType.CONNECTION_SUCCESSFUL -> {
+                setPlayerId(messageDTO)
+            }
+            MessageType.DICE_RESULT -> {
+                // Extract dice values from the message
+                val dice1 = messageDTO.message?.get("dice1")?.jsonPrimitive?.content?.toInt() ?: 0
+                val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.content?.toInt() ?: 0
+
+                Log.d("WebSocket", "Dice result received: dice1=$dice1, dice2=$dice2")
+
+                // Notify the callback
+                onDiceResult(dice1, dice2)
+            }
+            else -> {
+                // Handle other message types if needed
+            }
         }
     }
 
@@ -40,5 +58,9 @@ open class WebSocketListenerImpl : WebSocketListener() {
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
         Log.e("WebSocket", "Connection threw exception", t)
+    }
+
+    fun setOnDiceResultListener(listener: (dice1: Int, dice2: Int) -> Unit) {
+        this.onDiceResult = listener
     }
 }

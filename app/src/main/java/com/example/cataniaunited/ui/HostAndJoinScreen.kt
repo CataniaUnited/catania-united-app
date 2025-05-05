@@ -1,14 +1,14 @@
 package com.example.cataniaunited.ui
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -17,9 +17,13 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
+import com.example.cataniaunited.ui.theme.catanClay
+import com.example.cataniaunited.ui.theme.catanGold
+import com.example.cataniaunited.ui.theme.catanRessourceBar
 
 @Composable
 fun HostAndJoinScreen(
@@ -27,94 +31,114 @@ fun HostAndJoinScreen(
     onHostSelected: () -> Unit,
     onJoinSelected: () -> Unit
 ) {
-    val backgroundColor = Color(0xFF9A572E)
+    Box(modifier = Modifier.fillMaxSize()) {
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor),
-        color = backgroundColor
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp, vertical = 12.dp)
-            ) {
-                // Icon Back Button (Top Left)
-                IconButton(
-                    onClick = onBackClick,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(Color(0xFFF4C542), CircleShape)
-                        .border(BorderStroke(1.dp, Color.Black), CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.Black
-                    )
-                }
+        Image(
+            painter = painterResource(id = R.drawable.catan_starting_page_background),
+            contentDescription = "Starting Page Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Logo (Centered)
-                Image(
-                    painter = painterResource(id = R.drawable.catan_logo),
-                    contentDescription = "Catan Logo",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .height(100.dp) // make it a bit smaller
-                        .padding(bottom = 36.dp)
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .width(430.dp)
+                .height(340.dp)
+                .border(
+                    width = 9.dp,
+                    color = catanRessourceBar,
+                    shape = RoundedCornerShape(20.dp)
                 )
+                .background(
+                    catanClay.copy(alpha = 0.9f),
+                    shape = RoundedCornerShape(20.dp)
+                )
+        )
 
-                // Button Container
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    val buttonShape = RoundedCornerShape(40.dp)
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .size(40.dp)
+                    .background(catanGold, CircleShape)
+                    .border(BorderStroke(1.dp, Color.Black), CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.Black
+                )
+            }
 
-                    Button(
-                        onClick = onHostSelected,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(55.dp)
-                            .shadow(6.dp, buttonShape),
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "CATAN UNIVERSE",
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
+                color = catanGold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 30.dp)
+            )
+
+            val buttonShape = RoundedCornerShape(30.dp)
+
+            Button(
+                onClick = onHostSelected,
+                shape = buttonShape,
+                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(56.dp)
+                    .shadow(
+                        elevation = 13.dp,
                         shape = buttonShape,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFF4C542)
-                        ),
-                        border = BorderStroke(1.dp, Color.Black)
-                    ) {
-                        Text("HOST GAME", fontSize = 18.sp, color = Color.Black)
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = "OR",
-                        fontSize = 16.sp,
-                        color = Color.Black,
-                        modifier = Modifier.padding(bottom = 16.dp)
+                        ambientColor = Color.Black,
+                        spotColor = Color.Black
                     )
+            ) {
+                Text(
+                    text = "HOST GAME",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
 
-                    Button(
-                        onClick = onJoinSelected,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(55.dp)
-                            .shadow(6.dp, buttonShape),
+            Text(
+                text = "OR",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
+            )
+
+            Button(
+                onClick = onJoinSelected,
+                shape = buttonShape,
+                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(56.dp)
+                    .shadow(
+                        elevation = 13.dp,
                         shape = buttonShape,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFF4C542)
-                        ),
-                        border = BorderStroke(1.dp, Color.Black)
-                    ) {
-                        Text("JOIN GAME", fontSize = 18.sp, color = Color.Black)
-                    }
-                }
+                        ambientColor = Color.Black,
+                        spotColor = Color.Black
+                    )
+            ) {
+                Text(
+                    text = "JOIN GAME",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
             }
         }
     }

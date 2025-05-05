@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,111 +19,122 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
+import com.example.cataniaunited.ui.theme.catanClay
+import com.example.cataniaunited.ui.theme.catanGold
+import com.example.cataniaunited.ui.theme.catanRessourceBar
 
 @Composable
 fun JoinGameScreen(
     onBackClick: () -> Unit,
     onJoinClick: (String) -> Unit
 ) {
-    val backgroundColor = Color(0xFF9A572E)
     var gameCode by remember { mutableStateOf("") }
 
-    Surface(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(backgroundColor),
-        color = backgroundColor
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp, vertical = 12.dp)
-            ) {
-                // Back Arrow
-                IconButton(
-                    onClick = onBackClick,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(Color(0xFFF4C542), CircleShape)
-                        .border(BorderStroke(1.dp, Color.Black), CircleShape)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBack,
-                        contentDescription = "Back",
-                        tint = Color.Black
-                    )
-                }
+    Box(modifier = Modifier.fillMaxSize()) {
 
-                Spacer(modifier = Modifier.height(24.dp))
+        Image(
+            painter = painterResource(id = R.drawable.catan_starting_page_background),
+            contentDescription = "Join Page Background",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop
+        )
 
-                // Logo
-                Image(
-                    painter = painterResource(id = R.drawable.catan_logo),
-                    contentDescription = "Catan Logo",
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier
-                        .align(Alignment.CenterHorizontally)
-                        .height(100.dp)
-                        .padding(bottom = 36.dp)
+        Box(
+            modifier = Modifier
+                .align(Alignment.Center)
+                .width(430.dp)
+                .height(340.dp)
+                .border(
+                    width = 9.dp,
+                    color = catanRessourceBar,
+                    shape = RoundedCornerShape(20.dp)
                 )
+                .background(
+                    catanClay.copy(alpha = 0.9f),
+                    shape = RoundedCornerShape(20.dp)
+                )
+        )
 
-                // Input Area
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "ENTER GAME ID",
-                        fontSize = 18.sp,
-                        color = Color.Black,
-                        fontWeight = FontWeight.Bold
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+                .offset(y = (-40).dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .size(40.dp)
+                    .background(catanGold, CircleShape)
+                    .border(BorderStroke(1.dp, Color.Black), CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.Black
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = "ENTER GAME ID",
+                style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp, fontWeight = FontWeight.Bold),
+                color = MaterialTheme.colorScheme.onPrimary,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(bottom = 20.dp)
+            )
+
+            OutlinedTextField(
+                value = gameCode,
+                onValueChange = { gameCode = it },
+                placeholder = { Text("Game Code") },
+                visualTransformation = PasswordVisualTransformation(),
+                singleLine = true,
+                shape = RoundedCornerShape(40.dp),
+                modifier = Modifier
+                    .width(320.dp)
+                    .height(60.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = catanGold,
+                    unfocusedBorderColor = catanGold,
+                    focusedTextColor = Color.Black,
+                    unfocusedTextColor = Color.Black,
+                    cursorColor = Color.Black
+                )
+            )
+
+            Spacer(modifier = Modifier.height(30.dp))
+
+            val buttonShape = RoundedCornerShape(30.dp)
+
+            Button(
+                onClick = { onJoinClick(gameCode) },
+                shape = buttonShape,
+                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(56.dp)
+                    .shadow(
+                        elevation = 13.dp,
+                        shape = buttonShape,
+                        ambientColor = Color.Black,
+                        spotColor = Color.Black
                     )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = gameCode,
-                        onValueChange = { gameCode = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(60.dp),
-                        shape = RoundedCornerShape(40.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFFF4C542),
-                            unfocusedBorderColor = Color(0xFFF4C542),
-                            focusedLabelColor = Color.Black,
-                            cursorColor = Color.Black,
-                            focusedTextColor = Color.Black,
-                            unfocusedTextColor = Color.Black,
-
-                    ),
-                        visualTransformation = PasswordVisualTransformation(),
-                        singleLine = true
-                    )
-
-                    Spacer(modifier = Modifier.height(30.dp))
-
-                    Button(
-                        onClick = { onJoinClick(gameCode) },
-                        modifier = Modifier
-                            .height(50.dp)
-                            .width(160.dp)
-                            .shadow(6.dp, RoundedCornerShape(40.dp)),
-                        shape = RoundedCornerShape(40.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFF4C542)
-                        ),
-                        border = BorderStroke(1.dp, Color.Black)
-                    ) {
-                        Text("JOIN", fontSize = 18.sp, color = Color.Black)
-                    }
-                }
+            ) {
+                Text(
+                    text = "JOIN",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
             }
         }
     }

@@ -29,7 +29,8 @@ open class MainApplication : Application() {
 
 
     private val _currentLobbyIdFlow = MutableStateFlow<String?>(null) // Private Mutable StateFlow
-    val currentLobbyIdFlow: StateFlow<String?> = _currentLobbyIdFlow.asStateFlow() // Public Immutable StateFlow
+    val currentLobbyIdFlow: StateFlow<String?> =
+        _currentLobbyIdFlow.asStateFlow() // Public Immutable StateFlow
 
     var currentLobbyId: String?
         get() = _currentLobbyIdFlow.value // Getter reads from flow
@@ -58,7 +59,10 @@ open class MainApplication : Application() {
             onLobbyCreated = { lobbyId ->
                 Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId")
                 currentLobbyId = lobbyId
-                Log.d("MainApplication", ">>> _currentLobbyIdFlow value is now: ${_currentLobbyIdFlow.value}")
+                Log.d(
+                    "MainApplication",
+                    ">>> _currentLobbyIdFlow value is now: ${_currentLobbyIdFlow.value}"
+                )
             },
             onGameBoardReceived = { lobbyId, boardJson ->
                 Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId.")
@@ -69,11 +73,18 @@ open class MainApplication : Application() {
                             _navigateToGameChannel.send(lobbyId)
                             Log.d("MainApplication", "Sent lobbyId $lobbyId to navigation channel.")
                         } catch (e: Exception) {
-                            Log.e("MainApplication", "Error sending navigation event for lobby $lobbyId", e)
+                            Log.e(
+                                "MainApplication",
+                                "Error sending navigation event for lobby $lobbyId",
+                                e
+                            )
                         }
                     }
                 } else {
-                    Log.w("MainApplication", "Received board for lobby $lobbyId, but current lobby flow value is ${_currentLobbyIdFlow.value}. Ignoring navigation.")
+                    Log.w(
+                        "MainApplication",
+                        "Received board for lobby $lobbyId, but current lobby flow value is ${_currentLobbyIdFlow.value}. Ignoring navigation."
+                    )
                 }
             },
             onError = { error ->

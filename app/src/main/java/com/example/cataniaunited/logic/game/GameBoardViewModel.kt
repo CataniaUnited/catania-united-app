@@ -77,6 +77,7 @@ class GameViewModel @Inject constructor(
         // 3) Validate placement rules (distance, road connection)
         // 4) Get lobbyId and PlayerId
         // 5) Call gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
+        gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
     }
 
     fun handleRoadClick(road: Road, lobbyId: String) {
@@ -87,6 +88,7 @@ class GameViewModel @Inject constructor(
         // 3) Validate placement rules (road connection, empty)
         // 4) Get lobbyId and PlayerId
         // 5) Call gameBoardLogic.placeRoad(road.id, lobbyId)
+        gameBoardLogic.placeRoad(road.id, lobbyId)
     }
 }
 

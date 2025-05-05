@@ -33,7 +33,7 @@ open class WebSocketListenerImpl(
 
             when (messageDTO.type) {
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
-                MessageType.GAME_BOARD_JSON -> handleGameBoardJson(messageDTO)
+                MessageType.GAME_BOARD_JSON, MessageType.PLACE_SETTLEMENT, MessageType.PLACE_ROAD -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
                 // TODO: Other Messages
 

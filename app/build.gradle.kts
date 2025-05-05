@@ -149,6 +149,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.material.icons.extended.android)
 
     // Test implementations
     androidTestImplementation(libs.androidx.junit)

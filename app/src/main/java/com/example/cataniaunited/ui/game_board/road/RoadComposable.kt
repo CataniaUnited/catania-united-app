@@ -1,5 +1,6 @@
 package com.example.cataniaunited.ui.game_board.road
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import com.example.cataniaunited.data.model.Road
 import kotlin.math.PI
 
@@ -26,10 +28,10 @@ fun RoadComposable(
     thickness: Dp,
     onRoadClick: (Road) -> Unit = {}
 ) {
-    // TODO: Later, check road.owner to display different colors
-    val roadColor = when (road.owner) {
+    Log.d("Road Composable", "Color: ${road.color}")
+    val roadColor = when (road.color) {
         null -> Color.Transparent // Placeholder - just show border
-        else -> Color.Red // Error or unknown owner state
+        else -> Color(road.color.toColorInt())
     }
 
     val borderColor = Color.DarkGray

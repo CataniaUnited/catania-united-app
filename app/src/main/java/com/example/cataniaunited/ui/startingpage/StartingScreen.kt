@@ -108,7 +108,6 @@ fun StartingScreen(
 
             Button(
                 onClick = onStartClick,
-                enabled = currentLobbyId != null,
                 shape = buttonShape,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = catanGold,

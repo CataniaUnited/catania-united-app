@@ -64,6 +64,7 @@ class MainActivity : ComponentActivity() {
                         StartingScreen(
                             onLearnClick = { navController.navigate("tutorial") },
                             onCreateLobbyClick = {
+                                navController.navigate("hostandjoin")
                                 Log.i("MainActivity", "Create Lobby button clicked.")
                                 try {
                                     gameBoardLogic.requestCreateLobby()
@@ -72,18 +73,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             onStartClick = {
-                                //navController.navigate("hostandjoin")
-                                val lobbyToStart = currentLobbyIdState // Use collected state
-                                if (lobbyToStart != null) {
-                                    Log.i("MainActivity", "Start Game button clicked for known lobby: $lobbyToStart")
-                                    try {
-                                        gameBoardLogic.requestBoardForLobby(lobbyId = lobbyToStart, playerCount = 4)
-                                    } catch (e: Exception) {
-                                        Log.e("MainActivity", "Error requesting board for lobby", e)
-                                    }
-                                } else {
-                                    Log.e("MainActivity", "Start Game clicked, but no current Lobby ID state!")
-                                }
+                                navController.navigate("hostandjoin")
                             },
                             onTestClick = { navController.navigate("test") },
                             currentLobbyId = currentLobbyIdState // Pass the collected state

@@ -2,11 +2,20 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.22"
 }
 
 android {
     namespace = "com.example.cataniaunited"
     compileSdk = 35
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 
     defaultConfig {
         applicationId = "com.example.cataniaunited"
@@ -22,7 +31,7 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -34,11 +43,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
     buildFeatures {
         compose = true
@@ -68,7 +77,9 @@ tasks.register<JacocoReport>("jacocoUnitTestReport") {
         "**/BuildConfig.*",
         "**/Manifest*.*",
         "**/*Test*.*",
-        "android/**/*.*"
+        "android/**/*.*",
+        "**/com/example/cataniaunited/ui/**",
+        "**/com/example/cataniaunited/MainActivity*"
     )
 
     val debugTree =
@@ -139,6 +150,11 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    // Test implementations
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
@@ -156,5 +172,17 @@ dependencies {
     testImplementation(libs.mockito.core)
 
 
+    implementation(libs.hilt.android)
+    implementation(libs.androidx.hilt.navigation.compose)
+    kapt(libs.hilt.compiler)
+    testImplementation(libs.androidx.core.testing)
+    testImplementation(libs.turbine)
+    testImplementation(libs.hilt.android.testing)
+    kaptTest(libs.hilt.compiler)
+    testImplementation(libs.robolectric)
+    androidTestImplementation(libs.turbine)
+}
 
+kapt {
+    correctErrorTypes = true
 }

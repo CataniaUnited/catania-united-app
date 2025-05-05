@@ -21,7 +21,10 @@ class StartingScreenTest {
             CataniaUnitedTheme(darkTheme = false, dynamicColor = false) {
                 StartingScreen(
                     onLearnClick = {},
-                    onStartClick = {}
+                    onStartClick = {},
+                    onTestClick = {},
+                    onCreateLobbyClick = {},
+                    currentLobbyId = "testLobby123",
                 )
             }
         }
@@ -40,7 +43,10 @@ class StartingScreenTest {
             CataniaUnitedTheme(darkTheme = false, dynamicColor = false) {
                 StartingScreen(
                     onLearnClick = { learnClicked = true },
-                    onStartClick = { startClicked = true }
+                    onStartClick = { startClicked = true },
+                    onTestClick = { },
+                    onCreateLobbyClick = {},
+                    currentLobbyId = "testLobby123"
                 )
             }
         }

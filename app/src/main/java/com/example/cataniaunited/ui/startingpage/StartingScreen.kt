@@ -27,7 +27,13 @@ import com.example.cataniaunited.ui.theme.catanRessourceBar
 
 
 @Composable // UI component
-fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit) {
+fun StartingScreen(
+    onLearnClick: () -> Unit,
+    onStartClick: () -> Unit,
+    onTestClick: () -> Unit,
+    onCreateLobbyClick: () -> Unit,
+    currentLobbyId: String?
+) {
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -42,7 +48,7 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit) {
             modifier = Modifier
                 .align(Alignment.Center)
                 .width(430.dp)
-                .height(340.dp)
+                .height(400.dp)
                 .border(
                     width = 9.dp,
                     color = catanRessourceBar,
@@ -72,7 +78,7 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit) {
             val buttonShape = RoundedCornerShape(30.dp)
 
             Button(
-                onClick = onLearnClick,
+                onClick = onCreateLobbyClick,
                 shape = buttonShape,
                 colors = ButtonDefaults.buttonColors(containerColor = catanGold),
                 border = BorderStroke(1.dp, Color.Black),
@@ -87,7 +93,7 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit) {
                     )
             ) {
                 Text(
-                    text = "LEARN",
+                    text = "CREATE LOBBY",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -102,8 +108,12 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit) {
 
             Button(
                 onClick = onStartClick,
+                enabled = currentLobbyId != null,
                 shape = buttonShape,
-                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = catanGold,
+                    disabledContainerColor = Color.Gray
+                ),
                 border = BorderStroke(1.dp, Color.Black),
                 modifier = Modifier
                     .width(300.dp)
@@ -121,8 +131,53 @@ fun StartingScreen(onLearnClick: () -> Unit, onStartClick: () -> Unit) {
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             }
+
+
+            Button(
+                onClick = onLearnClick,
+                shape = buttonShape,
+                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier // Original modifier
+                    .width(300.dp)
+                    .height(56.dp)
+                    .shadow(
+                        elevation = 13.dp,
+                        shape = buttonShape,
+                        ambientColor = Color.Black,
+                        spotColor = Color.Black
+                    )
+                    .padding(top = 15.dp)
+            ) {
+                Text(
+                    text = "LEARN",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
+
+            Button(
+                onClick = onTestClick,
+                shape = buttonShape,
+                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier
+                    .width(300.dp)
+                    .height(56.dp)
+                    .shadow(
+                        elevation = 13.dp,
+                        shape = buttonShape,
+                        ambientColor = Color.Black,
+                        spotColor = Color.Black
+                    )
+                    .padding(top = 15.dp)
+            ) {
+                Text(
+                    text = "TEST PAGE",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
         }
     }
 }
-
-

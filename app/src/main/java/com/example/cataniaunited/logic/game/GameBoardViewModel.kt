@@ -3,11 +3,13 @@ package com.example.cataniaunited.logic.game
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
-import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.util.parseGameBoard
+import com.example.cataniaunited.logic.player.PlayerSessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,11 +20,18 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-    private val gameBoardLogic: GameBoardLogic
+    private val gameBoardLogic: GameBoardLogic,
+    private val sessionManager: PlayerSessionManager
 ) : ViewModel() {
 
+    val playerId get() = sessionManager.getPlayerId()
     private val _gameBoardState = MutableStateFlow<GameBoardModel?>(null)
     val gameBoardState: StateFlow<GameBoardModel?> = _gameBoardState.asStateFlow()
+
+    private val _isBuildMenuOpen = MutableStateFlow(false)
+    val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
+
+    private val _playerId = MainApplication.getInstance().getPlayerId()
 
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
@@ -42,7 +51,6 @@ class GameViewModel @Inject constructor(
             }
         }
     }
-
 
 
     fun loadGameBoardFromJson(jsonString: String) {
@@ -70,7 +78,10 @@ class GameViewModel @Inject constructor(
     }
 
     fun handleSettlementClick(settlementPosition: SettlementPosition, lobbyId: String) {
-        Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}")
+        Log.d(
+            "GameViewModel",
+            "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}"
+        )
         // TODO: Implement logic for placing/upgrading settlement DON'T FORGET UPGRADE XD
         // 1) Check game state (setup or not? your turn?)
         // 2) Check resources
@@ -89,6 +100,11 @@ class GameViewModel @Inject constructor(
         // 4) Get lobbyId and PlayerId
         // 5) Call gameBoardLogic.placeRoad(road.id, lobbyId)
         gameBoardLogic.placeRoad(road.id, lobbyId)
+    }
+
+    fun setBuildMenuOpen(isOpen: Boolean) {
+        Log.d("GameViewModel", "handleBuildMenuClick: isOpen=${isOpen}")
+        _isBuildMenuOpen.value = isOpen
     }
 }
 

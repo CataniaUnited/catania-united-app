@@ -55,6 +55,8 @@ fun CatanBoard(
     roads: List<Road>,
     outerMarginDp: Dp = 16.dp,
     boardBackgroundColor: Color = Color(0xff177fde),
+    isBuildMode: Boolean,
+    playerId: String,
     onTileClicked: (Tile) -> Unit = {},
     onSettlementClicked: (SettlementPosition) -> Unit = {},
     onRoadClicked: (Road) -> Unit = {}
@@ -218,6 +220,8 @@ fun CatanBoard(
                         modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
                         settlementPosition = position,
                         size = baseParams.initialSettlementSizeDp, // Use initial size
+                        isClickable = isBuildMode,
+                        playerId = playerId,
                         onSettlementClick = onSettlementClicked // Pass down the handler
                     )
                 }
@@ -240,6 +244,8 @@ fun CatanBoard(
                         road = road,
                         length = baseParams.initialDrawableRoadLengthDp, // Use initial size
                         thickness = roadThicknessDp,
+                        isClickable = isBuildMode,
+                        playerId = playerId,
                         onRoadClick = onRoadClicked // Pass down the handler
                     )
                 }

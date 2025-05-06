@@ -1,6 +1,5 @@
 package com.example.cataniaunited.ui.game_board.road
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
@@ -26,25 +26,30 @@ fun RoadComposable(
     road: Road,
     length: Dp,
     thickness: Dp,
+    isClickable: Boolean,
+    playerId: String,
     onRoadClick: (Road) -> Unit = {}
 ) {
-    Log.d("Road Composable", "Color: ${road.color}")
     val roadColor = when (road.color) {
         null -> Color.Transparent // Placeholder - just show border
         else -> Color(road.color.toColorInt())
     }
 
-    val borderColor = Color.DarkGray
+    val borderColor = if(isClickable) Color.DarkGray else Color.Transparent
+
+    val isOccupied = road.owner != null && road.owner != playerId
+    val canBuild: Boolean = isClickable && (road.owner == null)
 
     Box(
         modifier = modifier
+            .then(if (canBuild) Modifier.clickable { onRoadClick(road) } else Modifier)
             .width(length)
-            .clickable { onRoadClick(road) }
             .height(thickness)
             .graphicsLayer(
                 rotationZ = road.rotationAngle.toDegrees() // Convert radians to degrees
             )
             .background(roadColor)
             .border(1.dp, borderColor)
+            .alpha(if (isClickable && isOccupied) 0.3f else 1f)
     )
 }

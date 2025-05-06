@@ -4,16 +4,18 @@ import android.util.Log
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
+import com.example.cataniaunited.logic.player.PlayerSessionManager
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.util.UUID
 import javax.inject.Inject
 
-class GameBoardLogic @Inject constructor() {
-
+class GameBoardLogic @Inject constructor(
+    private val playerSessionManager: PlayerSessionManager
+) {
 
     fun placeSettlement(settlementPositionId: Int, lobbyId: String) {
-        val playerId = try { MainApplication.getInstance().getPlayerId() } catch (e: Exception) { Log.e("GameBoardLogic", "PlayerID Error", e); return }
+        val playerId: String = playerSessionManager.getPlayerId()
         val message = buildJsonObject { put("settlementPositionId", settlementPositionId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
@@ -22,7 +24,7 @@ class GameBoardLogic @Inject constructor() {
     }
 
     fun placeRoad(roadId: Int, lobbyId: String) {
-        val playerId = try { MainApplication.getInstance().getPlayerId() } catch (e: Exception) { Log.e("GameBoardLogic", "PlayerID Error", e); return }
+        val playerId: String = playerSessionManager.getPlayerId()
         val message = buildJsonObject { put("roadId", roadId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
@@ -31,12 +33,7 @@ class GameBoardLogic @Inject constructor() {
     }
 
     fun requestCreateLobby() {
-        val playerId = try {
-            MainApplication.getInstance().getPlayerId()
-        } catch (e: IllegalStateException) {
-            Log.e("GameBoardLogic", "Player ID not initialized when requesting lobby creation.", e)
-            return
-        }
+        val playerId = playerSessionManager.getPlayerId()
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
             val messageToSend = MessageDTO( MessageType.CREATE_LOBBY, playerId, null, null, null)
@@ -49,12 +46,7 @@ class GameBoardLogic @Inject constructor() {
     }
 
     fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4) {
-        val playerId = try {
-            MainApplication.getInstance().getPlayerId()
-        } catch (e: IllegalStateException) {
-            Log.e("GameBoardLogic", "Player ID not initialized when requesting new game board.", e)
-            return
-        }
+        val playerId = playerSessionManager.getPlayerId()
         val messagePayload = buildJsonObject { put("playerCount", playerCount) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {

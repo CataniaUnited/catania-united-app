@@ -1,4 +1,4 @@
-package com.example.cataniaunited.ui.game_board.board
+package com.example.cataniaunited.ui.game
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.game.GameViewModel
+import com.example.cataniaunited.ui.game_board.board.CatanBoard
 
 
 @Composable
@@ -22,6 +23,7 @@ fun GameScreen(
     gameViewModel: GameViewModel = hiltViewModel(),
 ) {
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
+    val isBuildMenuOpen by gameViewModel.isBuildMenuOpen.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication // Get app instance
 
     // Trigger initial load when the screen enters composition if state is null
@@ -45,6 +47,8 @@ fun GameScreen(
                     tiles = board.tiles,
                     settlementPositions = board.settlementPositions,
                     roads = board.roads,
+                    isBuildMode = isBuildMenuOpen,
+                    playerId = gameViewModel.playerId,
 
                     // Add click handlers
                     onTileClicked = { tile ->
@@ -60,6 +64,15 @@ fun GameScreen(
                         gameViewModel.handleRoadClick(road, lobbyId)
                     }
                 )
+
+                Box(
+                    modifier = Modifier.align(Alignment.TopEnd)
+                ){
+                    BuildButton(
+                        isOpen = isBuildMenuOpen,
+                        onClick = {isOpen -> gameViewModel.setBuildMenuOpen(isOpen)}
+                    )
+                }
             }
         }
     }

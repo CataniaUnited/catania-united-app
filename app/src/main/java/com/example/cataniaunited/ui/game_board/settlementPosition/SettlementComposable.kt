@@ -10,11 +10,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
@@ -27,20 +28,23 @@ fun SettlementComposable(
     modifier: Modifier = Modifier,
     settlementPosition: SettlementPosition,
     size: Dp,
+    isClickable: Boolean,
+    playerId: String,
     onSettlementClick: (SettlementPosition) -> Unit = {}
 ) {
 
-    val building: Building? = settlementPosition.building;
+    val building: Building? = settlementPosition.building
     val buildingColor = when (building) {
         null -> Color.Transparent // Nothing built yet
         else -> Color(building.color.toColorInt())
     }
-    val borderColor = Color.DarkGray
+    val borderColor = if(isClickable) Color.DarkGray else Color.Transparent
 
-    val icon: Painter? = when {
+    val icon: ImageVector? = when {
         building == null -> null
-        building.type == "Settlement" -> painterResource(id = R.drawable.home_group)
-        else -> painterResource(id = R.drawable.city)
+        //building.type == "Settlement" -> painterResource(id = R.drawable.settlement)
+        settlementPosition.id % 2 == 0-> ImageVector.vectorResource(R.drawable.settlement)
+        else -> ImageVector.vectorResource(R.drawable.city)
     }
 
     val iconTint = if (buildingColor.luminance() > 0.5f) {
@@ -49,22 +53,26 @@ fun SettlementComposable(
         Color.White //Dark background -> light icon
     }
 
+    val isOccupied = building != null && building.owner != playerId
+    val canBuild: Boolean = isClickable && (building == null || building.owner == playerId)
+
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
+            .then(if (canBuild) Modifier.clickable { onSettlementClick(settlementPosition)  } else Modifier)
             .size(size)
-            .clickable { onSettlementClick(settlementPosition) }
             .clip(CircleShape)
             .background(buildingColor)
             .border(1.dp, borderColor, CircleShape)
+            .alpha(if (isClickable && isOccupied) 0.3f else 1f)
     ) {
 
         if (icon != null) {
             Icon(
-                painter = icon,
+                imageVector = icon,
                 contentDescription = null,
                 tint = iconTint,
-                modifier = Modifier.size(size / 1.6f)
+                modifier = Modifier.size((size.value / 1.6f).toInt().dp)
             )
         }
     }

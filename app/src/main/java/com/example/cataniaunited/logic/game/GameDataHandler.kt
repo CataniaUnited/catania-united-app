@@ -23,10 +23,6 @@ class GameDataHandler @Inject constructor() {
             )
         }
         if (updatedBoard != null) {
-            //TODO: REMOVE
-            val ownedRoads = updatedBoard.roads.filter { it.owner != null }
-            Log.i("GameDataHandler", "Owned roads ${ownedRoads}")
-            _gameBoardState.value = null
             _gameBoardState.value = updatedBoard
             Log.i("GameDataHandler", "Game board updated successfully.")
         } else {

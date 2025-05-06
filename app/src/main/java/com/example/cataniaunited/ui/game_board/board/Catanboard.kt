@@ -93,7 +93,7 @@ fun CatanBoard(
             .pointerInput(Unit) {
                 detectTransformGestures { centroid, pan, zoom, _ ->
                     val oldScale = scale
-                    val newScale = (scale * zoom).coerceIn(0.5f, 3f) // Limit zoom levels
+                    val newScale = (scale * zoom).coerceIn(0.5f, 5f) // Limit zoom levels
 
                     // Calculate the offset adjustment needed to keep the centroid stable
                     offset = (offset + centroid - (centroid / oldScale) * newScale) + pan

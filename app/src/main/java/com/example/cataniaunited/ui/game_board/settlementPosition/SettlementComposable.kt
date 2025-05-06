@@ -42,8 +42,7 @@ fun SettlementComposable(
 
     val icon: ImageVector? = when {
         building == null -> null
-        //building.type == "Settlement" -> painterResource(id = R.drawable.settlement)
-        settlementPosition.id % 2 == 0-> ImageVector.vectorResource(R.drawable.settlement)
+        building.type == "Settlement" -> ImageVector.vectorResource(id = R.drawable.settlement)
         else -> ImageVector.vectorResource(R.drawable.city)
     }
 

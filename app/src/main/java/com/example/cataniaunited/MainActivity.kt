@@ -75,7 +75,7 @@ class MainActivity : ComponentActivity() {
                                 if (lobbyToStart != null) {
                                     Log.i("MainActivity", "Start Game button clicked for known lobby: $lobbyToStart")
                                     try {
-                                        gameBoardLogic.requestBoardForLobby(lobbyId = lobbyToStart, playerCount = 16)
+                                        gameBoardLogic.requestBoardForLobby(lobbyId = lobbyToStart, playerCount = 4)
                                     } catch (e: Exception) {
                                         Log.e("MainActivity", "Error requesting board for lobby", e)
                                     }

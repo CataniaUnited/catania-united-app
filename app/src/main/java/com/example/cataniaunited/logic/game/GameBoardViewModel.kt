@@ -4,16 +4,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
-import com.example.cataniaunited.data.util.parseGameBoard
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,51 +20,45 @@ import javax.inject.Inject
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val gameBoardLogic: GameBoardLogic,
+    private val gameDataHandler: GameDataHandler,
     private val sessionManager: PlayerSessionManager
 ) : ViewModel() {
 
     val playerId get() = sessionManager.getPlayerId()
-    private val _gameBoardState = MutableStateFlow<GameBoardModel?>(null)
-    val gameBoardState: StateFlow<GameBoardModel?> = _gameBoardState.asStateFlow()
+    val gameBoardState: StateFlow<GameBoardModel?> = gameDataHandler.gameBoardState
 
     private val _isBuildMenuOpen = MutableStateFlow(false)
     val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
 
-    private val _playerId = MainApplication.getInstance().getPlayerId()
-
     init {
+        Log.d("GameViewModel", "GameDataHandler hashCode: ${gameDataHandler.hashCode()}")
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
         // Don't load initial board automatically here
+        viewModelScope.launch {
+            gameBoardState.collect { newBoard ->
+                Log.d("GameViewModel", "GameBoard State in ViewModel updated: $newBoard")
+            }
+        }
     }
 
     // New function to be called externally (e.g., from the Composable's LaunchedEffect)
     fun initializeBoardState(initialJson: String?) {
-        if (_gameBoardState.value == null) { // Only load if not already loaded
+        if (gameBoardState.value == null) { // Only load if not already loaded
             Log.i("GameViewModel", "Initializing board state.")
             if (initialJson != null) {
                 loadGameBoardFromJson(initialJson)
                 // Maybe clear application state here if needed via injected dependency?
             } else {
                 Log.e("GameViewModel", "Initial board JSON was null during initialization!")
-                _gameBoardState.value = null
             }
         }
     }
-
 
     fun loadGameBoardFromJson(jsonString: String) {
         viewModelScope.launch {
-            val board = parseGameBoard(jsonString)
-            if (board != null) {
-                _gameBoardState.value = board
-                Log.i("GameViewModel", "Game board loaded/updated successfully from JSON.")
-            } else {
-                Log.e("GameViewModel", "Failed to parse game board from JSON string.")
-                _gameBoardState.value = null
-            }
+            gameDataHandler.updateGameBoard(jsonString)
         }
     }
-
 
     // --- Placeholder Click Handlers ---
 

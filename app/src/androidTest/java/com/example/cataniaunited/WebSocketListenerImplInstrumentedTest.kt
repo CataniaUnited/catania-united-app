@@ -1,6 +1,5 @@
 package com.example.cataniaunited.ws
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.logic.dto.MessageType
@@ -11,7 +10,6 @@ import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.serialization.json.Json
@@ -48,11 +46,6 @@ class WebSocketListenerImplInstrumentedTest {
         mockGameDataHandler = mockk(relaxed = true)
         mockWebSocket = mockk(relaxed = true)
         mockResponse = mockk(relaxed = true)
-
-        mockkStatic(Log::class)
-        every { Log.d(any(), any()) } returns 0
-        every { Log.i(any(), any()) } returns 0
-        every { Log.e(any(), any(), any()) } returns 0
 
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = mockConnectionSuccess,
@@ -154,7 +147,12 @@ class WebSocketListenerImplInstrumentedTest {
 
         val exception: Exception = Exception("Test exception")
 
-        every { mockGameBoardReceived.onGameBoardReceived(lobbyId, boardJsonString) } throws exception
+        every {
+            mockGameBoardReceived.onGameBoardReceived(
+                lobbyId,
+                boardJsonString
+            )
+        } throws exception
 
         val messageJson = buildJsonObject {
             put("type", MessageType.GAME_BOARD_JSON.name)
@@ -267,7 +265,7 @@ class WebSocketListenerImplInstrumentedTest {
     }
 
     @Test
-    fun onMessage_handlesErrorMessageType_noCallbacksCalled(){
+    fun onMessage_handlesErrorMessageType_noCallbacksCalled() {
         val messageJson = buildJsonObject {
             put("type", MessageType.ERROR.name)
         }.toString()

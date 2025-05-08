@@ -91,7 +91,6 @@ open class MainApplication : Application() {
 
             onDiceResult = { dice1, dice2 ->
                 Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")
-                // Forward the dice result to the GameViewModel
                 applicationScope.launch {
                     gameViewModel?.updateDiceResult(dice1, dice2)
                 }

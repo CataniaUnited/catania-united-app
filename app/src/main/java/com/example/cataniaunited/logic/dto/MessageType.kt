@@ -8,6 +8,7 @@ enum class MessageType {
     LOBBY_UPDATED,
     PLAYER_JOINED,
     LOBBY_CREATED,
+    GAME_BOARD_JSON,
     DICE_RESULT,
 
     //Client Messages
@@ -16,5 +17,6 @@ enum class MessageType {
     SET_USERNAME,
     PLACE_SETTLEMENT,
     PLACE_ROAD,
+    CREATE_GAME_BOARD,
     ROLL_DICE
 }

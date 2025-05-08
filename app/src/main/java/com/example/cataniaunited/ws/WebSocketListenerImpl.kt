@@ -4,63 +4,126 @@ import android.util.Log
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 import okhttp3.WebSocket
 import okhttp3.WebSocketListener
 
-open class WebSocketListenerImpl : WebSocketListener() {
+open class WebSocketListenerImpl(
+    private val onConnectionSuccess: (playerId: String) -> Unit,
+    private val onGameBoardReceived: (lobbyId: String, boardJson: String) -> Unit,
+    private val onError: (error: Throwable) -> Unit,
+    private val onClosed: (code: Int, reason: String) -> Unit,
+    private val onLobbyCreated: (lobbyId: String) -> Unit,
+    private val onDiceResult: ((dice1: Int, dice2: Int) -> Unit) = { _, _ -> }
+) : WebSocketListener() {
 
-    // Callback for dice roll results
-    private var onDiceResult: ((dice1: Int, dice2: Int) -> Unit) = { _, _ -> }
+    private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
+
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         Log.d("WebSocket", "Opened connection")
     }
 
-    /**
-     * Callback endpoint which retrieves messages from the server
-     */
-    override fun onMessage(webSocket: WebSocket, message: String) {
-        val messageDTO: MessageDTO = MessageDTO.fromJson(message)
-        Log.d("WebSocket", "Received message: $messageDTO")
+    override fun onMessage(webSocket: WebSocket, text: String) {
+        Log.d("WebSocketListener", "Raw Message Received: $text")
+        try {
+            val messageDTO = jsonParser.decodeFromString<MessageDTO>(text)
+            Log.d("WebSocketListener", "Parsed: Type=${messageDTO.type}, Lobby=${messageDTO.lobbyId}, MsgObj=${messageDTO.message}")
 
-        when (messageDTO.type) {
-            MessageType.CONNECTION_SUCCESSFUL -> {
-                setPlayerId(messageDTO)
-            }
-            MessageType.DICE_RESULT -> {
-                // Extract dice values from the message
-                val dice1 = messageDTO.message?.get("dice1")?.jsonPrimitive?.content?.toInt() ?: 0
-                val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.content?.toInt() ?: 0
+            when (messageDTO.type) {
+                MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
+                MessageType.GAME_BOARD_JSON -> handleGameBoardJson(messageDTO)
+                MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
+                MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
+                // TODO: Other Messages
 
-                Log.d("WebSocket", "Dice result received: dice1=$dice1, dice2=$dice2")
-
-                // Notify the callback
-                onDiceResult(dice1, dice2)
+                MessageType.ERROR -> {
+                    Log.e("WebSocketListener", "Received ERROR message from server: ${messageDTO.message}")
+                }
+                else -> Log.w("WebSocketListener", "Received unhandled message type: ${messageDTO.type}")
             }
-            else -> {
-                // Handle other message types if needed
-            }
+        } catch (e: Exception) {
+            Log.e("WebSocketListener", "Error parsing or handling message: $text", e)
+            onError(e)
         }
     }
 
-    fun setPlayerId(messageDTO: MessageDTO) {
-        val playerId: String = messageDTO.message?.get("playerId")?.jsonPrimitive?.content!!
-        Log.d("WebSocket", "Setting player id: playerId=$playerId")
-        MainApplication.getInstance().setPlayerId(playerId)
+    private fun handleConnectionSuccessful(messageDTO: MessageDTO) {
+        val playerId = messageDTO.message?.get("playerId")?.jsonPrimitive?.contentOrNull
+        if (playerId != null) {
+            Log.d("WebSocketListener", "Extracted playerId: $playerId")
+            onConnectionSuccess(playerId) // Use callback
+        } else {
+            Log.e("WebSocketListener", "CONNECTION_SUCCESSFUL message missing 'playerId': ${messageDTO.message}")
+            onError(IllegalArgumentException("Missing playerId")) // Use callback
+        }
+    }
+
+    private fun handleGameBoardJson(messageDTO: MessageDTO) {
+        val lobbyId = messageDTO.lobbyId
+        val boardJsonObject: JsonObject? = messageDTO.message // The payload is the board object
+
+        if (lobbyId != null && boardJsonObject != null) {
+            try {
+                // Convert the board JsonObject back to a JSON String
+                val boardJsonString = jsonParser.encodeToString(JsonObject.serializer(), boardJsonObject)
+                Log.d("WebSocketListener", "Extracted board JSON string for lobby: $lobbyId")
+                onGameBoardReceived(lobbyId, boardJsonString) // Use callback
+            } catch (e: Exception) {
+                Log.e("WebSocketListener", "Error converting board message JsonObject to String", e)
+                onError(e) // Use callback
+            }
+        } else {
+            Log.e("WebSocketListener", "GAME_BOARD_JSON missing lobbyId ('${lobbyId}') or message object ('${boardJsonObject}')")
+            onError(IllegalArgumentException("Invalid GAME_BOARD_JSON format"))
+        }
     }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-        Log.d("WebSocket", "Closing connection: Code=$code, Reason=$reason")
-        webSocket.close(1000, null)
+        Log.i("WebSocketListener", "Closing: Code=$code, Reason=$reason")
+    }
+
+    override fun onClosed(webSocket: WebSocket, code: Int, reason: String) {
+        Log.i("WebSocketListener", "Closed: Code=$code, Reason=$reason")
+        onClosed(code, reason) // Use callback
     }
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        Log.e("WebSocket", "Connection threw exception", t)
+        val responseMsg = response?.message ?: "No response"
+        Log.e("WebSocketListener", "Failure: ${t.message}, Response: $responseMsg", t)
+        onError(t) // Use callback
     }
 
-    fun setOnDiceResultListener(listener: (dice1: Int, dice2: Int) -> Unit) {
-        this.onDiceResult = listener
+    private fun handleLobbyCreated(messageDTO: MessageDTO) {
+        val lobbyId = messageDTO.lobbyId
+        if (lobbyId != null) {
+            Log.i("WebSocketListener", "Lobby Created successfully with ID: $lobbyId")
+            onLobbyCreated(lobbyId)
+        } else {
+            Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")
+            onError(IllegalArgumentException("Missing lobbyId in LOBBY_CREATED message"))
+        }
+    }
+
+    private var lastProcessedDiceResult: String? = null
+
+    private fun handleDiceResult(messageDTO: MessageDTO) {
+        val resultJson = messageDTO.message.toString()
+
+        if (resultJson == lastProcessedDiceResult) {
+            Log.d("WebSocketListener", "Ignoring duplicate dice result")
+            return
+        }
+
+        lastProcessedDiceResult = resultJson
+        val dice1 = messageDTO.message?.get("dice1")?.jsonPrimitive?.content?.toInt() ?: 0
+        val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.content?.toInt() ?: 0
+
+        Log.d("WebSocketListener", "Processing new dice result: $dice1, $dice2")
+        onDiceResult(dice1, dice2)
     }
 }

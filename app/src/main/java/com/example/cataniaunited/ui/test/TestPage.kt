@@ -49,23 +49,7 @@ fun TestPage(testPageViewModel: TestPageViewModel = TestPageViewModel()) {
     val diceResult by testPageViewModel.diceResult.collectAsState()
     val lobbyId = "lobby1" // Using a constant for demo - in real app this would come from navigation or state
 
-    // Setup WebSocket listener for dice results
-    DisposableEffect(Unit) {
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        val listener = WebSocketListenerImpl().apply {
-            setOnDiceResultListener { dice1, dice2 ->
-                Log.d("TestPage", "Dice result received: $dice1, $dice2")
-                testPageViewModel.handleDiceResult(dice1, dice2)
-            }
-        }
 
-        // Set the listener on the WebSocketClient
-        webSocketClient.setListener(listener)
-
-        onDispose {
-            // Any cleanup if needed
-        }
-    }
 
     ShakeDetector(onShake = {
         if (!showDicePopup) {

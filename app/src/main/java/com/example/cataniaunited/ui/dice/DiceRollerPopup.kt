@@ -33,11 +33,10 @@ fun DiceRollerPopup(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // Local state for animation
     var dice1 by remember { mutableStateOf(1) }
     var dice2 by remember { mutableStateOf(1) }
-    var rolling by remember { mutableStateOf(false) }
-    var totalValue by remember { mutableStateOf(2) }
+    var rolling by remember { mutableStateOf(true) }
+    var showFinalResult by remember { mutableStateOf(false) }
 
     val rotation = rememberInfiniteTransition()
     val angle by rotation.animateFloat(
@@ -48,26 +47,21 @@ fun DiceRollerPopup(
         )
     )
 
-    // Start rolling when popup opens
+    // Start roll when popup opens
     LaunchedEffect(Unit) {
-        rolling = true
-        // If no server values yet, simulate rolling animation
-        if (dice1Result == null || dice2Result == null) {
-            onDiceRolled()
-        }
+        onDiceRolled()
     }
 
-    // Handle server results
+    // Once server result is received
     LaunchedEffect(dice1Result, dice2Result) {
         if (dice1Result != null && dice2Result != null) {
-            // Wait a moment to show rolling animation
-            delay(1000)
+            delay(800) // Let animation play a bit
             dice1 = dice1Result
             dice2 = dice2Result
-            totalValue = dice1Result + dice2Result
             rolling = false
+            showFinalResult = true
             vibratePhone(context)
-            delay(2000) // Show results for 2 seconds before closing
+            delay(2000) // Wait before closing
             onClose()
         }
     }
@@ -80,58 +74,33 @@ fun DiceRollerPopup(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = if (rolling) "Rolling Dice!" else "Dice Result!",
+                text = if (rolling) "Rolling Dice..." else "Result!",
                 style = MaterialTheme.typography.titleLarge
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                DiceImage(dice1, rolling, angle)
-                DiceImage(dice2, rolling, angle)
+                DiceImageDisplay(dice1, rolling, angle)
+                DiceImageDisplay(dice2, rolling, angle)
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Total: $totalValue", style = MaterialTheme.typography.bodyLarge)
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    rolling = true
-                    onDiceRolled()
-                },
-                enabled = !rolling,
-                colors = ButtonDefaults.buttonColors(containerColor = catanGold)
-            ) {
-                Text("Roll Dice")
+            if (showFinalResult) {
+                Text(
+                    text = "Total: ${dice1 + dice2}",
+                    style = MaterialTheme.typography.titleLarge
+                )
             }
         }
     }
 }
 
 @Composable
-private fun DiceImage(value: Int, rolling: Boolean, angle: Float) {
-    val displayValue = if (rolling) {
-        remember { (1..6).random() }
-    } else {
-        value
-    }
-
-    Image(
-        painter = painterResource(id = getDiceImage(displayValue)),
-        contentDescription = "Dice $displayValue",
-        modifier = Modifier
-            .size(100.dp)
-            .graphicsLayer {
-                rotationZ = if (rolling) angle else 0f
-            }
-    )
-}
-
-private fun getDiceImage(value: Int): Int {
-    return when (value) {
+fun DiceImageDisplay(value: Int, rolling: Boolean, angle: Float) {
+    val displayValue = if (rolling) (1..6).random() else value
+    val imageRes = when (displayValue) {
         1 -> R.drawable.dice_1
         2 -> R.drawable.dice_2
         3 -> R.drawable.dice_3
@@ -139,6 +108,16 @@ private fun getDiceImage(value: Int): Int {
         5 -> R.drawable.dice_5
         else -> R.drawable.dice_6
     }
+
+    Image(
+        painter = painterResource(id = imageRes),
+        contentDescription = "Dice $displayValue",
+        modifier = Modifier
+            .size(100.dp)
+            .graphicsLayer {
+                rotationZ = if (rolling) angle else 0f
+            }
+    )
 }
 
 private fun vibratePhone(context: Context) {

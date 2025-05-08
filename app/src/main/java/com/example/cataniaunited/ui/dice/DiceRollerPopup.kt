@@ -19,9 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.theme.catanClay
-import com.example.cataniaunited.ui.theme.catanGold
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @Composable
 fun DiceRollerPopup(
@@ -47,21 +45,19 @@ fun DiceRollerPopup(
         )
     )
 
-    // Start roll when popup opens
     LaunchedEffect(Unit) {
         onDiceRolled()
     }
 
-    // Once server result is received
     LaunchedEffect(dice1Result, dice2Result) {
         if (dice1Result != null && dice2Result != null) {
-            delay(800) // Let animation play a bit
+            delay(800)
             dice1 = dice1Result
             dice2 = dice2Result
             rolling = false
             showFinalResult = true
             vibratePhone(context)
-            delay(2000) // Wait before closing
+            delay(2000)
             onClose()
         }
     }

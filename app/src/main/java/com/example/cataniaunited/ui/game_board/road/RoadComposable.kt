@@ -35,7 +35,7 @@ fun RoadComposable(
         else -> Color(road.color.toColorInt())
     }
 
-    val borderColor = if(isClickable) Color.DarkGray else Color.Transparent
+    val borderColor = if(isClickable || road.owner != null) Color.DarkGray else Color.Transparent
 
     val isOccupied = road.owner != null && road.owner != playerId
     val canBuild: Boolean = isClickable && (road.owner == null)

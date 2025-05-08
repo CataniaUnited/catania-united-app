@@ -38,7 +38,7 @@ fun SettlementComposable(
         null -> Color.Transparent // Nothing built yet
         else -> Color(building.color.toColorInt())
     }
-    val borderColor = if(isClickable) Color.DarkGray else Color.Transparent
+    val borderColor = if(isClickable || (building != null)) Color.DarkGray else Color.Transparent
 
     val icon: ImageVector? = when {
         building == null -> null
@@ -53,7 +53,7 @@ fun SettlementComposable(
     }
 
     val isOccupied = building != null && building.owner != playerId
-    val canBuild: Boolean = isClickable && (building == null || building.owner == playerId)
+    val canBuild: Boolean = isClickable && (building == null || (building.owner == playerId && building.type == "Settlement"))
 
     Box(
         contentAlignment = Alignment.Center,

@@ -232,4 +232,79 @@ class GameBoardInstrumentedTest {
         t.join()
         println("testPlaceRoad finished successfully.")
     }
+
+    @Test
+    fun testRollDice() {
+        println("Running testRollDice...")
+        val lobbyId = "lobby-dice-${System.currentTimeMillis()}"
+
+        val messagePayload = buildJsonObject { put("action", "rollDice") }
+        val expectedMessageDTO = MessageDTO(MessageType.ROLL_DICE, playerId, lobbyId, null, messagePayload)
+        val expectedJson = testJsonParser.encodeToString(MessageDTO.serializer(), expectedMessageDTO)
+
+        val messageLatch = CountDownLatch(1)
+        val openLatch = CountDownLatch(1)
+        val errorLatch = CountDownLatch(1)
+        val receivedMessage = mutableListOf<String>()
+
+        mockWebServer.enqueue(MockResponse()
+            .setResponseCode(101)
+            .withWebSocketUpgrade(object : WebSocketListener() {
+                override fun onOpen(webSocket: WebSocket, response: Response) { println("MockServer: Opened") }
+                override fun onMessage(webSocket: WebSocket, text: String) {
+                    println("MockServer: Received '$text'")
+                    synchronized(receivedMessage) { receivedMessage.add(text) }
+                    messageLatch.countDown()
+                }
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) { println("MockServer: onFailure ${t.message}") }
+            })
+        )
+
+        println("Connecting spyClient...")
+        val t = thread {
+            spyClient.connect(object : WebSocketListenerImpl(
+                onConnectionSuccess = dummyOnConnectionSuccess,
+                onLobbyCreated = dummyOnLobbyCreated,
+                onGameBoardReceived = dummyOnGameBoardReceived,
+                onError = { e ->
+                    println("!!! Test onError CALLED: ${e.message}")
+                    errorLatch.countDown()
+                },
+                onClosed = dummyOnClosed,
+                onDiceResult = dummyOnDiceResult
+            ) {
+                override fun onOpen(webSocket: WebSocket, response: Response) {
+                    super.onOpen(webSocket, response)
+                    println("Client Listener: Opened connection (on background thread).")
+                    openLatch.countDown()
+                    try {
+                        println("Client Listener: Sending rollDice...")
+                        gameBoardLogic.rollDice(lobbyId)
+                    } catch (e: Exception) {
+                        println("!!! Error calling rollDice: ${e.message}")
+                        errorLatch.countDown()
+                    }
+                }
+                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
+                    super.onFailure(webSocket, t, response)
+                    println("!!! Client Listener onFailure triggered in dice test.")
+                    errorLatch.countDown()
+                }
+            })
+        }
+
+        val connectionOpened = openLatch.await(5, TimeUnit.SECONDS)
+        assertTrue("WebSocket connection was not opened within timeout", connectionOpened)
+
+        val messageReceived = messageLatch.await(8, TimeUnit.SECONDS)
+        val errorOccurred = errorLatch.count == 0L
+
+        assertFalse("onError callback was triggered during test", errorOccurred)
+        assertTrue("Message not received by server within timeout", messageReceived)
+        assertEquals("Expected exactly one message", 1, receivedMessage.size)
+        assertEquals("Sent message JSON does not match expected", expectedJson, receivedMessage[0])
+
+        t.join()
+        println("testRollDice finished successfully.")
+    }
 }

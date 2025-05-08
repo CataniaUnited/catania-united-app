@@ -9,6 +9,7 @@ import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
@@ -90,6 +91,19 @@ class GameViewModelTest {
     fun initialStateIsNull() = runTest {
         assertNull(viewModel.gameBoardState.value, "Initial gameBoardState should be null")
         println("Test passed: initial state is null")
+    }
+
+    @ExperimentalCoroutinesApi
+    @Test
+    fun updateDiceResult_setsCorrectValue() = runTest {
+        val dice1 = 5
+        val dice2 = 6
+
+        viewModel.updateDiceResult(dice1, dice2)
+
+        val result = viewModel.diceResult.first { it != null }
+
+        assertEquals(Pair(dice1, dice2), result)
     }
 
     @Nested

@@ -31,14 +31,8 @@ class GameViewModel @Inject constructor(
     val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
 
     init {
-        Log.d("GameViewModel", "GameDataHandler hashCode: ${gameDataHandler.hashCode()}")
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
         // Don't load initial board automatically here
-        viewModelScope.launch {
-            gameBoardState.collect { newBoard ->
-                Log.d("GameViewModel", "GameBoard State in ViewModel updated: $newBoard")
-            }
-        }
     }
 
     // New function to be called externally (e.g., from the Composable's LaunchedEffect)

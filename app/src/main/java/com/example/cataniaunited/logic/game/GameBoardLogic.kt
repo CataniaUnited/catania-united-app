@@ -15,7 +15,11 @@ class GameBoardLogic @Inject constructor(
 ) {
 
     fun placeSettlement(settlementPositionId: Int, lobbyId: String) {
-        val playerId: String = playerSessionManager.getPlayerId()
+        val playerId = try{
+            playerSessionManager.getPlayerId()
+        }catch (ise: IllegalStateException){
+            return
+        }
         val message = buildJsonObject { put("settlementPositionId", settlementPositionId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
@@ -24,7 +28,11 @@ class GameBoardLogic @Inject constructor(
     }
 
     fun placeRoad(roadId: Int, lobbyId: String) {
-        val playerId: String = playerSessionManager.getPlayerId()
+        val playerId = try{
+            playerSessionManager.getPlayerId()
+        }catch (ise: IllegalStateException){
+            return
+        }
         val message = buildJsonObject { put("roadId", roadId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
@@ -33,7 +41,11 @@ class GameBoardLogic @Inject constructor(
     }
 
     fun requestCreateLobby() {
-        val playerId = playerSessionManager.getPlayerId()
+        val playerId = try{
+            playerSessionManager.getPlayerId()
+        }catch (ise: IllegalStateException){
+            return
+        }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
             val messageToSend = MessageDTO( MessageType.CREATE_LOBBY, playerId, null, null, null)
@@ -46,7 +58,12 @@ class GameBoardLogic @Inject constructor(
     }
 
     fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4) {
-        val playerId = playerSessionManager.getPlayerId()
+
+        val playerId = try{
+            playerSessionManager.getPlayerId()
+        }catch (ise: IllegalStateException){
+            return
+        }
         val messagePayload = buildJsonObject { put("playerCount", playerCount) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {

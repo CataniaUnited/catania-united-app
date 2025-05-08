@@ -13,7 +13,7 @@ class PlayerSessionManager @Inject constructor(
         return try {
             (context.applicationContext as MainApplication).getPlayerId()
         } catch (e: Exception) {
-            Log.e("GameBoardLogic", "PlayerID Error", e);
+            Log.e("PlayerSessionManager", "Could not fetch playerId from main application", e);
             throw IllegalStateException("No player Id set")
         }
     }

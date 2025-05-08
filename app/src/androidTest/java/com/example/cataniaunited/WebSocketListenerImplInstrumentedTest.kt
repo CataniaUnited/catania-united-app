@@ -181,4 +181,75 @@ class WebSocketListenerImplInstrumentedTest {
         assertEquals("Close code mismatch", expectedCode, closedCode)
         assertEquals("Close reason mismatch", expectedReason, closedReason)
     }
+
+    @Test
+    fun handleDiceResult_callsOnDiceResultWithParsedValues() {
+        var receivedDice1 = -1
+        var receivedDice2 = -1
+
+        val listener = WebSocketListenerImpl(
+            onConnectionSuccess = {},
+            onLobbyCreated = {},
+            onGameBoardReceived = { _, _ -> },
+            onError = {},
+            onClosed = { _, _ -> },
+            onDiceResult = { d1, d2 ->
+                receivedDice1 = d1
+                receivedDice2 = d2
+            }
+        )
+
+        val message = buildJsonObject {
+            put("dice1", 3)
+            put("dice2", 4)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "some-player",
+            lobbyId = "some-lobby",
+            message = message
+        )
+
+        val method = listener.javaClass.getDeclaredMethod("handleDiceResult", MessageDTO::class.java)
+        method.isAccessible = true
+        method.invoke(listener, dto)
+
+        assertEquals(3, receivedDice1)
+        assertEquals(4, receivedDice2)
+    }
+
+    @Test
+    fun handleDiceResult_ignoresDuplicateResults() {
+        var callCount = 0
+
+        val listener = WebSocketListenerImpl(
+            onConnectionSuccess = {},
+            onLobbyCreated = {},
+            onGameBoardReceived = { _, _ -> },
+            onError = {},
+            onClosed = { _, _ -> },
+            onDiceResult = { _, _ -> callCount++ }
+        )
+
+        val message = buildJsonObject {
+            put("dice1", 2)
+            put("dice2", 5)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "player",
+            lobbyId = "lobby",
+            message = message
+        )
+
+        val method = listener.javaClass.getDeclaredMethod("handleDiceResult", MessageDTO::class.java)
+        method.isAccessible = true
+
+        method.invoke(listener, dto)
+        method.invoke(listener, dto)
+
+        assertEquals(1, callCount)
+    }
 }

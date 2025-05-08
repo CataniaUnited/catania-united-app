@@ -8,7 +8,9 @@ import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
+import io.mockk.Runs
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.unmockkAll
 import io.mockk.verify
@@ -46,6 +48,8 @@ class WebSocketListenerImplInstrumentedTest {
         mockGameDataHandler = mockk(relaxed = true)
         mockWebSocket = mockk(relaxed = true)
         mockResponse = mockk(relaxed = true)
+
+        every { mockGameDataHandler.updateGameBoard(any()) } just Runs
 
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = mockConnectionSuccess,

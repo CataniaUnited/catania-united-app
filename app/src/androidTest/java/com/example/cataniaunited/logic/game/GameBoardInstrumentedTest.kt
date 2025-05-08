@@ -3,10 +3,14 @@ package com.example.cataniaunited.logic.game
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
+import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -22,6 +26,7 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 
 import java.util.concurrent.CountDownLatch
@@ -38,12 +43,14 @@ class GameBoardInstrumentedTest {
     private lateinit var gameBoardLogic: GameBoardLogic
     private lateinit var mockWebServer: MockWebServer
     private lateinit var playerId: String
+    private lateinit var playerSessionManagerMock: PlayerSessionManager
+    private val gameDataHandlerMock = GameDataHandler()
     private val testJsonParser = Json { encodeDefaults = true }
 
     @Before
     fun setup() {
         println("Setting up GameBoardInstrumentedTest...")
-        mainApplication = ApplicationProvider.getApplicationContext<MainApplication>()
+        mainApplication = ApplicationProvider.getApplicationContext()
         realClient = mainApplication.getWebSocketClient()
 
         mockWebServer = MockWebServer()
@@ -52,6 +59,8 @@ class GameBoardInstrumentedTest {
 
         val mockServerClient = WebSocketClient(wsUrl)
         spyClient = spy(mockServerClient)
+
+        playerSessionManagerMock = PlayerSessionManager(mainApplication)
 
         runBlocking(Dispatchers.Main) {
             try {
@@ -65,7 +74,7 @@ class GameBoardInstrumentedTest {
             }
         }
 
-        gameBoardLogic = GameBoardLogic()
+        gameBoardLogic = GameBoardLogic(playerSessionManagerMock)
         println("Setup complete: PlayerID=$playerId, SpyClient injected.")
     }
 
@@ -127,7 +136,7 @@ class GameBoardInstrumentedTest {
                     println("!!! Test onError CALLED: ${e.message}")
                     errorLatch.countDown()
                 },
-                onClosed = dummyOnClosed
+                onClosed = dummyOnClosed, gameDataHandler = gameDataHandlerMock
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -198,7 +207,8 @@ class GameBoardInstrumentedTest {
                     println("!!! Test onError CALLED: ${e.message}")
                     errorLatch.countDown()
                 },
-                onClosed = dummyOnClosed
+                onClosed = dummyOnClosed,
+                gameDataHandlerMock
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)

@@ -1,9 +1,16 @@
 package com.example.cataniaunited
 
 import androidx.test.core.app.ApplicationProvider
+import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.ws.WebSocketListenerImpl
+import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnGameBoardReceived
+import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnWebSocketClosed
+import com.example.cataniaunited.ws.callback.OnWebSocketError
+import io.mockk.mockk
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
@@ -22,13 +29,14 @@ class WebSocketListenerImplParameterizedTest {
 
     private lateinit var mainApplication: MainApplication
     private lateinit var webSocketListener: WebSocketListenerImpl
-    private val mockWebSocket = mock(WebSocket::class.java)
+    private lateinit var mockWebSocket: WebSocket
     private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
 
-    private val dummyOnLobbyCreated: (String) -> Unit = { _ -> }
-    private val dummyOnGameBoardReceived: (String, String) -> Unit = { _, _ -> }
-    private val dummyOnError: (Throwable) -> Unit = { e -> println("Parameterized Test onError: ${e.message}") }
-    private val dummyOnClosed: (Int, String) -> Unit = { _, _ -> }
+    private lateinit var mockLobbyCreated: OnLobbyCreated
+    private lateinit var mockGameBoardReceived: OnGameBoardReceived
+    private lateinit var mockError: OnWebSocketError
+    private lateinit var mockClosed: OnWebSocketClosed
+    private lateinit var mockGameDataHandler: GameDataHandler
 
     @Before
     fun setup() {
@@ -36,15 +44,23 @@ class WebSocketListenerImplParameterizedTest {
         mainApplication = ApplicationProvider.getApplicationContext()
         mainApplication.setPlayerId("initial_test_value_${System.currentTimeMillis()}")
 
+        mockLobbyCreated = mockk(relaxed = true)
+        mockGameBoardReceived = mockk(relaxed = true)
+        mockError = mockk(relaxed = true)
+        mockClosed = mockk(relaxed = true)
+        mockGameDataHandler = mockk(relaxed = true)
+        mockWebSocket = mockk(relaxed = true)
+
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = { playerId ->
                 println("Parameterized Test: onConnectionSuccess called with $playerId")
                 mainApplication.setPlayerId(playerId)
             },
-            onLobbyCreated = dummyOnLobbyCreated,
-            onGameBoardReceived = dummyOnGameBoardReceived,
-            onError = dummyOnError,
-            onClosed = dummyOnClosed
+            onLobbyCreated = mockLobbyCreated,
+            onGameBoardReceived = mockGameBoardReceived,
+            onError = mockError,
+            onClosed = mockClosed,
+            gameDataHandler = mockGameDataHandler
         )
         println("Parameterized Test Setup Complete.")
     }
@@ -56,7 +72,9 @@ class WebSocketListenerImplParameterizedTest {
             arrayOf(MessageType.CONNECTION_SUCCESSFUL, true),
             arrayOf(MessageType.LOBBY_UPDATED, false),
             arrayOf(MessageType.LOBBY_CREATED, false),
-            arrayOf(MessageType.GAME_BOARD_JSON, false)
+            arrayOf(MessageType.GAME_BOARD_JSON, false),
+            arrayOf(MessageType.PLACE_ROAD, false),
+            arrayOf(MessageType.PLACE_SETTLEMENT, false),
         )
     }
 
@@ -73,7 +91,7 @@ class WebSocketListenerImplParameterizedTest {
         val actualMessageType = messageType ?: return
 
         val expectedPlayerId = "player-${System.currentTimeMillis()}"
-        val initialPlayerId = mainApplication.getPlayerId()
+        mainApplication.getPlayerId()
         val messagePayload = buildJsonObject {
             if (actualMessageType == MessageType.CONNECTION_SUCCESSFUL) {
                 put("playerId", expectedPlayerId)

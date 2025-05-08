@@ -18,6 +18,10 @@ class DataModelSerializationTest {
         """{"id":1,"building": null,"coordinates":[1.1842378929335002E-15,9.999999999999998]}"""
     private val roadJsonNullOwner =
         """{"id":1,"owner":null, "color": null, "coordinates":[4.3301270189221945,7.499999999999998],"rotationAngle":2.6179938779914944}"""
+    private val buildingJson =
+        """{"owner":"PlayerA","color":"Red","type":"Settlement"}"""
+    private val settlementJsonWithBuilding =
+        """{"id":2,"building": {"owner":"PlayerB","color":"Blue","type":"City"},"coordinates":[20.0,30.0]}"""
 
     @Test
     fun deserializeTileWood() {
@@ -61,6 +65,18 @@ class DataModelSerializationTest {
     }
 
     @Test
+    fun deserializeSettlementPositionWithBuilding() {
+        val sp = jsonParser.decodeFromString<SettlementPosition>(settlementJsonWithBuilding)
+        assertEquals(2, sp.id)
+        assertNotNull(sp.building)
+        assertEquals("PlayerB", sp.building?.owner)
+        assertEquals("Blue", sp.building?.color)
+        assertEquals("City", sp.building?.type)
+        assertEquals(20.0, sp.coordinates[0], 0.00001)
+        assertEquals(30.0, sp.coordinates[1], 0.00001)
+    }
+
+    @Test
     fun deserializeRoadNullOwner() {
         val road = jsonParser.decodeFromString<Road>(roadJsonNullOwner)
         assertEquals(1, road.id)
@@ -79,6 +95,23 @@ class DataModelSerializationTest {
         val expectedJson =
             """{"id":20,"owner":null,"coordinates":[5.0,5.0],"rotationAngle":0.0,"color":"#000000"}"""
         val actualJson = jsonParser.encodeToString(road)
+        assertEquals(expectedJson, actualJson)
+    }
+
+    @Test
+    fun deserializeBuilding() {
+        val building = jsonParser.decodeFromString<Building>(buildingJson)
+        assertNotNull(building)
+        assertEquals("PlayerA", building.owner)
+        assertEquals("Red", building.color)
+        assertEquals("Settlement", building.type)
+    }
+
+    @Test
+    fun serializeBuilding() {
+        val building = Building(owner = "PlayerC", color = "Green", type = "City")
+        val expectedJson = """{"owner":"PlayerC","color":"Green","type":"City"}"""
+        val actualJson = jsonParser.encodeToString(building)
         assertEquals(expectedJson, actualJson)
     }
 

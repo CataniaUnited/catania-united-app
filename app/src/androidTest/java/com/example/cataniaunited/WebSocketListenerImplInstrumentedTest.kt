@@ -211,9 +211,7 @@ class WebSocketListenerImplInstrumentedTest {
             message = message
         )
 
-        val method = listener.javaClass.getDeclaredMethod("handleDiceResult", MessageDTO::class.java)
-        method.isAccessible = true
-        method.invoke(listener, dto)
+        listener.handleDiceResult(dto)
 
         assertEquals(3, receivedDice1)
         assertEquals(4, receivedDice2)
@@ -244,11 +242,7 @@ class WebSocketListenerImplInstrumentedTest {
             message = message
         )
 
-        val method = listener.javaClass.getDeclaredMethod("handleDiceResult", MessageDTO::class.java)
-        method.isAccessible = true
-
-        method.invoke(listener, dto)
-        method.invoke(listener, dto)
+        listener.handleDiceResult(dto)
 
         assertEquals(1, callCount)
     }

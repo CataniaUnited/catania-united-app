@@ -5,6 +5,7 @@ import android.widget.Toast
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.example.cataniaunited.logic.HostJoinLogic
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.CompositionLocalProvider
 
@@ -19,10 +20,15 @@ class HostAndJoin : ComponentActivity() {
                 onBackClick = {
                     ctx.finish() // close the current screen
                 },
+
+
                 onHostSelected = {
-                    Toast.makeText(ctx, "You clicked Host Game", Toast.LENGTH_SHORT).show()
+                    HostJoinLogic.sendCreateLobby()
+                    Toast.makeText(ctx, "Sent CREATE_LOBBY to server", Toast.LENGTH_SHORT).show()
                 },
-                onJoinSelected = {
+
+
+                        onJoinSelected = {
                     val intent = Intent(this, JoinGame::class.java)
                     startActivity(intent)
                 }

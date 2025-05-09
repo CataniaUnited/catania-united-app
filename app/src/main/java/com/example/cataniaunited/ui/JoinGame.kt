@@ -4,6 +4,8 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import com.example.cataniaunited.logic.HostJoinLogic
+
 import androidx.compose.ui.platform.LocalContext
 
 class JoinGame : ComponentActivity() {
@@ -18,8 +20,10 @@ class JoinGame : ComponentActivity() {
                     finish() }, // go back
 
                 onJoinClick = { gameCode ->
-                    // TODO: Connect to game logic here
-                    Toast.makeText(ctx, "Trying to join game: $gameCode", Toast.LENGTH_SHORT).show()
+                    HostJoinLogic.sendJoinLobby(gameCode)
+                    Toast.makeText(ctx, "Sent JOIN_LOBBY to server with ID $gameCode", Toast.LENGTH_SHORT).show()
+
+
                 }
             )
         }

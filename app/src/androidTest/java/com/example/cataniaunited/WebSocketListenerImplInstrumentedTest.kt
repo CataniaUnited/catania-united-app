@@ -2,6 +2,7 @@ package com.example.cataniaunited.ws
 
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
@@ -266,12 +267,14 @@ class WebSocketListenerImplInstrumentedTest {
     }
 
     @Test
-    fun onMessage_handlesErrorMessageType_noCallbacksCalled() {
+    fun onMessage_handlesErrorMessageType_errorCallbackCalled() {
         val messageJson = buildJsonObject {
             put("type", MessageType.ERROR.name)
         }.toString()
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 1) { mockError.onError(any<GameException>()) }
 
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
         verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }

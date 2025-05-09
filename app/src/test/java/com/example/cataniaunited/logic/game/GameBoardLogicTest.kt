@@ -97,6 +97,14 @@ class GameBoardLogicTest {
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
 
+    @Test
+    fun placeRoadDoesNotSendWhenGetPlayerIdThrows() {
+        val exception = IllegalStateException("Player ID not set")
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
+        gameBoardLogic.placeRoad(testRoadId, testLobbyId)
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
 
     @Test
     fun requestCreateLobbySendsCorrectMessageWhenConnected() {

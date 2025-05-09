@@ -9,6 +9,7 @@ import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
+import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.mockkStatic
@@ -16,8 +17,10 @@ import io.mockk.unmockkStatic
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -59,6 +62,8 @@ class GameViewModelTest {
     private lateinit var mockPlayerSessionManager: PlayerSessionManager
     private lateinit var mockGameDataHandler: GameDataHandler
     private lateinit var mockGameBoardLogic: GameBoardLogic
+    private lateinit var mockErrorProvider: WebSocketErrorProvider
+    private lateinit var errorProviderFlow: MutableSharedFlow<String>
 
     private lateinit var viewModel: GameViewModel
 
@@ -88,6 +93,7 @@ class GameViewModelTest {
     @BeforeEach
     fun setUp() {
         gameBoardMutableStateFlow = MutableStateFlow<GameBoardModel?>(null)
+        errorProviderFlow = MutableSharedFlow(extraBufferCapacity = 1)
 
         unmockkStatic(Log::class)
         mockkStatic(Log::class)
@@ -99,6 +105,11 @@ class GameViewModelTest {
 
         mockGameBoardLogic = mockk(relaxed = true)
         mockPlayerSessionManager = mockk(relaxed = true)
+
+        mockErrorProvider = mockk(relaxed = true) {
+            every { errorFlow } returns errorProviderFlow
+        }
+
 
         mockGameDataHandler = mockk {
             every { gameBoardState } returns gameBoardMutableStateFlow.asStateFlow()
@@ -180,7 +191,12 @@ class GameViewModelTest {
             }
         }
 
-        viewModel = GameViewModel(mockGameBoardLogic, mockGameDataHandler, mockPlayerSessionManager)
+        viewModel = GameViewModel(
+            mockGameBoardLogic,
+            mockGameDataHandler,
+            mockPlayerSessionManager,
+            mockErrorProvider
+        )
 
         println("Setup complete.")
     }
@@ -451,6 +467,27 @@ class GameViewModelTest {
 
             println("Test passed: setBuildMenuOpen sets state to false")
         }
+    }
+
+    @Test
+    @DisplayName("collects errors from errorProvider and sends them to errorFlow")
+    fun collectsErrorsFromErrorProviderAndSendsToErrorFlow() = runTest {
+        val testErrorMessage = "Simulated WebSocket Error"
+
+        // Use Turbine to observe the ViewModel's errorFlow
+        viewModel.errorFlow.test {
+            val emitJob = launch {
+                errorProviderFlow.emit(testErrorMessage)
+            }
+
+            advanceUntilIdle()
+
+            assertEquals(testErrorMessage, awaitItem())
+
+            emitJob.cancel()
+            cancelAndIgnoreRemainingEvents()
+        }
+        println("Test passed: collects errors from errorProvider and sends them to errorFlow")
     }
 
     @Test

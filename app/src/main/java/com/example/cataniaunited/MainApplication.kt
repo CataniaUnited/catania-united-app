@@ -9,6 +9,7 @@ import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
+import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +28,7 @@ open class MainApplication : Application(),
     OnLobbyCreated,
     OnGameBoardReceived,
     OnWebSocketError,
-    OnWebSocketClosed {
+    OnWebSocketClosed, WebSocketErrorProvider {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -39,6 +40,11 @@ open class MainApplication : Application(),
 
     val _navigateToGameChannel = Channel<String>(Channel.BUFFERED)
     val navigateToGameFlow = _navigateToGameChannel.receiveAsFlow()
+
+    private val _errorChannel = Channel<String>(Channel.BUFFERED)
+
+    //override errorFlow of WebSocketErrorProvider
+    override val errorFlow = _errorChannel.receiveAsFlow()
 
     var latestBoardJson: String? = null
 
@@ -117,6 +123,9 @@ open class MainApplication : Application(),
 
     override fun onError(error: Throwable) {
         Log.e("MainApplication", "Callback: onError. Error: ${error.message}", error)
+        applicationScope.launch {
+            _errorChannel.send(error.message ?: "Unknown error occurred")
+        }
     }
 
     override fun onClosed(code: Int, reason: String) {

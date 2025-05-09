@@ -10,9 +10,12 @@ import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.logic.player.PlayerSessionManager
+import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,11 +24,15 @@ import javax.inject.Inject
 class GameViewModel @Inject constructor(
     private val gameBoardLogic: GameBoardLogic,
     private val gameDataHandler: GameDataHandler,
-    private val sessionManager: PlayerSessionManager
+    private val sessionManager: PlayerSessionManager,
+    private val errorProvider: WebSocketErrorProvider
 ) : ViewModel() {
 
     val playerId get() = sessionManager.getPlayerId()
     val gameBoardState: StateFlow<GameBoardModel?> = gameDataHandler.gameBoardState
+
+    private val _errorChannel = Channel<String>(Channel.BUFFERED)
+    val errorFlow = _errorChannel.receiveAsFlow()
 
     private val _isBuildMenuOpen = MutableStateFlow(false)
     val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
@@ -33,6 +40,13 @@ class GameViewModel @Inject constructor(
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
         // Don't load initial board automatically here
+
+        viewModelScope.launch {
+            errorProvider.errorFlow.collect { errorMessage ->
+                Log.e("GameBoardViewModel", "Error Message received")
+                _errorChannel.send(errorMessage)
+            }
+        }
     }
 
     // New function to be called externally (e.g., from the Composable's LaunchedEffect)

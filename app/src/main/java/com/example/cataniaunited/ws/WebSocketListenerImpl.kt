@@ -3,6 +3,7 @@ package com.example.cataniaunited.ws
 import android.util.Log
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
@@ -53,6 +54,7 @@ open class WebSocketListenerImpl @Inject constructor(
 
                 MessageType.ERROR -> {
                     Log.e("WebSocketListener", "Received ERROR message from server: ${messageDTO.message}")
+                    onError.onError(GameException(messageDTO.message?.getValue("error").toString()))
                 }
                 else -> Log.w("WebSocketListener", "Received unhandled message type: ${messageDTO.type}")
             }

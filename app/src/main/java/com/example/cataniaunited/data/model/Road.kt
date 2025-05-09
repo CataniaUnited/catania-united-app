@@ -1,7 +1,6 @@
 package com.example.cataniaunited.data.model
 
 import android.annotation.SuppressLint
-import androidx.compose.ui.graphics.Color
 import kotlinx.serialization.Serializable
 
 @SuppressLint("UnsafeOptInUsageError")

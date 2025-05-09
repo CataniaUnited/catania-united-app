@@ -3,7 +3,6 @@ package com.example.cataniaunited.logic.game
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.Road
@@ -110,6 +109,7 @@ class GameViewModel @Inject constructor(
         Log.d("GameViewModel", "handleBuildMenuClick: isOpen=${isOpen}")
         _isBuildMenuOpen.value = isOpen
     }
+
     var isProcessingRoll = false
     fun rollDice(lobbyId: String) {
         if (isProcessingRoll) return

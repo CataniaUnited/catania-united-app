@@ -11,7 +11,6 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,7 +22,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -85,13 +83,16 @@ fun GameScreen(
     ) { paddingValues ->
 
         Box(
-            modifier = Modifier.fillMaxSize().padding(paddingValues),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues),
             contentAlignment = Alignment.Center
         ) {
             when (val board = gameBoardState) {
                 null -> {
                     CircularProgressIndicator()
                 }
+
                 else -> {
                     CatanBoard(
                         modifier = Modifier.fillMaxSize(),
@@ -103,7 +104,10 @@ fun GameScreen(
 
                         // Add click handlers
                         onTileClicked = { tile ->
-                            Log.d("GameScreen", "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}")
+                            Log.d(
+                                "GameScreen",
+                                "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}"
+                            )
                             gameViewModel.handleTileClick(tile, lobbyId)
                         },
                         onSettlementClicked = { settlementPos ->
@@ -122,10 +126,10 @@ fun GameScreen(
                             .offset(y = 32.dp)
                             .zIndex(1f)
                             .padding(horizontal = 16.dp)
-                    ){
+                    ) {
                         BuildButton(
                             isOpen = isBuildMenuOpen,
-                            onClick = {isOpen -> gameViewModel.setBuildMenuOpen(isOpen)}
+                            onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
                         )
                     }
 

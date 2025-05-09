@@ -8,10 +8,7 @@ import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.util.parseGameBoard
-import com.example.cataniaunited.ws.WebSocketClient
-import com.example.cataniaunited.ws.WebSocketListenerImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -96,8 +93,7 @@ class GameViewModel @Inject constructor(
         // 4) Get lobbyId and PlayerId
         // 5) Call gameBoardLogic.placeRoad(road.id, lobbyId)
     }
-    private var isProcessingRoll = false
-
+    var isProcessingRoll = false
     fun rollDice(lobbyId: String) {
         if (isProcessingRoll) return
 
@@ -106,7 +102,6 @@ class GameViewModel @Inject constructor(
         gameBoardLogic.rollDice(lobbyId)
 
         viewModelScope.launch {
-            delay(2000) // Cooldown period
             isProcessingRoll = false
         }
     }

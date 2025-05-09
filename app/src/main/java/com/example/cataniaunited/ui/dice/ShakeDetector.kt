@@ -5,9 +5,10 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import kotlin.math.sqrt
@@ -20,7 +21,7 @@ fun ShakeDetector(
     val context = LocalContext.current
     val sensorManager = remember { context.getSystemService(Context.SENSOR_SERVICE) as SensorManager }
     val accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
-    val lastShakeTime = remember { mutableStateOf(0L) }
+    val lastShakeTime = remember { mutableLongStateOf(0L) }
 
     DisposableEffect(Unit) {
         val listener = object : SensorEventListener {
@@ -36,7 +37,9 @@ fun ShakeDetector(
                 }
             }
 
-            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
+            override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
+                Log.d("SensorListener", "Sensor accuracy changed: $sensor, Accuracy level: $accuracy")
+            }
         }
 
         sensorManager.registerListener(listener, accelerometer, SensorManager.SENSOR_DELAY_UI)

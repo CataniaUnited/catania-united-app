@@ -93,7 +93,6 @@ fun GameScreen(
                 ) {
                     RollDiceButton {
                         showDicePopup = true
-                        gameViewModel.rollDice(lobbyId)
                     }
                 }
             }

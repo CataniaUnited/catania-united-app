@@ -1,6 +1,5 @@
 package com.example.cataniaunited.ui.test
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -18,7 +17,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,25 +36,9 @@ import com.example.cataniaunited.ui.theme.catanRessourceBar
 import com.example.cataniaunited.viewmodel.TestPageViewModel
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
-import com.example.cataniaunited.BuildConfig
-import com.example.cataniaunited.MainApplication
-import com.example.cataniaunited.ws.WebSocketClient
-import com.example.cataniaunited.ws.WebSocketListenerImpl
-import okhttp3.WebSocketListener
+
 @Composable
 fun TestPage(testPageViewModel: TestPageViewModel = TestPageViewModel()) {
-    var showDicePopup by remember { mutableStateOf(false) }
-    val diceResult by testPageViewModel.diceResult.collectAsState()
-    val lobbyId = "lobby1" // Using a constant for demo - in real app this would come from navigation or state
-
-
-
-    ShakeDetector(onShake = {
-        if (!showDicePopup) {
-            showDicePopup = true
-            testPageViewModel.rollDice(lobbyId)
-        }
-    })
 
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
@@ -136,9 +118,7 @@ fun TestPage(testPageViewModel: TestPageViewModel = TestPageViewModel()) {
             }
 
             Button(
-                onClick = {
-                    showDicePopup = true
-                },
+                onClick = { },
                 shape = buttonShape,
                 colors = ButtonDefaults.buttonColors(containerColor = catanGold),
                 border = BorderStroke(1.dp, Color.Black),
@@ -159,15 +139,5 @@ fun TestPage(testPageViewModel: TestPageViewModel = TestPageViewModel()) {
                 )
             }
         }
-    }
-
-    // Show dice roller popup when requested
-    if (showDicePopup) {
-        DiceRollerPopup(
-            onDiceRolled = { testPageViewModel.rollDice(lobbyId) },
-            onClose = { showDicePopup = false },
-            dice1Result = diceResult?.first,
-            dice2Result = diceResult?.second
-        )
     }
 }

@@ -30,6 +30,7 @@ class WebSocketListenerImplInstrumentedTest {
     private val dummyOnGameBoardReceived: (String, String) -> Unit = { _, _ -> }
     private val dummyOnError: (Throwable) -> Unit = { e -> println("Parameterized Test onError: ${e.message}") }
     private val dummyOnClosed: (Int, String) -> Unit = { _, _ -> }
+    private val dummyOnDiceResult: (Int, Int) -> Unit = { _, _ -> }
 
     @Before
     fun setup() {
@@ -40,7 +41,8 @@ class WebSocketListenerImplInstrumentedTest {
             onLobbyCreated = { _ -> },
             onGameBoardReceived = { _, _ -> },
             onError = { _ -> },
-            onClosed = { _, _ -> }
+            onClosed = { _, _ -> },
+            onDiceResult = { _, _ -> }
         )
     }
 
@@ -66,7 +68,8 @@ class WebSocketListenerImplInstrumentedTest {
             onLobbyCreated = dummyOnLobbyCreated,
             onGameBoardReceived = dummyOnGameBoardReceived,
             onError = dummyOnError,
-            onClosed = dummyOnClosed
+            onClosed = dummyOnClosed,
+            onDiceResult = dummyOnDiceResult
         )
 
         specificTestListener.onMessage(mockWebSocket, messageJsonString)
@@ -89,7 +92,8 @@ class WebSocketListenerImplInstrumentedTest {
             onLobbyCreated = { lobbyId -> receivedLobbyId = lobbyId },
             onGameBoardReceived = { _, _ -> },
             onError = { e -> fail("onError called: ${e.message}") },
-            onClosed = { _, _ -> }
+            onClosed = { _, _ -> },
+            onDiceResult = { _, _ -> }
         )
         val messageDTO = MessageDTO(type = MessageType.LOBBY_CREATED, lobbyId = expectedLobbyId)
         val messageJson = jsonParser.encodeToString(MessageDTO.serializer(), messageDTO)
@@ -125,7 +129,8 @@ class WebSocketListenerImplInstrumentedTest {
                 receivedBoardJson = boardJson
             },
             onError = { e -> fail("onError called: ${e.message}") },
-            onClosed = { _, _ -> }
+            onClosed = { _, _ -> },
+            onDiceResult = { _, _ -> }
         )
 
         testListener.onMessage(mockWebSocket, messageJson)
@@ -142,7 +147,8 @@ class WebSocketListenerImplInstrumentedTest {
             onLobbyCreated = { _ -> fail("onLobbyCreated called") },
             onGameBoardReceived = { _, _ -> fail("onGameBoardReceived called")},
             onError = { error -> receivedError = error },
-            onClosed = { _, _ -> fail("onClosed called") }
+            onClosed = { _, _ -> fail("onClosed called") },
+            onDiceResult = { _, _ -> fail("onDiceResult called") }
         )
         val invalidJson = "{ type: INVALID JSON"
 
@@ -166,12 +172,78 @@ class WebSocketListenerImplInstrumentedTest {
             onClosed = { code, reason ->
                 closedCode = code
                 closedReason = reason
-            }
+            },
+            onDiceResult = { _, _ -> }
         )
 
         testListener.onClosed(mockWebSocket, expectedCode, expectedReason)
 
         assertEquals("Close code mismatch", expectedCode, closedCode)
         assertEquals("Close reason mismatch", expectedReason, closedReason)
+    }
+
+    @Test
+    fun handleDiceResult_callsOnDiceResultWithParsedValues() {
+        var receivedDice1 = -1
+        var receivedDice2 = -1
+
+        val listener = WebSocketListenerImpl(
+            onConnectionSuccess = {},
+            onLobbyCreated = {},
+            onGameBoardReceived = { _, _ -> },
+            onError = {},
+            onClosed = { _, _ -> },
+            onDiceResult = { d1, d2 ->
+                receivedDice1 = d1
+                receivedDice2 = d2
+            }
+        )
+
+        val message = buildJsonObject {
+            put("dice1", 3)
+            put("dice2", 4)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "some-player",
+            lobbyId = "some-lobby",
+            message = message
+        )
+
+        listener.handleDiceResult(dto)
+
+        assertEquals(3, receivedDice1)
+        assertEquals(4, receivedDice2)
+    }
+
+    @Test
+    fun handleDiceResult_ignoresDuplicateResults() {
+        var callCount = 0
+
+        val listener = WebSocketListenerImpl(
+            onConnectionSuccess = {},
+            onLobbyCreated = {},
+            onGameBoardReceived = { _, _ -> },
+            onError = {},
+            onClosed = { _, _ -> },
+            onDiceResult = { _, _ -> callCount++ }
+        )
+
+        val message = buildJsonObject {
+            put("dice1", 2)
+            put("dice2", 5)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "player",
+            lobbyId = "lobby",
+            message = message
+        )
+
+        listener.handleDiceResult(dto)
+
+        assertEquals(1, callCount)
     }
 }

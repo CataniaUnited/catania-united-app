@@ -17,9 +17,11 @@ open class WebSocketListenerImpl(
     private val onError: (error: Throwable) -> Unit,
     private val onClosed: (code: Int, reason: String) -> Unit,
     private val onLobbyCreated: (lobbyId: String) -> Unit,
+    private val onDiceResult: ((dice1: Int, dice2: Int) -> Unit) = { _, _ -> }
 ) : WebSocketListener() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
+
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         Log.d("WebSocket", "Opened connection")
@@ -35,6 +37,7 @@ open class WebSocketListenerImpl(
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
                 MessageType.GAME_BOARD_JSON -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
+                MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 // TODO: Other Messages
 
                 MessageType.ERROR -> {
@@ -103,5 +106,13 @@ open class WebSocketListenerImpl(
             Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")
             onError(IllegalArgumentException("Missing lobbyId in LOBBY_CREATED message"))
         }
+    }
+
+    internal fun handleDiceResult(messageDTO: MessageDTO) {
+        val dice1 = messageDTO.message?.get("dice1")?.jsonPrimitive?.content?.toInt() ?: 0
+        val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.content?.toInt() ?: 0
+
+        Log.d("WebSocketListener", "Processing new dice result: $dice1, $dice2")
+        onDiceResult(dice1, dice2)
     }
 }

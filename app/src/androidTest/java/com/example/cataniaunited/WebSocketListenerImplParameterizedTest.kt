@@ -29,6 +29,7 @@ class WebSocketListenerImplParameterizedTest {
     private val dummyOnGameBoardReceived: (String, String) -> Unit = { _, _ -> }
     private val dummyOnError: (Throwable) -> Unit = { e -> println("Parameterized Test onError: ${e.message}") }
     private val dummyOnClosed: (Int, String) -> Unit = { _, _ -> }
+    private val dummyOnDiceResult: (Int, Int) -> Unit = { _, _ -> }
 
     @Before
     fun setup() {
@@ -44,7 +45,8 @@ class WebSocketListenerImplParameterizedTest {
             onLobbyCreated = dummyOnLobbyCreated,
             onGameBoardReceived = dummyOnGameBoardReceived,
             onError = dummyOnError,
-            onClosed = dummyOnClosed
+            onClosed = dummyOnClosed,
+            onDiceResult = dummyOnDiceResult
         )
         println("Parameterized Test Setup Complete.")
     }

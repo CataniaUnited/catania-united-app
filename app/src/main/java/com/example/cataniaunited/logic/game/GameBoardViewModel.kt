@@ -18,15 +18,20 @@ import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
-    private val gameBoardLogic: GameBoardLogic
-) : ViewModel() {
+    private val gameBoardLogic: GameBoardLogic,
+
+    ) : ViewModel() {
 
     private val _gameBoardState = MutableStateFlow<GameBoardModel?>(null)
     val gameBoardState: StateFlow<GameBoardModel?> = _gameBoardState.asStateFlow()
 
+    private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
+    val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
+
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
         // Don't load initial board automatically here
+
     }
 
     // New function to be called externally (e.g., from the Composable's LaunchedEffect)
@@ -87,6 +92,28 @@ class GameViewModel @Inject constructor(
         // 3) Validate placement rules (road connection, empty)
         // 4) Get lobbyId and PlayerId
         // 5) Call gameBoardLogic.placeRoad(road.id, lobbyId)
+    }
+    var isProcessingRoll = false
+    fun rollDice(lobbyId: String) {
+        if (isProcessingRoll) return
+
+        isProcessingRoll = true
+        Log.d("GameViewModel", "Initiating dice roll for lobby: $lobbyId")
+        gameBoardLogic.rollDice(lobbyId)
+
+        viewModelScope.launch {
+            isProcessingRoll = false
+        }
+    }
+
+    fun updateDiceResult(dice1: Int?, dice2: Int?) {
+        viewModelScope.launch {
+            if (dice1 != null && dice2 != null) {
+                _diceResult.value = Pair(dice1, dice2)
+            } else {
+                _diceResult.value = null
+            }
+        }
     }
 }
 

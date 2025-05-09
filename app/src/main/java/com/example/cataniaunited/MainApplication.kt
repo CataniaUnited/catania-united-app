@@ -4,6 +4,7 @@ import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.ui.lobby.LobbyPlayer
+import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import dagger.hilt.android.HiltAndroidApp
@@ -34,6 +35,7 @@ open class MainApplication : Application() {
     private val _currentLobbyIdFlow = MutableStateFlow<String?>(null) // Private Mutable StateFlow
     val currentLobbyIdFlow: StateFlow<String?> = _currentLobbyIdFlow.asStateFlow() // Public Immutable StateFlow
 
+    var gameViewModel: GameViewModel? = null
     var currentLobbyId: String?
         get() = _currentLobbyIdFlow.value // Getter reads from flow
         set(value) { // Setter updates the flow
@@ -89,6 +91,13 @@ open class MainApplication : Application() {
                 _playerId = null
                 currentLobbyId = null
                 latestBoardJson = null
+            },
+
+            onDiceResult = { dice1, dice2 ->
+                Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")
+                applicationScope.launch {
+                    gameViewModel?.updateDiceResult(dice1, dice2)
+                }
             }
         )
         webSocketClient.connect(listener)

@@ -63,4 +63,26 @@ class GameBoardLogic @Inject constructor() {
             Log.e("GameBoardLogic", "WebSocket not connected when trying to create game board.")
         }
     }
+
+    fun rollDice(lobbyId: String) {
+        try {
+            Log.d("GameBoard", "Rolling dice for lobby: $lobbyId")
+            val playerId = MainApplication.getInstance().getPlayerId()
+            val message = buildJsonObject {
+                put("action", "rollDice")
+            }
+            val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+            webSocketClient.sendMessage(
+                MessageDTO(
+                    MessageType.ROLL_DICE,
+                    playerId,
+                    lobbyId,
+                    null,
+                    message
+                )
+            )
+        } catch (e: Exception) {
+            Log.e("GameBoard", "Error rolling dice", e)
+        }
+    }
 }

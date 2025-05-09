@@ -1,8 +1,5 @@
 package com.example.cataniaunited.ui.dice
 
-import android.content.Context
-import android.os.VibrationEffect
-import android.os.Vibrator
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -13,7 +10,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -28,11 +24,8 @@ fun DiceRollerPopup(
     dice1Result: Int?,
     dice2Result: Int?
 ) {
-    val context = LocalContext.current
-    val scope = rememberCoroutineScope()
-
-    var dice1 by remember { mutableStateOf(1) }
-    var dice2 by remember { mutableStateOf(1) }
+    var dice1 by remember { mutableIntStateOf(1) }
+    var dice2 by remember { mutableIntStateOf(1) }
     var rolling by remember { mutableStateOf(true) }
     var showFinalResult by remember { mutableStateOf(false) }
 
@@ -56,7 +49,6 @@ fun DiceRollerPopup(
             dice2 = dice2Result
             rolling = false
             showFinalResult = true
-            vibratePhone(context)
             delay(2000)
             onClose()
         }
@@ -114,9 +106,4 @@ fun DiceImageDisplay(value: Int, rolling: Boolean, angle: Float) {
                 rotationZ = if (rolling) angle else 0f
             }
     )
-}
-
-private fun vibratePhone(context: Context) {
-    val vibrator = context.getSystemService(Context.VIBRATOR_SERVICE) as Vibrator
-    vibrator.vibrate(VibrationEffect.createOneShot(100, VibrationEffect.DEFAULT_AMPLITUDE))
 }

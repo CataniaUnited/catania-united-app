@@ -5,6 +5,7 @@ import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
@@ -90,6 +91,24 @@ class WebSocketModuleTest {
         }
     }
 
+    @Test
+    fun provideOnDiceResult_returnsMainApplicationAsOnDiceResult() {
+        val callback = WebSocketModule.provideOnDiceResult(mockMainApplication)
+
+        assertNotNull(callback)
+        assertTrue(callback is OnDiceResult)
+        assertSame(mockMainApplication, callback)
+    }
+
+    @Test
+    fun provideOnDiceResult_throwsClassCastException_whenApplicationIsNotMainApplication() {
+        val mockApplication = mockk<Application>()
+
+        assertThrows<ClassCastException> {
+            WebSocketModule.provideOnDiceResult(mockApplication)
+        }
+    }
+
 
     @Test
     fun provideOnWebSocketError_returnsMainApplicationAsOnWebSocketError() {
@@ -137,6 +156,7 @@ class WebSocketModuleTest {
             onGameBoardReceived = mockMainApplication,
             onError = mockMainApplication,
             onClosed = mockMainApplication,
+            onDiceResult = mockMainApplication,
             gameDataHandler = mockGameDataHandler
         )
 

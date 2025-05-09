@@ -3,8 +3,10 @@ package com.example.cataniaunited.ws
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.exception.GameException
+import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
@@ -33,6 +35,7 @@ class WebSocketListenerImplInstrumentedTest {
     private lateinit var mockGameBoardReceived: OnGameBoardReceived
     private lateinit var mockError: OnWebSocketError
     private lateinit var mockClosed: OnWebSocketClosed
+    private lateinit var mockDiceResult: OnDiceResult
     private lateinit var mockGameDataHandler: GameDataHandler
     private lateinit var mockWebSocket: WebSocket
     private lateinit var mockResponse: Response
@@ -42,6 +45,7 @@ class WebSocketListenerImplInstrumentedTest {
         mockConnectionSuccess = mockk(relaxed = true)
         mockLobbyCreated = mockk(relaxed = true)
         mockGameBoardReceived = mockk(relaxed = true)
+        mockDiceResult = mockk(relaxed = true)
         mockError = mockk(relaxed = true)
         mockClosed = mockk(relaxed = true)
         mockWebSocket = mockk(relaxed = true)
@@ -55,6 +59,7 @@ class WebSocketListenerImplInstrumentedTest {
             onGameBoardReceived = mockGameBoardReceived,
             onError = mockError,
             onClosed = mockClosed,
+            onDiceResult = mockDiceResult,
             gameDataHandler = mockGameDataHandler
         )
     }
@@ -308,5 +313,48 @@ class WebSocketListenerImplInstrumentedTest {
         verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+    @Test
+    fun handleDiceResult_callsOnDiceResultWithParsedValues() {
+        var receivedDice1 = 3
+        var receivedDice2 = 4
+
+        val message = buildJsonObject {
+            put("dice1", receivedDice1)
+            put("dice2", receivedDice2)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "some-player",
+            lobbyId = "some-lobby",
+            message = message
+        )
+
+        webSocketListener.handleDiceResult(dto)
+
+        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2) }
+        verify(exactly = 0) { mockError.onError(any<Throwable>()) }
+    }
+
+    @Test
+    fun handleDiceResult_ignoresDuplicateResults() {
+        val message = buildJsonObject {
+            put("dice1", 2)
+            put("dice2", 5)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "player",
+            lobbyId = "lobby",
+            message = message
+        )
+
+        webSocketListener.handleDiceResult(dto)
+
+        verify(exactly = 1) { mockDiceResult.onDiceResult(any(), any()) }
+        verify(exactly = 0) { mockError.onError(any<Throwable>()) }
     }
 }

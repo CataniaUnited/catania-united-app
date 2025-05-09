@@ -37,6 +37,9 @@ class GameViewModel @Inject constructor(
     private val _isBuildMenuOpen = MutableStateFlow(false)
     val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
 
+    private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
+    val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
+
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
         // Don't load initial board automatically here
@@ -106,6 +109,28 @@ class GameViewModel @Inject constructor(
     fun setBuildMenuOpen(isOpen: Boolean) {
         Log.d("GameViewModel", "handleBuildMenuClick: isOpen=${isOpen}")
         _isBuildMenuOpen.value = isOpen
+    }
+    var isProcessingRoll = false
+    fun rollDice(lobbyId: String) {
+        if (isProcessingRoll) return
+
+        isProcessingRoll = true
+        Log.d("GameViewModel", "Initiating dice roll for lobby: $lobbyId")
+        gameBoardLogic.rollDice(lobbyId)
+
+        viewModelScope.launch {
+            isProcessingRoll = false
+        }
+    }
+
+    fun updateDiceResult(dice1: Int?, dice2: Int?) {
+        viewModelScope.launch {
+            if (dice1 != null && dice2 != null) {
+                _diceResult.value = Pair(dice1, dice2)
+            } else {
+                _diceResult.value = null
+            }
+        }
     }
 }
 

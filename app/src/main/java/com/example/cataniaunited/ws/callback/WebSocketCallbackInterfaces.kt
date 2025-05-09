@@ -19,3 +19,7 @@ fun interface OnWebSocketError {
 fun interface OnWebSocketClosed {
     fun onClosed(code: Int, reason: String)
 }
+
+fun interface OnDiceResult {
+    fun onDiceResult(dice1: Int, dice2: Int)
+}

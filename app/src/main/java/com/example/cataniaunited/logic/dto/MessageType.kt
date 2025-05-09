@@ -9,6 +9,7 @@ enum class MessageType {
     PLAYER_JOINED,
     LOBBY_CREATED,
     GAME_BOARD_JSON,
+    DICE_RESULT,
 
     //Client Messages
     CREATE_LOBBY,
@@ -17,5 +18,6 @@ enum class MessageType {
     SET_ACTIVE_PLAYER, //-> TODO: Remove after implementation of player order
     PLACE_SETTLEMENT,
     PLACE_ROAD,
-    CREATE_GAME_BOARD
+    CREATE_GAME_BOARD,
+    ROLL_DICE
 }

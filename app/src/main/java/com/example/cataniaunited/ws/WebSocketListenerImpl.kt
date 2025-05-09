@@ -7,6 +7,7 @@ import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
@@ -27,6 +28,7 @@ open class WebSocketListenerImpl @Inject constructor(
     private val onGameBoardReceived: OnGameBoardReceived,
     private val onError: OnWebSocketError,
     private val onClosed: OnWebSocketClosed,
+    private val onDiceResult: OnDiceResult,
     private val gameDataHandler: GameDataHandler
 ) : WebSocketListener() {
 
@@ -50,6 +52,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
                 MessageType.GAME_BOARD_JSON, MessageType.PLACE_SETTLEMENT, MessageType.PLACE_ROAD -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
+                MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 // TODO: Other Messages
 
                 MessageType.ERROR -> {
@@ -122,5 +125,13 @@ open class WebSocketListenerImpl @Inject constructor(
             Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")
             onError.onError(IllegalArgumentException("Missing lobbyId in LOBBY_CREATED message"))
         }
+    }
+
+    internal fun handleDiceResult(messageDTO: MessageDTO) {
+        val dice1 = messageDTO.message?.get("dice1")?.jsonPrimitive?.content?.toInt() ?: 0
+        val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.content?.toInt() ?: 0
+
+        Log.d("WebSocketListener", "Processing new dice result: $dice1, $dice2")
+        onDiceResult.onDiceResult(dice1, dice2)
     }
 }

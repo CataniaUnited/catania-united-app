@@ -2,9 +2,11 @@ package com.example.cataniaunited
 
 import android.app.Application
 import android.util.Log
+import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
@@ -28,7 +30,9 @@ open class MainApplication : Application(),
     OnLobbyCreated,
     OnGameBoardReceived,
     OnWebSocketError,
-    OnWebSocketClosed, WebSocketErrorProvider {
+    OnWebSocketClosed,
+    OnDiceResult,
+    WebSocketErrorProvider {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
@@ -52,6 +56,7 @@ open class MainApplication : Application(),
     val currentLobbyIdFlow: StateFlow<String?> =
         _currentLobbyIdFlow.asStateFlow() // Public Immutable StateFlow
 
+    var gameViewModel: GameViewModel? = null
     var currentLobbyId: String?
         get() = _currentLobbyIdFlow.value // Getter reads from flow
         set(value) { // Setter updates the flow
@@ -119,6 +124,13 @@ open class MainApplication : Application(),
             Log.w("MainApplication", "Received board for wrong lobby.")
         }
         latestBoardJson = boardJson
+    }
+
+    override fun onDiceResult(dice1: Int, dice2: Int) {
+        Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")
+        applicationScope.launch {
+            gameViewModel?.updateDiceResult(dice1, dice2)
+        }
     }
 
     override fun onError(error: Throwable) {

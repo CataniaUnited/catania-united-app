@@ -32,6 +32,7 @@ import com.example.cataniaunited.viewmodel.TestPageViewModel
 
 @Composable
 fun TestPage(testPageViewModel: TestPageViewModel = TestPageViewModel()) {
+
     Box(modifier = Modifier.fillMaxSize()) {
         Image(
             painter = painterResource(id = R.drawable.catan_starting_page_background),
@@ -104,6 +105,28 @@ fun TestPage(testPageViewModel: TestPageViewModel = TestPageViewModel()) {
             ) {
                 Text(
                     text = "TEST PLACE ROAD",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary,
+                )
+            }
+
+            Button(
+                onClick = { },
+                shape = buttonShape,
+                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .shadow(
+                        elevation = 13.dp,
+                        shape = buttonShape,
+                        ambientColor = Color.Black,
+                        spotColor = Color.Black
+                    )
+            ) {
+                Text(
+                    text = "ROLL DICE",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )

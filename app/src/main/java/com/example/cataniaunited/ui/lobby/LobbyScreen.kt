@@ -11,6 +11,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -19,6 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.theme.catanClay
 import com.example.cataniaunited.ui.theme.catanGold
+import androidx.core.graphics.toColorInt
 
 @Composable
 fun LobbyScreen(
@@ -60,13 +62,14 @@ fun LobbyScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ){
                 players.forEach { player ->
+                    val playerColor = Color(player.colorHex.toColorInt())
                     Column (horizontalAlignment = Alignment.CenterHorizontally){
                         Image(
                             painter = painterResource(id = R.drawable.player_icon128),
                             contentDescription = "player icon",
                             modifier = Modifier
                                 .size(80.dp)
-                                .border(6.dp, player.color.color, RectangleShape)
+                                .border(6.dp, playerColor, RectangleShape)
                                 .padding(4.dp),
                             contentScale = ContentScale.Crop
                         )

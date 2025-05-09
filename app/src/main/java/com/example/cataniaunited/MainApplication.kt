@@ -3,7 +3,6 @@ package com.example.cataniaunited
 import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
-import com.example.cataniaunited.logic.lobby.LobbyColorManager
 import com.example.cataniaunited.ui.lobby.LobbyPlayer
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
@@ -123,7 +122,7 @@ open class MainApplication : Application() {
     }
 
     fun addHostToLobby(lobbyId: String) {
-        val hostUsername = "HostPlayer"
+        /*val hostUsername = "HostPlayer"
         val hostColor = LobbyColorManager.assignColor(lobbyId, hostUsername)
 
         if (hostColor != null) {
@@ -133,7 +132,7 @@ open class MainApplication : Application() {
         }
         else {
             Log.e("LobbySetup", "ERROR: No more colors available for host $hostUsername in lobby $lobbyId")
-        }
+        }*/
 
     }
 }

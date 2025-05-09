@@ -6,6 +6,7 @@ import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.util.UUID
 import javax.inject.Inject
 
 class GameBoardLogic @Inject constructor() {
@@ -56,6 +57,18 @@ class GameBoardLogic @Inject constructor() {
         val messagePayload = buildJsonObject { put("playerCount", playerCount) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
+
+            for(i in 1 until playerCount) {
+                val joinLobbyMessage = MessageDTO(
+                    MessageType.JOIN_LOBBY,
+                    UUID.randomUUID().toString(),
+                    lobbyId,
+                    null,
+                    null
+                )
+                webSocketClient.sendMessage(joinLobbyMessage)
+            }
+
             val messageToSend = MessageDTO( MessageType.CREATE_GAME_BOARD, playerId, lobbyId, null, messagePayload )
             webSocketClient.sendMessage(messageToSend)
             Log.i("GameBoardLogic", "Sent CREATE_GAME_BOARD request for $playerCount players in lobby $lobbyId.")
@@ -85,4 +98,5 @@ class GameBoardLogic @Inject constructor() {
             Log.e("GameBoard", "Error rolling dice", e)
         }
     }
+
 }

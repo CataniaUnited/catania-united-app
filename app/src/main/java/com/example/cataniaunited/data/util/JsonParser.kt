@@ -6,7 +6,7 @@ import com.example.cataniaunited.data.model.GameBoardModel
 
 
 val jsonParser = Json {
-    ignoreUnknownKeys = false // If backend adds fields throw exception
+    ignoreUnknownKeys = true // If backend adds fields throw exception
     isLenient = true         // to ignore minor syntax issues (trailing ,,,)
 }
 

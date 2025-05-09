@@ -1,11 +1,15 @@
 package com.example.cataniaunited.ui.game_board.board
 
 import android.util.Log
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -15,15 +19,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.game.GameViewModel
+import com.example.cataniaunited.logic.game.PlayerInfo
 import com.example.cataniaunited.ui.dice.DiceRollerPopup
 import com.example.cataniaunited.ui.dice.ShakeDetector
 import com.example.cataniaunited.ui.game.RollDiceButton
+import com.example.cataniaunited.ui.game_board.playerinfo.PlayerVictoryBar
+import com.example.cataniaunited.ui.theme.catanBlue
 
 
 @Composable
@@ -55,7 +64,9 @@ fun GameScreen(
     })
 
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(catanBlue),
         contentAlignment = Alignment.Center
     ) {
         when (val board = gameBoardState) {
@@ -63,36 +74,55 @@ fun GameScreen(
                 CircularProgressIndicator()
             }
             else -> {
-                CatanBoard(
-                    modifier = Modifier.fillMaxSize(),
-                    tiles = board.tiles,
-                    settlementPositions = board.settlementPositions,
-                    roads = board.roads,
+                Column(
+                    modifier = Modifier.fillMaxSize()
+                ){
+                    PlayerVictoryBar(
+                        players = listOf(
+                            PlayerInfo("1", "Mia", "#FF0000", 4),
+                            PlayerInfo("2", "Nassir", "#0000FF", 10),
+                            PlayerInfo("3", "Jean", "#D4AF37", 9),
+                            PlayerInfo("4", "Candamir", "#800080", 0)
+                        ),
 
-                    // Add click handlers
-                    onTileClicked = { tile ->
-                        Log.d("GameScreen", "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}")
-                        gameViewModel.handleTileClick(tile, lobbyId)
-                    },
-                    onSettlementClicked = { settlementPos ->
-                        Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
-                        gameViewModel.handleSettlementClick(settlementPos, lobbyId)
-                    },
-                    onRoadClicked = { road ->
-                        Log.d("GameScreen", "Road Clicked: ID=${road.id}")
-                        gameViewModel.handleRoadClick(road, lobbyId)
-                    }
-                )
+                        currentPlayerId = application.getPlayerId(),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .zIndex(2f)
+                            .padding(top = 12.dp)
+                    )
 
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopStart)
-                        .offset(y = 32.dp)
-                        .zIndex(1f)
-                        .padding(horizontal = 4.dp)
-                ) {
-                    RollDiceButton {
-                        showDicePopup = true
+                    Box(modifier = Modifier.weight(1f)) {
+                        CatanBoard(
+                            modifier = Modifier.fillMaxSize(),
+                            tiles = board.tiles,
+                            settlementPositions = board.settlementPositions,
+                            roads = board.roads,
+                            onTileClicked = { tile ->
+                                Log.d("GameScreen", "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}")
+                                gameViewModel.handleTileClick(tile, lobbyId)
+                            },
+                            onSettlementClicked = { settlementPos ->
+                                Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
+                                gameViewModel.handleSettlementClick(settlementPos, lobbyId)
+                            },
+                            onRoadClicked = { road ->
+                                Log.d("GameScreen", "Road Clicked: ID=${road.id}")
+                                gameViewModel.handleRoadClick(road, lobbyId)
+                            }
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .offset(y = 32.dp)
+                                .zIndex(1f)
+                                .padding(horizontal = 4.dp)
+                        ) {
+                            RollDiceButton {
+                                showDicePopup = true
+                            }
+                        }
                     }
                 }
             }
@@ -110,3 +140,5 @@ fun GameScreen(
         )
     }
 }
+
+

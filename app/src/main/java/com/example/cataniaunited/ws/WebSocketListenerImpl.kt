@@ -1,7 +1,6 @@
 package com.example.cataniaunited.ws
 
 import android.util.Log
-import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import kotlinx.serialization.json.Json
@@ -109,17 +108,7 @@ open class WebSocketListenerImpl(
         }
     }
 
-    private var lastProcessedDiceResult: String? = null
-
-    private fun handleDiceResult(messageDTO: MessageDTO) {
-        val resultJson = messageDTO.message.toString()
-
-        if (resultJson == lastProcessedDiceResult) {
-            Log.d("WebSocketListener", "Ignoring duplicate dice result")
-            return
-        }
-
-        lastProcessedDiceResult = resultJson
+    internal fun handleDiceResult(messageDTO: MessageDTO) {
         val dice1 = messageDTO.message?.get("dice1")?.jsonPrimitive?.content?.toInt() ?: 0
         val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.content?.toInt() ?: 0
 

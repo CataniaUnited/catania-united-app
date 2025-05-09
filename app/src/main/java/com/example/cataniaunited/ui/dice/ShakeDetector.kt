@@ -30,8 +30,8 @@ fun ShakeDetector(
                 val magnitude = sqrt(x * x + y * y + z * z)
                 if (magnitude > shakeThreshold) {
                     val now = System.currentTimeMillis()
-                    if (now - lastShakeTime.value > 1000) {
-                        lastShakeTime.value = now
+                    if (now - lastShakeTime.longValue > 1000) {
+                        lastShakeTime.longValue = now
                         onShake()
                     }
                 }

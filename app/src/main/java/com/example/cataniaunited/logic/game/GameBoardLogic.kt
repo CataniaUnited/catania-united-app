@@ -6,7 +6,6 @@ import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import java.util.UUID
 import javax.inject.Inject
 
 class GameBoardLogic @Inject constructor() {

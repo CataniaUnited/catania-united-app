@@ -4,6 +4,7 @@ import android.util.Log
 import app.cash.turbine.test
 import com.example.cataniaunited.data.model.*
 import io.mockk.every
+import io.mockk.just
 import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.unmockkStatic
@@ -93,18 +94,89 @@ class GameViewModelTest {
         println("Test passed: initial state is null")
     }
 
-    @ExperimentalCoroutinesApi
     @Test
-    fun updateDiceResult_setsCorrectValue() = runTest {
+    fun testDiceResultIsInitiallyNull() = runTest {
+        assertNull(viewModel.diceResult.first(), "Initial diceResult should be null")
+    }
+
+    @Test
+    fun testRollDiceCallsGameBoardLogicWithCorrectLobbyId() = runTest {
+        val testLobbyId = "test-lobby-abc"
+        io.mockk.every { mockGameBoardLogic.rollDice(testLobbyId) } just io.mockk.Runs
+
+        viewModel.rollDice(testLobbyId)
+        io.mockk.verify(exactly = 1) { mockGameBoardLogic.rollDice(testLobbyId) }
+
+        assertNull(viewModel.diceResult.first())
+    }
+
+    @Test
+    fun rollDiceSetsIsProcessingRollFromFalseToTrue() = runTest {
+        val testLobbyId = "test-lobby-processing"
+        io.mockk.every { mockGameBoardLogic.rollDice(any()) } just io.mockk.Runs
+
+        val isProcessingRollField = GameViewModel::class.java.getDeclaredField("isProcessingRoll")
+        isProcessingRollField.isAccessible = true
+
+        assertEquals(false, isProcessingRollField.get(viewModel) as Boolean)
+
+        viewModel.rollDice(testLobbyId)
+
+        assertEquals(true, isProcessingRollField.get(viewModel) as Boolean)
+    }
+
+    @Test
+    fun testRollDiceDoesNothingWhenAlreadyProcessing() = runTest {
+        val testLobbyId = "test-lobby-456"
+        val isProcessingRollField = GameViewModel::class.java.getDeclaredField("isProcessingRoll")
+        isProcessingRollField.isAccessible = true
+        isProcessingRollField.set(viewModel, true)
+
+        viewModel.rollDice(testLobbyId)
+
+        io.mockk.verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
+
+        assertNull(viewModel.diceResult.first())
+    }
+
+    @Test
+    fun testUpdateDiceResultSetsValidPairToStateFlow() = runTest {
         val dice1 = 5
-        val dice2 = 6
+        val dice2 = 2
+        val newDiceResult = Pair(dice1, dice2)
 
         viewModel.updateDiceResult(dice1, dice2)
 
-        val result = viewModel.diceResult.first { it != null }
+        advanceUntilIdle()
 
-        assertEquals(Pair(dice1, dice2), result)
+        assertEquals(newDiceResult, viewModel.diceResult.first())
+
+        val isProcessingRollField = GameViewModel::class.java.getDeclaredField("isProcessingRoll")
+        isProcessingRollField.isAccessible = true
+        assertEquals(false, isProcessingRollField.get(viewModel) as Boolean)
     }
+
+    @Test
+    fun testUpdateDiceResultSetsNullWhenDice1IsNull() = runTest {
+        viewModel.updateDiceResult(null, 4)
+        advanceUntilIdle()
+        assertNull(viewModel.diceResult.first())
+    }
+
+    @Test
+    fun testUpdateDiceResultSetsNullWhenDice2IsNull() = runTest {
+        viewModel.updateDiceResult(3, null)
+        advanceUntilIdle()
+        assertNull(viewModel.diceResult.first())
+    }
+
+    @Test
+    fun testUpdateDiceResultSetsNullWhenBothDiceAreNull() = runTest {
+        viewModel.updateDiceResult(null, null)
+        advanceUntilIdle()
+        assertNull(viewModel.diceResult.first())
+    }
+
 
     @Nested
     @DisplayName("Initialization via initializeBoardState")

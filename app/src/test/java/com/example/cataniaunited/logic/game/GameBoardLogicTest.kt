@@ -152,4 +152,28 @@ class GameBoardLogicTest {
         gameBoardLogic.requestBoardForLobby(testLobbyId, testPlayerCount)
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
+
+    @Test
+    fun rollDiceSendsCorrectMessageWhenConnected() {
+        val expectedPayload = buildJsonObject { put("action", "rollDice") }
+        val expectedMessage = MessageDTO(
+            type = MessageType.ROLL_DICE,
+            player = testPlayerId,
+            lobbyId = testLobbyId,
+            players = null,
+            message = expectedPayload
+        )
+        gameBoardLogic.rollDice(testLobbyId)
+        val messageSlot = slot<MessageDTO>()
+        verify(exactly = 1) { mockWebSocketClient.sendMessage(capture(messageSlot)) }
+        assertEquals(expectedMessage, messageSlot.captured)
+    }
+
+    @Test
+    fun rollDiceDoesNotSendWhenGetPlayerIdThrows() {
+        val exception = IllegalStateException("Player ID not set")
+        every { mockMainApplication.getPlayerId() } throws exception
+        gameBoardLogic.rollDice(testLobbyId)
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
 }

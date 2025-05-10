@@ -4,11 +4,12 @@ import androidx.compose.ui.graphics.Color
 
 // light theme
 val catanClay = Color(0xFF9A572E) // Main background
+val catanClayLight = Color(0xFFB76B3C)
+val catanClayDark = Color(0xFF8C4E27)
 val catanGold = Color(0xFFF5C967) // Buttons
+val catanGoldLight = Color(0xFFFFDB85)
 val catanRessourceBar = Color(0xFF652B06) // Resource panel
-val catanClayLight = Color(0xFFB76B3C) // lighter version of catanClay
 val catanBlue = Color(0xFF177FDE)
 
 
 
-// 0xFFB26B3A

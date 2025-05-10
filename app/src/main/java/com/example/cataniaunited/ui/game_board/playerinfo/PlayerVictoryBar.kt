@@ -13,7 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.cataniaunited.logic.game.PlayerInfo
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.ui.theme.appTypography
 import com.example.cataniaunited.ui.theme.catanClayLight
 

@@ -30,6 +30,7 @@ import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ui.dice.DiceRollerPopup
 import com.example.cataniaunited.ui.dice.ShakeDetector
 import com.example.cataniaunited.ui.game_board.board.CatanBoard
+import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import kotlinx.coroutines.flow.collectLatest
 
 
@@ -94,6 +95,14 @@ fun GameScreen(
                 }
 
                 else -> {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopCenter)
+                            .padding(top = 12.dp)
+                            .zIndex(2f)
+                    ) {
+                        LivePlayerVictoryBar(viewModel = gameViewModel)
+                    }
                     CatanBoard(
                         modifier = Modifier.fillMaxSize(),
                         tiles = board.tiles,

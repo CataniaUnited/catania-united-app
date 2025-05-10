@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.toColorInt
 import com.example.cataniaunited.data.model.Road
 import kotlin.math.PI
 
@@ -24,25 +26,30 @@ fun RoadComposable(
     road: Road,
     length: Dp,
     thickness: Dp,
+    isClickable: Boolean,
+    playerId: String,
     onRoadClick: (Road) -> Unit = {}
 ) {
-    // TODO: Later, check road.owner to display different colors
-    val roadColor = when (road.owner) {
+    val roadColor = when (road.color) {
         null -> Color.Transparent // Placeholder - just show border
-        else -> Color.Red // Error or unknown owner state
+        else -> Color(road.color.toColorInt())
     }
 
-    val borderColor = Color.DarkGray
+    val borderColor = if(isClickable || road.owner != null) Color.DarkGray else Color.Transparent
+
+    val isOccupied = road.owner != null && road.owner != playerId
+    val canBuild: Boolean = isClickable && (road.owner == null)
 
     Box(
         modifier = modifier
+            .then(if (canBuild) Modifier.clickable { onRoadClick(road) } else Modifier)
             .width(length)
-            .clickable { onRoadClick(road) }
             .height(thickness)
             .graphicsLayer(
                 rotationZ = road.rotationAngle.toDegrees() // Convert radians to degrees
             )
             .background(roadColor)
             .border(1.dp, borderColor)
+            .alpha(if (isClickable && isOccupied) 0.3f else 1f)
     )
 }

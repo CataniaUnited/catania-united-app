@@ -2,11 +2,16 @@ package com.example.cataniaunited
 
 import android.app.Application
 import android.util.Log
-import androidx.compose.runtime.mutableStateListOf
-import com.example.cataniaunited.ui.lobby.LobbyPlayer
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
+import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDiceResult
+import com.example.cataniaunited.ws.callback.OnGameBoardReceived
+import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnWebSocketClosed
+import com.example.cataniaunited.ws.callback.OnWebSocketError
+import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
 import dagger.hilt.android.HiltAndroidApp
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -17,11 +22,22 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @HiltAndroidApp
-open class MainApplication : Application() {
+open class MainApplication : Application(),
+    OnConnectionSuccess,
+    OnLobbyCreated,
+    OnGameBoardReceived,
+    OnWebSocketError,
+    OnWebSocketClosed,
+    OnDiceResult,
+    WebSocketErrorProvider {
 
-    private val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+
+    @Inject
+    lateinit var webSocketListener: WebSocketListenerImpl
 
     internal lateinit var webSocketClient: WebSocketClient
     private var _playerId: String? = null
@@ -29,11 +45,16 @@ open class MainApplication : Application() {
     val _navigateToGameChannel = Channel<String>(Channel.BUFFERED)
     val navigateToGameFlow = _navigateToGameChannel.receiveAsFlow()
 
+    private val _errorChannel = Channel<String>(Channel.BUFFERED)
+
+    //override errorFlow of WebSocketErrorProvider
+    override val errorFlow = _errorChannel.receiveAsFlow()
+
     var latestBoardJson: String? = null
 
-
     private val _currentLobbyIdFlow = MutableStateFlow<String?>(null) // Private Mutable StateFlow
-    val currentLobbyIdFlow: StateFlow<String?> = _currentLobbyIdFlow.asStateFlow() // Public Immutable StateFlow
+    val currentLobbyIdFlow: StateFlow<String?> =
+        _currentLobbyIdFlow.asStateFlow() // Public Immutable StateFlow
 
     var gameViewModel: GameViewModel? = null
     var currentLobbyId: String?
@@ -54,53 +75,7 @@ open class MainApplication : Application() {
         Log.i("MainApplication", "onCreate: Application instance initialized.")
         webSocketClient = WebSocketClient(BuildConfig.SERVER_URL)
         Log.i("MainApplication", "onCreate: Initializing WebSocket connection.")
-
-        val listener = WebSocketListenerImpl(
-            onConnectionSuccess = { playerId ->
-                Log.d("MainApplication", "Callback: onConnectionSuccess. Player ID: $playerId")
-                setPlayerId(playerId)
-            },
-            onLobbyCreated = { lobbyId ->
-                Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId")
-                currentLobbyId = lobbyId
-                addHostToLobby(lobbyId)
-                Log.d("MainApplication", ">>> _currentLobbyIdFlow value is now: ${_currentLobbyIdFlow.value}")
-            },
-            onGameBoardReceived = { lobbyId, boardJson ->
-                Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId.")
-                latestBoardJson = boardJson
-                if (lobbyId == _currentLobbyIdFlow.value) {
-                    applicationScope.launch {
-                        try {
-                            _navigateToGameChannel.send(lobbyId)
-                            Log.d("MainApplication", "Sent lobbyId $lobbyId to navigation channel.")
-                        } catch (e: Exception) {
-                            Log.e("MainApplication", "Error sending navigation event for lobby $lobbyId", e)
-                        }
-                    }
-                } else {
-                    Log.w("MainApplication", "Received board for lobby $lobbyId, but current lobby flow value is ${_currentLobbyIdFlow.value}. Ignoring navigation.")
-                }
-            },
-            onError = { error ->
-                Log.e("MainApplication", "Callback: onError. Error: ${error.message}", error)
-            },
-            onClosed = { code, reason ->
-                Log.w("MainApplication", "Callback: onClosed. Code=$code, Reason=$reason")
-                // Reset state on disconnect
-                _playerId = null
-                currentLobbyId = null
-                latestBoardJson = null
-            },
-
-            onDiceResult = { dice1, dice2 ->
-                Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")
-                applicationScope.launch {
-                    gameViewModel?.updateDiceResult(dice1, dice2)
-                }
-            }
-        )
-        webSocketClient.connect(listener)
+        webSocketClient.connect(webSocketListener)
     }
 
     fun getPlayerId(): String {
@@ -115,7 +90,6 @@ open class MainApplication : Application() {
     fun getWebSocketClient(): WebSocketClient {
         // Ensure webSocketClient is initialized before returning
         check(::webSocketClient.isInitialized) { "WebSocketClient accessed before initialization in onCreate" }
-
         return webSocketClient
     }
 
@@ -130,18 +104,46 @@ open class MainApplication : Application() {
         Log.d("MainApplication", "Cleared lobby data.")
     }
 
-    fun addHostToLobby(lobbyId: String) {
-        /*val hostUsername = "HostPlayer"
-        val hostColor = LobbyColorManager.assignColor(lobbyId, hostUsername)
-
-        if (hostColor != null) {
-            playersInLobby.clear()
-            playersInLobby.add(LobbyPlayer(username = hostUsername, color = hostColor))
-            Log.i("LobbySetup", "Host $hostUsername was added in lobby $lobbyId with color $hostColor")
-        }
-        else {
-            Log.e("LobbySetup", "ERROR: No more colors available for host $hostUsername in lobby $lobbyId")
-        }*/
-
+    override fun onConnectionSuccess(playerId: String) {
+        Log.d("MainApplication", "Callback: onConnectionSuccess. Player ID: $playerId")
+        setPlayerId(playerId)
     }
+
+    override fun onLobbyCreated(lobbyId: String) {
+        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId")
+        currentLobbyId = lobbyId
+    }
+
+    override fun onGameBoardReceived(lobbyId: String, boardJson: String) {
+        Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId.")
+        if (latestBoardJson == null && lobbyId == _currentLobbyIdFlow.value) {
+            applicationScope.launch {
+                _navigateToGameChannel.send(lobbyId)
+            }
+        } else {
+            Log.w("MainApplication", "Received board for wrong lobby.")
+        }
+        latestBoardJson = boardJson
+    }
+
+    override fun onDiceResult(dice1: Int, dice2: Int) {
+        Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")
+        applicationScope.launch {
+            gameViewModel?.updateDiceResult(dice1, dice2)
+        }
+    }
+
+    override fun onError(error: Throwable) {
+        Log.e("MainApplication", "Callback: onError. Error: ${error.message}", error)
+        applicationScope.launch {
+            _errorChannel.send(error.message ?: "Unknown error occurred")
+        }
+    }
+
+    override fun onClosed(code: Int, reason: String) {
+        Log.w("MainApplication", "Callback: onClosed. Code=$code, Reason=$reason")
+        clearGameData()
+    }
+
+
 }

@@ -55,6 +55,8 @@ fun CatanBoard(
     roads: List<Road>,
     outerMarginDp: Dp = 16.dp,
     boardBackgroundColor: Color = Color(0xff177fde),
+    isBuildMode: Boolean,
+    playerId: String,
     onTileClicked: (Tile) -> Unit = {},
     onSettlementClicked: (SettlementPosition) -> Unit = {},
     onRoadClicked: (Road) -> Unit = {}
@@ -91,7 +93,7 @@ fun CatanBoard(
             .pointerInput(Unit) {
                 detectTransformGestures { centroid, pan, zoom, _ ->
                     val oldScale = scale
-                    val newScale = (scale * zoom).coerceIn(0.5f, 3f) // Limit zoom levels
+                    val newScale = (scale * zoom).coerceIn(0.5f, 5f) // Limit zoom levels
 
                     // Calculate the offset adjustment needed to keep the centroid stable
                     offset = (offset + centroid - (centroid / oldScale) * newScale) + pan
@@ -218,6 +220,8 @@ fun CatanBoard(
                         modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
                         settlementPosition = position,
                         size = baseParams.initialSettlementSizeDp, // Use initial size
+                        isClickable = isBuildMode,
+                        playerId = playerId,
                         onSettlementClick = onSettlementClicked // Pass down the handler
                     )
                 }
@@ -240,6 +244,8 @@ fun CatanBoard(
                         road = road,
                         length = baseParams.initialDrawableRoadLengthDp, // Use initial size
                         thickness = roadThicknessDp,
+                        isClickable = isBuildMode,
+                        playerId = playerId,
                         onRoadClick = onRoadClicked // Pass down the handler
                     )
                 }

@@ -30,7 +30,6 @@ import com.example.cataniaunited.ui.theme.catanRessourceBar
 fun StartingScreen(
     onLearnClick: () -> Unit,
     onStartClick: () -> Unit,
-    onTestClick: () -> Unit,
     onCreateLobbyClick: () -> Unit,
     currentLobbyId: String?
 ) {
@@ -151,29 +150,6 @@ fun StartingScreen(
             ) {
                 Text(
                     text = "LEARN",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
-            }
-
-            Button(
-                onClick = onTestClick,
-                shape = buttonShape,
-                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
-                border = BorderStroke(1.dp, Color.Black),
-                modifier = Modifier
-                    .width(300.dp)
-                    .height(56.dp)
-                    .shadow(
-                        elevation = 13.dp,
-                        shape = buttonShape,
-                        ambientColor = Color.Black,
-                        spotColor = Color.Black
-                    )
-                    .padding(top = 15.dp)
-            ) {
-                Text(
-                    text = "TEST PAGE",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )

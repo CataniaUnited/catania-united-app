@@ -1,39 +1,36 @@
-package com.example.cataniaunited.ui.startingpage
+package com.example.cataniaunited.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import com.example.cataniaunited.ui.theme.catanClay
-import com.example.cataniaunited.ui.theme.catanGold
-import androidx.compose.ui.unit.sp
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
+import com.example.cataniaunited.ui.theme.catanClay
+import com.example.cataniaunited.ui.theme.catanGold
 import com.example.cataniaunited.ui.theme.catanRessourceBar
 
-
-@Composable // UI component
-fun StartingScreen(
-    onLearnClick: () -> Unit,
-    onStartClick: () -> Unit,
-    onCreateLobbyClick: () -> Unit,
-    currentLobbyId: String?
+@Composable
+fun HostAndJoinScreen(
+    onBackClick: () -> Unit,
+    onHostSelected: () -> Unit,
+    onJoinSelected: () -> Unit
 ) {
-
     Box(modifier = Modifier.fillMaxSize()) {
 
         Image(
@@ -47,7 +44,7 @@ fun StartingScreen(
             modifier = Modifier
                 .align(Alignment.Center)
                 .width(430.dp)
-                .height(400.dp)
+                .height(340.dp)
                 .border(
                     width = 9.dp,
                     color = catanRessourceBar,
@@ -66,6 +63,23 @@ fun StartingScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            IconButton(
+                onClick = onBackClick,
+                modifier = Modifier
+                    .align(Alignment.Start)
+                    .size(40.dp)
+                    .background(catanGold, CircleShape)
+                    .border(BorderStroke(1.dp, Color.Black), CircleShape)
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back",
+                    tint = Color.Black
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
             Text(
                 text = "CATAN UNIVERSE",
                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
@@ -77,7 +91,7 @@ fun StartingScreen(
             val buttonShape = RoundedCornerShape(30.dp)
 
             Button(
-                onClick = onCreateLobbyClick,
+                onClick = onHostSelected,
                 shape = buttonShape,
                 colors = ButtonDefaults.buttonColors(containerColor = catanGold),
                 border = BorderStroke(1.dp, Color.Black),
@@ -92,7 +106,7 @@ fun StartingScreen(
                     )
             ) {
                 Text(
-                    text = "CREATE LOBBY",
+                    text = "HOST GAME",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
@@ -106,12 +120,9 @@ fun StartingScreen(
             )
 
             Button(
-                onClick = onStartClick,
+                onClick = onJoinSelected,
                 shape = buttonShape,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = catanGold,
-                    disabledContainerColor = Color.Gray
-                ),
+                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
                 border = BorderStroke(1.dp, Color.Black),
                 modifier = Modifier
                     .width(300.dp)
@@ -124,31 +135,7 @@ fun StartingScreen(
                     )
             ) {
                 Text(
-                    text = "START GAME",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                )
-            }
-
-
-            Button(
-                onClick = onLearnClick,
-                shape = buttonShape,
-                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
-                border = BorderStroke(1.dp, Color.Black),
-                modifier = Modifier // Original modifier
-                    .width(300.dp)
-                    .height(56.dp)
-                    .shadow(
-                        elevation = 13.dp,
-                        shape = buttonShape,
-                        ambientColor = Color.Black,
-                        spotColor = Color.Black
-                    )
-                    .padding(top = 15.dp)
-            ) {
-                Text(
-                    text = "LEARN",
+                    text = "JOIN GAME",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary,
                 )

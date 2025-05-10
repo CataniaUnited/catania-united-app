@@ -15,7 +15,14 @@ import com.example.cataniaunited.logic.game.GameBoardLogic
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
+12-Host-and-Join-Game
+import com.example.cataniaunited.ui.HostAndJoinScreen
+import com.example.cataniaunited.ui.JoinGameScreen
+
+import com.example.cataniaunited.ui.game_board.board.GameScreen
+
 import com.example.cataniaunited.ui.game.GameScreen
+main
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -63,6 +70,7 @@ class MainActivity : ComponentActivity() {
                         StartingScreen(
                             onLearnClick = { navController.navigate("tutorial") },
                             onCreateLobbyClick = {
+                                navController.navigate("hostandjoin")
                                 Log.i("MainActivity", "Create Lobby button clicked.")
                                 try {
                                     gameBoardLogic.requestCreateLobby()
@@ -71,17 +79,7 @@ class MainActivity : ComponentActivity() {
                                 }
                             },
                             onStartClick = {
-                                val lobbyToStart = currentLobbyIdState // Use collected state
-                                if (lobbyToStart != null) {
-                                    Log.i("MainActivity", "Start Game button clicked for known lobby: $lobbyToStart")
-                                    try {
-                                        gameBoardLogic.requestBoardForLobby(lobbyId = lobbyToStart, playerCount = 4)
-                                    } catch (e: Exception) {
-                                        Log.e("MainActivity", "Error requesting board for lobby", e)
-                                    }
-                                } else {
-                                    Log.e("MainActivity", "Start Game clicked, but no current Lobby ID state!")
-                                }
+                                navController.navigate("hostandjoin")
                             },
                             currentLobbyId = currentLobbyIdState // Pass the collected state
                         )
@@ -102,6 +100,27 @@ class MainActivity : ComponentActivity() {
                             Log.d("Navigation", "Navigating to GameScreen for lobby: $lobbyIdArg")
                             GameScreen(lobbyId = lobbyIdArg)
                         }
+                    }
+                    composable("hostandjoin") {
+                        HostAndJoinScreen(
+                            onBackClick = { navController.navigateUp() },
+                            onHostSelected = { navController.navigate("hostgame") },
+                            onJoinSelected = { navController.navigate("joingame") }
+                        )
+                    }
+                    composable("joingame") {
+                        JoinGameScreen(
+                            onBackClick = { navController.navigateUp() },
+                            onJoinClick = { /* Do something when user joins, or just leave empty for now */ }
+                        )
+                    }
+
+                    composable("hostgame") {
+                        HostAndJoinScreen(
+                            onBackClick = { navController.navigateUp() },
+                            onHostSelected = {},
+                            onJoinSelected = {}
+                        )
                     }
                 }
             }

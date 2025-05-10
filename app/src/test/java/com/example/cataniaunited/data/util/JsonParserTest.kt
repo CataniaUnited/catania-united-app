@@ -29,7 +29,7 @@ class JsonParserTest {
         val result = parseGameBoard(validFullBoardJson)
 
         assertNotNull(result, "Result should not be null for valid JSON")
-        assertEquals(3, result?.ringsOfBoard)
+        assertEquals(4, result?.ringsOfBoard)
         assertEquals(6, result?.sizeOfHex)
         assertTrue(result?.tiles?.isNotEmpty() ?: false)
         assertEquals(TileType.ORE, result?.tiles?.get(0)?.type)

@@ -22,7 +22,6 @@ class StartingScreenTest {
                 StartingScreen(
                     onLearnClick = {},
                     onStartClick = {},
-                    onTestClick = {},
                     onCreateLobbyClick = {},
                     currentLobbyId = "testLobby123",
                 )
@@ -44,7 +43,6 @@ class StartingScreenTest {
                 StartingScreen(
                     onLearnClick = { learnClicked = true },
                     onStartClick = { startClicked = true },
-                    onTestClick = { },
                     onCreateLobbyClick = {},
                     currentLobbyId = "testLobby123"
                 )

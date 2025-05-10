@@ -5,6 +5,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
+import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import kotlinx.coroutines.Dispatchers
@@ -38,12 +39,14 @@ class GameBoardInstrumentedTest {
     private lateinit var gameBoardLogic: GameBoardLogic
     private lateinit var mockWebServer: MockWebServer
     private lateinit var playerId: String
+    private lateinit var playerSessionManagerMock: PlayerSessionManager
+    private val gameDataHandlerMock = GameDataHandler()
     private val testJsonParser = Json { encodeDefaults = true }
 
     @Before
     fun setup() {
         println("Setting up GameBoardInstrumentedTest...")
-        mainApplication = ApplicationProvider.getApplicationContext<MainApplication>()
+        mainApplication = ApplicationProvider.getApplicationContext()
         realClient = mainApplication.getWebSocketClient()
 
         mockWebServer = MockWebServer()
@@ -52,6 +55,8 @@ class GameBoardInstrumentedTest {
 
         val mockServerClient = WebSocketClient(wsUrl)
         spyClient = spy(mockServerClient)
+
+        playerSessionManagerMock = PlayerSessionManager(mainApplication)
 
         runBlocking(Dispatchers.Main) {
             try {
@@ -65,7 +70,7 @@ class GameBoardInstrumentedTest {
             }
         }
 
-        gameBoardLogic = GameBoardLogic()
+        gameBoardLogic = GameBoardLogic(playerSessionManagerMock)
         println("Setup complete: PlayerID=$playerId, SpyClient injected.")
     }
 
@@ -128,6 +133,7 @@ class GameBoardInstrumentedTest {
                     errorLatch.countDown()
                 },
                 onClosed = dummyOnClosed,
+                gameDataHandler = gameDataHandlerMock,
                 onDiceResult = dummyOnDiceResult
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
@@ -200,7 +206,8 @@ class GameBoardInstrumentedTest {
                     errorLatch.countDown()
                 },
                 onClosed = dummyOnClosed,
-                onDiceResult = dummyOnDiceResult
+                onDiceResult = dummyOnDiceResult,
+                gameDataHandlerMock,
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -271,7 +278,8 @@ class GameBoardInstrumentedTest {
                     errorLatch.countDown()
                 },
                 onClosed = dummyOnClosed,
-                onDiceResult = dummyOnDiceResult
+                onDiceResult = dummyOnDiceResult,
+                gameDataHandlerMock,
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)

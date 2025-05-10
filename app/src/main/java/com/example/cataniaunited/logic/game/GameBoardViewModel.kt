@@ -3,15 +3,17 @@ package com.example.cataniaunited.logic.game
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
-import com.example.cataniaunited.data.model.GameBoardModel
-import com.example.cataniaunited.data.util.parseGameBoard
+import com.example.cataniaunited.logic.player.PlayerSessionManager
+import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -19,11 +21,19 @@ import javax.inject.Inject
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val gameBoardLogic: GameBoardLogic,
+    private val gameDataHandler: GameDataHandler,
+    private val sessionManager: PlayerSessionManager,
+    private val errorProvider: WebSocketErrorProvider
+) : ViewModel() {
 
-    ) : ViewModel() {
+    val playerId get() = sessionManager.getPlayerId()
+    val gameBoardState: StateFlow<GameBoardModel?> = gameDataHandler.gameBoardState
 
-    private val _gameBoardState = MutableStateFlow<GameBoardModel?>(null)
-    val gameBoardState: StateFlow<GameBoardModel?> = _gameBoardState.asStateFlow()
+    private val _errorChannel = Channel<String>(Channel.BUFFERED)
+    val errorFlow = _errorChannel.receiveAsFlow()
+
+    private val _isBuildMenuOpen = MutableStateFlow(false)
+    val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
 
     private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
     val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
@@ -32,37 +42,32 @@ class GameViewModel @Inject constructor(
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
         // Don't load initial board automatically here
 
+        viewModelScope.launch {
+            errorProvider.errorFlow.collect { errorMessage ->
+                Log.e("GameBoardViewModel", "Error Message received")
+                _errorChannel.send(errorMessage)
+            }
+        }
     }
 
     // New function to be called externally (e.g., from the Composable's LaunchedEffect)
     fun initializeBoardState(initialJson: String?) {
-        if (_gameBoardState.value == null) { // Only load if not already loaded
+        if (gameBoardState.value == null) { // Only load if not already loaded
             Log.i("GameViewModel", "Initializing board state.")
             if (initialJson != null) {
                 loadGameBoardFromJson(initialJson)
                 // Maybe clear application state here if needed via injected dependency?
             } else {
                 Log.e("GameViewModel", "Initial board JSON was null during initialization!")
-                _gameBoardState.value = null
             }
         }
     }
-
-
 
     fun loadGameBoardFromJson(jsonString: String) {
         viewModelScope.launch {
-            val board = parseGameBoard(jsonString)
-            if (board != null) {
-                _gameBoardState.value = board
-                Log.i("GameViewModel", "Game board loaded/updated successfully from JSON.")
-            } else {
-                Log.e("GameViewModel", "Failed to parse game board from JSON string.")
-                _gameBoardState.value = null
-            }
+            gameDataHandler.updateGameBoard(jsonString)
         }
     }
-
 
     // --- Placeholder Click Handlers ---
 
@@ -75,13 +80,17 @@ class GameViewModel @Inject constructor(
     }
 
     fun handleSettlementClick(settlementPosition: SettlementPosition, lobbyId: String) {
-        Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}")
+        Log.d(
+            "GameViewModel",
+            "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}"
+        )
         // TODO: Implement logic for placing/upgrading settlement DON'T FORGET UPGRADE XD
         // 1) Check game state (setup or not? your turn?)
         // 2) Check resources
         // 3) Validate placement rules (distance, road connection)
         // 4) Get lobbyId and PlayerId
         // 5) Call gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
+        gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
     }
 
     fun handleRoadClick(road: Road, lobbyId: String) {
@@ -92,7 +101,14 @@ class GameViewModel @Inject constructor(
         // 3) Validate placement rules (road connection, empty)
         // 4) Get lobbyId and PlayerId
         // 5) Call gameBoardLogic.placeRoad(road.id, lobbyId)
+        gameBoardLogic.placeRoad(road.id, lobbyId)
     }
+
+    fun setBuildMenuOpen(isOpen: Boolean) {
+        Log.d("GameViewModel", "handleBuildMenuClick: isOpen=${isOpen}")
+        _isBuildMenuOpen.value = isOpen
+    }
+
     var isProcessingRoll = false
     fun rollDice(lobbyId: String) {
         if (isProcessingRoll) return

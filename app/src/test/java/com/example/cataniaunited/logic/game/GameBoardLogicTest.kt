@@ -3,6 +3,7 @@ package com.example.cataniaunited.logic.game
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
+import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.ws.WebSocketClient
 import io.mockk.*
 import kotlinx.serialization.json.buildJsonObject
@@ -18,6 +19,7 @@ class GameBoardLogicTest {
 
     private lateinit var mockMainApplication: MainApplication
     private lateinit var mockWebSocketClient: WebSocketClient
+    private lateinit var mockPlayerSessionManager: PlayerSessionManager
 
     private lateinit var gameBoardLogic: GameBoardLogic
 
@@ -31,8 +33,10 @@ class GameBoardLogicTest {
     fun setUp() {
         mockMainApplication = mockk(relaxed = true)
         mockWebSocketClient = mockk(relaxed = true)
-        gameBoardLogic = GameBoardLogic()
+        mockPlayerSessionManager = mockk(relaxed = true)
+        gameBoardLogic = GameBoardLogic(mockPlayerSessionManager)
         mockkObject(MainApplication.Companion)
+        every { mockPlayerSessionManager.getPlayerId() } returns testPlayerId
         every { MainApplication.getInstance() } returns mockMainApplication
         every { mockMainApplication.getPlayerId() } returns testPlayerId
         every { mockMainApplication.getWebSocketClient() } returns mockWebSocketClient
@@ -68,7 +72,7 @@ class GameBoardLogicTest {
     @Test
     fun placeSettlementDoesNotSendWhenGetPlayerIdThrows() {
         val exception = IllegalStateException("Player ID not set")
-        every { mockMainApplication.getPlayerId() } throws exception
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
         gameBoardLogic.placeSettlement(testSettlementId, testLobbyId)
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
@@ -89,6 +93,14 @@ class GameBoardLogicTest {
     @Test
     fun placeRoadDoesNotSendWhenNotConnected() {
         every { mockWebSocketClient.isConnected() } returns false
+        gameBoardLogic.placeRoad(testRoadId, testLobbyId)
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
+    @Test
+    fun placeRoadDoesNotSendWhenGetPlayerIdThrows() {
+        val exception = IllegalStateException("Player ID not set")
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
         gameBoardLogic.placeRoad(testRoadId, testLobbyId)
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
@@ -119,23 +131,25 @@ class GameBoardLogicTest {
         val expectedMessage = MessageDTO(
             type = MessageType.CREATE_GAME_BOARD, player = testPlayerId, lobbyId = testLobbyId, players = null, message = expectedPayload
         )
-        val messageSlot = slot<MessageDTO>()
+        val messageList = mutableListOf<MessageDTO>()
         gameBoardLogic.requestBoardForLobby(testLobbyId, testPlayerCount)
-        verify(exactly = 1) { mockWebSocketClient.sendMessage(capture(messageSlot)) }
-        assertEquals(expectedMessage, messageSlot.captured)
+        verify(exactly = testPlayerCount + 2) { mockWebSocketClient.sendMessage(capture(messageList)) }
+        assertEquals(expectedMessage, messageList.get(messageList.lastIndex - 1))
     }
 
     @Test
     fun requestBoardForLobbyUsesDefaultPlayerCountIfNotProvided() {
-        val expectedPayload = buildJsonObject { put("playerCount", 4) }
+        val defaultPlayerCount = 4
+        val expectedPayload = buildJsonObject { put("playerCount", defaultPlayerCount) }
         val expectedMessage = MessageDTO(
             type = MessageType.CREATE_GAME_BOARD, player = testPlayerId, lobbyId = testLobbyId, players = null, message = expectedPayload
         )
-        val messageSlot = slot<MessageDTO>()
+        val messageList = mutableListOf<MessageDTO>()
         gameBoardLogic.requestBoardForLobby(testLobbyId)
-        verify(exactly = 1) { mockWebSocketClient.sendMessage(capture(messageSlot)) }
-        assertEquals(expectedMessage, messageSlot.captured)
-        assertEquals(4, messageSlot.captured.message?.get("playerCount")?.jsonPrimitive?.int)
+        verify(exactly = defaultPlayerCount + 2) { mockWebSocketClient.sendMessage(capture(messageList)) }
+        val actualMessage = messageList.get(messageList.lastIndex - 1)
+        assertEquals(expectedMessage, actualMessage)
+        assertEquals(4, actualMessage.message?.get("playerCount")?.jsonPrimitive?.int)
     }
 
     @Test
@@ -148,7 +162,7 @@ class GameBoardLogicTest {
     @Test
     fun requestBoardForLobbyDoesNotSendWhenGetPlayerIdThrows() {
         val exception = IllegalStateException("Player ID not set")
-        every { mockMainApplication.getPlayerId() } throws exception
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
         gameBoardLogic.requestBoardForLobby(testLobbyId, testPlayerCount)
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }

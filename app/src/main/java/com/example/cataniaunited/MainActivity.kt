@@ -15,14 +15,16 @@ import com.example.cataniaunited.logic.game.GameBoardLogic
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
-import com.example.cataniaunited.ui.game_board.board.GameScreen
+import com.example.cataniaunited.ui.game.GameScreen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val gameBoardLogic = GameBoardLogic()
+    @Inject
+    lateinit var gameBoardLogic: GameBoardLogic
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -81,7 +83,6 @@ class MainActivity : ComponentActivity() {
                                     Log.e("MainActivity", "Start Game clicked, but no current Lobby ID state!")
                                 }
                             },
-                            onTestClick = { navController.navigate("test") },
                             currentLobbyId = currentLobbyIdState // Pass the collected state
                         )
                     }
@@ -107,7 +108,4 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    override fun onStop() {
-        super.onStop()
-    }
 }

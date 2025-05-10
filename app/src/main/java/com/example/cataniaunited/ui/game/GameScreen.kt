@@ -43,6 +43,7 @@ fun GameScreen(
     val application = LocalContext.current.applicationContext as MainApplication // Get app instance
     var showDicePopup by remember { mutableStateOf(false) }
     val diceResult by gameViewModel.diceResult.collectAsState()
+    val playerResources by gameViewModel.playerResources.collectAsState()
 
     // Snackbar state
     val snackbarHostState = remember { SnackbarHostState() }
@@ -147,6 +148,15 @@ fun GameScreen(
                 }
             }
         }
+
+
+        // Player Resources Bar at the bottom
+        if (gameBoardState != null) {
+            PlayerResourcesBar(
+                resources = playerResources
+            )
+        }
+
         if (showDicePopup) {
             DiceRollerPopup(
                 onDiceRolled = { gameViewModel.rollDice(lobbyId) },

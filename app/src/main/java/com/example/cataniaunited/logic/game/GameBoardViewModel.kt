@@ -8,12 +8,14 @@ import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
+import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -39,6 +41,9 @@ class GameViewModel @Inject constructor(
     private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
     val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
 
+    private val _playerResources = MutableStateFlow<Map<TileType, Int>>(emptyMap())
+    val playerResources: StateFlow<Map<TileType, Int>> = _playerResources.asStateFlow()
+
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
         // Don't load initial board automatically here
@@ -49,7 +54,15 @@ class GameViewModel @Inject constructor(
                 _errorChannel.send(errorMessage)
             }
         }
+
+        // Initialize with default resources (all zero)
+        // This will be overwritten by server messages.
+        val initialResources = TileType.entries
+            .filter { it != TileType.WASTE }
+            .associateWith { 0 }
+        _playerResources.value = initialResources
     }
+
 
     // New function to be called externally (e.g., from the Composable's LaunchedEffect)
     fun initializeBoardState(initialJson: String?) {
@@ -68,6 +81,11 @@ class GameViewModel @Inject constructor(
         viewModelScope.launch {
             gameDataHandler.updateGameBoard(jsonString)
         }
+    }
+
+    fun updatePlayerResources(newResources: Map<TileType, Int>) { // ADD THIS
+        Log.d("GameViewModel", "Updating player resources: $newResources")
+        _playerResources.value = newResources
     }
 
     // --- Placeholder Click Handlers ---

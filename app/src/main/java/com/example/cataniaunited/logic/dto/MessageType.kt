@@ -10,6 +10,7 @@ enum class MessageType {
     LOBBY_CREATED,
     GAME_BOARD_JSON,
     DICE_RESULT,
+    PLAYER_RESOURCES,
 
     //Client Messages
     CREATE_LOBBY,

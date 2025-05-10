@@ -10,6 +10,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import kotlinx.coroutines.launch
@@ -25,6 +26,7 @@ import javax.inject.Inject
 open class WebSocketListenerImpl @Inject constructor(
     private val onConnectionSuccess: OnConnectionSuccess,
     private val onLobbyCreated: OnLobbyCreated,
+    private val onPlayerJoined: OnPlayerJoined,
     private val onGameBoardReceived: OnGameBoardReceived,
     private val onError: OnWebSocketError,
     private val onClosed: OnWebSocketClosed,
@@ -52,6 +54,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
                 MessageType.GAME_BOARD_JSON, MessageType.PLACE_SETTLEMENT, MessageType.PLACE_ROAD -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
+                MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 // TODO: Other Messages
 
@@ -118,12 +121,24 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleLobbyCreated(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
+        val playerId = messageDTO.player
+        val color = messageDTO.color
         if (lobbyId != null) {
-            Log.i("WebSocketListener", "Lobby Created successfully with ID: $lobbyId")
-            onLobbyCreated.onLobbyCreated(lobbyId)
+            Log.i("WebSocketListener", "Lobby Created successfully with ID $lobbyId for host $playerId with color $color")
+            onLobbyCreated.onLobbyCreated(lobbyId, playerId.toString(), color)
         } else {
             Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")
             onError.onError(IllegalArgumentException("Missing lobbyId in LOBBY_CREATED message"))
+        }
+    }
+
+    private fun handlePlayerJoined(messageDTO: MessageDTO) {
+        val lobbyId = messageDTO.lobbyId
+        val playerId = messageDTO.player
+        val color = messageDTO.color
+        if (lobbyId != null && playerId != null && color != null) {
+            Log.i("WebSocketListener", "Player $playerId joined lobby $lobbyId with color $color")
+            onPlayerJoined.onPlayerJoined(playerId, color)
         }
     }
 

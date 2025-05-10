@@ -8,6 +8,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import dagger.Module
@@ -29,6 +30,12 @@ object WebSocketModule {
     @Provides
     @Singleton
     fun provideOnLobbyCreated(application: Application): OnLobbyCreated {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnPlayerJoined(application: Application): OnPlayerJoined {
         return application as MainApplication
     }
 
@@ -61,6 +68,7 @@ object WebSocketModule {
     fun provideWebSocketListener(
         onConnectionSuccess: OnConnectionSuccess,
         onLobbyCreated: OnLobbyCreated,
+        onPlayerJoined: OnPlayerJoined,
         onGameBoardReceived: OnGameBoardReceived,
         onError: OnWebSocketError,
         onClosed: OnWebSocketClosed,
@@ -70,6 +78,7 @@ object WebSocketModule {
         return WebSocketListenerImpl(
             onConnectionSuccess = onConnectionSuccess,
             onLobbyCreated = onLobbyCreated,
+            onPlayerJoined = onPlayerJoined,
             onGameBoardReceived = onGameBoardReceived,
             onError = onError,
             onClosed = onClosed,

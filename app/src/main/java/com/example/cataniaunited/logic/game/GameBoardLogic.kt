@@ -23,7 +23,7 @@ class GameBoardLogic @Inject constructor(
         val message = buildJsonObject { put("settlementPositionId", settlementPositionId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
-            webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_SETTLEMENT, playerId, lobbyId, null, message))
+            webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_SETTLEMENT, playerId, lobbyId, null, null, message))
         } else { Log.e("GameBoardLogic", "WS not connected for placeSettlement") }
     }
 
@@ -36,7 +36,7 @@ class GameBoardLogic @Inject constructor(
         val message = buildJsonObject { put("roadId", roadId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
-            webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, message))
+            webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, null, message))
         } else { Log.e("GameBoardLogic", "WS not connected for placeRoad") }
     }
 
@@ -73,7 +73,7 @@ class GameBoardLogic @Inject constructor(
                 webSocketClient.sendMessage(joinLobbyMessage)
             }
 
-            val messageToSend = MessageDTO( MessageType.CREATE_GAME_BOARD, playerId, lobbyId, null, messagePayload )
+            val messageToSend = MessageDTO( MessageType.CREATE_GAME_BOARD, playerId, lobbyId, null, null, messagePayload )
             webSocketClient.sendMessage(messageToSend)
 
             val setPlayerActiveMessage = MessageDTO( MessageType.SET_ACTIVE_PLAYER, playerId, lobbyId )
@@ -97,6 +97,7 @@ class GameBoardLogic @Inject constructor(
                     MessageType.ROLL_DICE,
                     playerId,
                     lobbyId,
+                    null,
                     null,
                     message
                 )

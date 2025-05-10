@@ -62,20 +62,19 @@ fun LobbyScreen(
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ){
                 players.forEach { player ->
-                    val playerColor = Color(player.colorHex.toColorInt())
                     Column (horizontalAlignment = Alignment.CenterHorizontally){
                         Image(
                             painter = painterResource(id = R.drawable.player_icon128),
                             contentDescription = "player icon",
                             modifier = Modifier
                                 .size(80.dp)
-                                .border(6.dp, playerColor, RectangleShape)
+                                .border(8.dp, Color(player.colorHex.toColorInt()), RectangleShape)
                                 .padding(4.dp),
                             contentScale = ContentScale.Crop
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = player.username,
+                            text = player.playerId,
                             color = MaterialTheme.colorScheme.onBackground
                         )
                     }

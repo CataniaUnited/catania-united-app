@@ -2,13 +2,18 @@ package com.example.cataniaunited
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.toColorInt
 import com.example.cataniaunited.logic.game.GameViewModel
+import com.example.cataniaunited.ui.lobby.LobbyPlayer
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
@@ -28,6 +33,7 @@ import javax.inject.Inject
 open class MainApplication : Application(),
     OnConnectionSuccess,
     OnLobbyCreated,
+    OnPlayerJoined,
     OnGameBoardReceived,
     OnWebSocketError,
     OnWebSocketClosed,
@@ -109,9 +115,15 @@ open class MainApplication : Application(),
         setPlayerId(playerId)
     }
 
-    override fun onLobbyCreated(lobbyId: String) {
-        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId")
+    override fun onLobbyCreated(lobbyId: String, playerId: String, color: String?) {
+        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with playerId: $playerId and color: $color")
         currentLobbyId = lobbyId
+        playersInLobby.add(LobbyPlayer(playerId, color.toString()))
+    }
+
+    override fun onPlayerJoined(playerId: String, color: String) {
+        Log.d("MainApplication", "Callback: onPlayerJoined. Player ID: $playerId with color: $color")
+        playersInLobby.add(LobbyPlayer(playerId, color))
     }
 
     override fun onGameBoardReceived(lobbyId: String, boardJson: String) {

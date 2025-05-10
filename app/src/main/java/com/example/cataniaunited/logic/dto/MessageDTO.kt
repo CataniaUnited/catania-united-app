@@ -12,6 +12,7 @@ data class MessageDTO(
     val type: MessageType,
     val player: String? = null,
     val lobbyId: String? = null,
+    val color: String? = null,
     val players: List<String>? = null,
     val message: JsonObject? = null
 ) {

@@ -9,6 +9,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import io.mockk.every
@@ -32,6 +33,7 @@ class WebSocketListenerImplInstrumentedTest {
     private lateinit var webSocketListener: WebSocketListenerImpl
     private lateinit var mockConnectionSuccess: OnConnectionSuccess
     private lateinit var mockLobbyCreated: OnLobbyCreated
+    private lateinit var mockPlayerJoined: OnPlayerJoined
     private lateinit var mockGameBoardReceived: OnGameBoardReceived
     private lateinit var mockError: OnWebSocketError
     private lateinit var mockClosed: OnWebSocketClosed
@@ -44,6 +46,7 @@ class WebSocketListenerImplInstrumentedTest {
     fun setUp() {
         mockConnectionSuccess = mockk(relaxed = true)
         mockLobbyCreated = mockk(relaxed = true)
+        mockPlayerJoined = mockk(relaxed = true)
         mockGameBoardReceived = mockk(relaxed = true)
         mockDiceResult = mockk(relaxed = true)
         mockError = mockk(relaxed = true)
@@ -56,6 +59,7 @@ class WebSocketListenerImplInstrumentedTest {
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = mockConnectionSuccess,
             onLobbyCreated = mockLobbyCreated,
+            onPlayerJoined = mockPlayerJoined,
             onGameBoardReceived = mockGameBoardReceived,
             onError = mockError,
             onClosed = mockClosed,
@@ -110,7 +114,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        verify(exactly = 1) { mockLobbyCreated.onLobbyCreated(lobbyId) }
+        verify(exactly = 1) { mockLobbyCreated.onLobbyCreated(lobbyId, playerId, color) }
         verify(exactly = 0) { mockError.onError(any<Throwable>()) }
     }
 
@@ -122,7 +126,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), playerId, color) }
         verify(exactly = 1) { mockError.onError(any<IllegalArgumentException>()) }
     }
 
@@ -251,7 +255,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 1) { mockError.onError(any<Exception>()) }
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), playerId, color) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockClosed.onClosed(any(), any()) }
     }
@@ -266,7 +270,7 @@ class WebSocketListenerImplInstrumentedTest {
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), playerId, color) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockClosed.onClosed(any(), any()) }
     }
@@ -282,7 +286,7 @@ class WebSocketListenerImplInstrumentedTest {
         verify(exactly = 1) { mockError.onError(any<GameException>()) }
 
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), playerId, color) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockClosed.onClosed(any(), any()) }
     }
@@ -296,7 +300,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 1) { mockError.onError(testErrorThrowable) }
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), playerId, color) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockClosed.onClosed(any(), any()) }
     }
@@ -310,7 +314,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 1) { mockClosed.onClosed(code, reason) }
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), playerId, color) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockError.onError(any()) }
     }

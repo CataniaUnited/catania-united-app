@@ -14,6 +14,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.game.GameViewModel
+import com.example.cataniaunited.ui.components.DevelopmentCardPopup
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+
 
 
 @Composable
@@ -23,6 +28,8 @@ fun GameScreen(
 ) {
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication // Get app instance
+    var drawnCardType by remember { mutableStateOf<String?>(null) }
+
 
     // Trigger initial load when the screen enters composition if state is null
     LaunchedEffect(Unit) { // Run once when GameScreen enters composition
@@ -62,5 +69,18 @@ fun GameScreen(
                 )
             }
         }
+    }
+    if (drawnCardType != null) {
+        DevelopmentCardPopup(
+            cardType = drawnCardType!!,
+            onDismiss = { drawnCardType = null }
+        )
+    }
+
+    androidx.compose.material3.Button(onClick = {
+        drawnCardType = "KNIGHT"
+        gameViewModel.handleBuyDevCardClick(lobbyId)
+    }) {
+        androidx.compose.material3.Text("Buy Dev Card")
     }
 }

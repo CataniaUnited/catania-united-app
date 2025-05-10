@@ -79,14 +79,21 @@ open class MainApplication : Application() {
             onError = { error ->
                 Log.e("MainApplication", "Callback: onError. Error: ${error.message}", error)
             },
+
             onClosed = { code, reason ->
                 Log.w("MainApplication", "Callback: onClosed. Code=$code, Reason=$reason")
                 // Reset state on disconnect
                 _playerId = null
                 currentLobbyId = null
                 latestBoardJson = null
+            },
+            onDevelopmentCardReceived = { cardType ->
+                Log.d("MainApplication", "Card received from server: $cardType")
+
             }
         )
+
+
         webSocketClient.connect(listener)
     }
 

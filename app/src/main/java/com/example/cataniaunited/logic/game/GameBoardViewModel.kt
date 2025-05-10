@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.compose.runtime.mutableStateListOf
+
 
 
 @HiltViewModel
@@ -88,5 +90,17 @@ class GameViewModel @Inject constructor(
         // 4) Get lobbyId and PlayerId
         // 5) Call gameBoardLogic.placeRoad(road.id, lobbyId)
     }
+    fun handleBuyDevCardClick(lobbyId: String) {
+        gameBoardLogic.buyDevelopmentCard(lobbyId)
+    }
+    // Store list of development cards
+    private val _myDevelopmentCards = mutableStateListOf<String>()
+    val myDevelopmentCards: List<String> = _myDevelopmentCards
+
+    // Add a new card to the list
+    fun addDevelopmentCard(cardType: String) {
+        _myDevelopmentCards.add(cardType)
+    }
+
 }
 

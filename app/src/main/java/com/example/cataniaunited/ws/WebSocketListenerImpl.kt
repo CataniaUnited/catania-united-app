@@ -17,7 +17,8 @@ open class WebSocketListenerImpl(
     private val onError: (error: Throwable) -> Unit,
     private val onClosed: (code: Int, reason: String) -> Unit,
     private val onLobbyCreated: (lobbyId: String) -> Unit,
-) : WebSocketListener() {
+    private val onDevelopmentCardReceived: (cardType: String) -> Unit,
+    ) : WebSocketListener() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
 
@@ -35,6 +36,8 @@ open class WebSocketListenerImpl(
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
                 MessageType.GAME_BOARD_JSON -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
+                MessageType.BUY_DEVELOPMENT_CARD -> handleDevelopmentCardDraw(messageDTO)
+
                 // TODO: Other Messages
 
                 MessageType.ERROR -> {
@@ -102,6 +105,16 @@ open class WebSocketListenerImpl(
         } else {
             Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")
             onError(IllegalArgumentException("Missing lobbyId in LOBBY_CREATED message"))
+        }
+    }
+
+    private fun handleDevelopmentCardDraw(messageDTO: MessageDTO) {
+        val cardTypeString = messageDTO.message?.get("cardType")?.jsonPrimitive?.contentOrNull
+        if (cardTypeString != null) {
+            Log.i("WebSocketListener", "Development card drawn: $cardTypeString")
+            onDevelopmentCardReceived(cardTypeString) // Call the ViewModel logic via callback
+        } else {
+            Log.e("WebSocketListener", "BUY_DEVELOPMENT_CARD message missing cardType")
         }
     }
 }

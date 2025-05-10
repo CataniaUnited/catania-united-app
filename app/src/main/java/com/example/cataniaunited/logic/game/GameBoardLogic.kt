@@ -7,6 +7,9 @@ import com.example.cataniaunited.logic.dto.MessageType
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import javax.inject.Inject
+private val developmentCardDeck = DevelopmentCardDeck()
+
+
 
 class GameBoardLogic @Inject constructor() {
 
@@ -63,4 +66,34 @@ class GameBoardLogic @Inject constructor() {
             Log.e("GameBoardLogic", "WebSocket not connected when trying to create game board.")
         }
     }
+
+    fun buyDevelopmentCard(lobbyId: String) {
+        val playerId = try {
+            MainApplication.getInstance().getPlayerId()
+        } catch (e: Exception) {
+            Log.e("GameBoardLogic", "PlayerID Error in buyDevelopmentCard", e)
+            return
+        }
+
+        val card = developmentCardDeck.drawCard()
+        if (card == null) {
+            Log.e("GameBoardLogic", "No development cards left!")
+            return
+        }
+
+        val message = buildJsonObject {
+            put("cardType", card.type.name)
+        }
+
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        if (webSocketClient.isConnected()) {
+            webSocketClient.sendMessage(
+                MessageDTO(MessageType.BUY_DEVELOPMENT_CARD, playerId, lobbyId, null, message)
+            )
+            Log.i("GameBoardLogic", "Sent BUY_DEVELOPMENT_CARD with ${card.type}")
+        } else {
+            Log.e("GameBoardLogic", "WebSocket not connected for buying development card.")
+        }
+    }
+
 }

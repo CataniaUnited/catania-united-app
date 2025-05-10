@@ -72,6 +72,7 @@ object WebSocketModule {
         onError: OnWebSocketError,
         onClosed: OnWebSocketClosed,
         onDiceResult: OnDiceResult,
+        onPlayerResourcesReceived: OnPlayerResourcesReceived,
         gameDataHandler: GameDataHandler
     ): WebSocketListenerImpl {
         return WebSocketListenerImpl(
@@ -81,7 +82,8 @@ object WebSocketModule {
             onError = onError,
             onClosed = onClosed,
             onDiceResult = onDiceResult,
-            gameDataHandler = gameDataHandler
+            gameDataHandler = gameDataHandler,
+            onPlayerResourcesReceived = onPlayerResourcesReceived
         )
     }
 }

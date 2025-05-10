@@ -58,6 +58,7 @@ fun GameScreen(
 
     // Trigger initial load when the screen enters composition if state is null
     LaunchedEffect(Unit) { // Run once when GameScreen enters composition
+        application.gameViewModel = gameViewModel
         if (gameViewModel.gameBoardState.value == null) {
             gameViewModel.initializeBoardState(application.latestBoardJson)
         }

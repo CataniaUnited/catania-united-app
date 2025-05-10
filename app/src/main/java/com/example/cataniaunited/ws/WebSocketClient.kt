@@ -13,7 +13,6 @@ open class WebSocketClient(private val serverUrl: String) {
     private val client = OkHttpClient()
     private var webSocket: WebSocket? = null
     private val jsonParser = Json { encodeDefaults = true }
-
     open fun connect(listener: WebSocketListener) {
         val request = Request.Builder().url(serverUrl).build()
         webSocket = client.newWebSocket(request, listener)

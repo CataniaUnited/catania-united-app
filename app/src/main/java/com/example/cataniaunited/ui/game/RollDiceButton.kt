@@ -1,0 +1,39 @@
+package com.example.cataniaunited.ui.game
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import com.example.cataniaunited.R
+
+@Composable
+fun RollDiceButton(
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .clickable(onClick = onClick)
+            .border(
+                width = 1.dp,
+                color = MaterialTheme.colorScheme.outline,
+                shape = RoundedCornerShape(4.dp)
+            )
+            .padding(4.dp)
+            .zIndex(1f)
+    ) {
+        Image(
+            painter = painterResource(R.drawable.dice_6),
+            contentDescription = "Roll dice",
+            modifier = Modifier.size(32.dp)
+        )
+    }
+}

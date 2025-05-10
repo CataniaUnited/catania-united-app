@@ -38,6 +38,9 @@ class GameViewModel @Inject constructor(
     private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
     val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
 
+    private val _victoryPoints = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val victoryPoints: StateFlow<Map<String, Int>> = _victoryPoints
+
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
         // Don't load initial board automatically here
@@ -46,6 +49,12 @@ class GameViewModel @Inject constructor(
             errorProvider.errorFlow.collect { errorMessage ->
                 Log.e("GameBoardViewModel", "Error Message received")
                 _errorChannel.send(errorMessage)
+            }
+        }
+
+        viewModelScope.launch {
+            gameDataHandler.victoryPointsState.collect {
+                _victoryPoints.value = it
             }
         }
     }

@@ -18,6 +18,14 @@ import com.example.cataniaunited.ui.components.DevelopmentCardPopup
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
+import com.example.cataniaunited.ui.components.DevelopmentCardRowPopup
+import androidx.compose.ui.unit.dp
+
+
+
 
 
 
@@ -29,6 +37,7 @@ fun GameScreen(
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication // Get app instance
     var drawnCardType by remember { mutableStateOf<String?>(null) }
+    var showCardPopup by remember { mutableStateOf(false) }
 
 
     // Trigger initial load when the screen enters composition if state is null
@@ -67,9 +76,30 @@ fun GameScreen(
                         gameViewModel.handleRoadClick(road, lobbyId)
                     }
                 )
+
+
+                //Deck icon to show development cards
+                Button(
+                    onClick = { showCardPopup = true },
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                ) {
+                    Text("🂠") // card deck icon
+                }
             }
         }
+
+        // Popup showing  development cards
+        if (showCardPopup) {
+            DevelopmentCardRowPopup(
+                cards = gameViewModel.myDevelopmentCards,
+                onDismiss = { showCardPopup = false }
+            )
+        }
     }
+
+    // Existing card draw button
     if (drawnCardType != null) {
         DevelopmentCardPopup(
             cardType = drawnCardType!!,
@@ -77,10 +107,10 @@ fun GameScreen(
         )
     }
 
-    androidx.compose.material3.Button(onClick = {
+    Button(onClick = {
         drawnCardType = "KNIGHT"
         gameViewModel.handleBuyDevCardClick(lobbyId)
     }) {
-        androidx.compose.material3.Text("Buy Dev Card")
+        Text("Buy Dev Card")
     }
 }

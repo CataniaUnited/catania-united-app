@@ -87,11 +87,15 @@ open class MainApplication : Application() {
                 currentLobbyId = null
                 latestBoardJson = null
             },
+
             onDevelopmentCardReceived = { cardType ->
                 Log.d("MainApplication", "Card received from server: $cardType")
-
+                applicationScope.launch {
+                    com.example.cataniaunited.logic.CardReceiver.sendCard(cardType)
+                }
             }
         )
+
 
 
         webSocketClient.connect(listener)

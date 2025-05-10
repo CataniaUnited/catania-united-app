@@ -28,8 +28,16 @@ class GameViewModel @Inject constructor(
 
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
-        // Don't load initial board automatically here
+
+        // Listen for development cards sent from the server
+        viewModelScope.launch {
+            com.example.cataniaunited.logic.CardReceiver.cardFlow.collect { cardType ->
+                Log.d("GameViewModel", "Received card from flow: $cardType")
+                addDevelopmentCard(cardType)
+            }
+        }
     }
+
 
     // New function to be called externally (e.g., from the Composable's LaunchedEffect)
     fun initializeBoardState(initialJson: String?) {

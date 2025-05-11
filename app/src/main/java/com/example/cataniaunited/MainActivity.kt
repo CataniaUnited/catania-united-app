@@ -1,28 +1,24 @@
 package com.example.cataniaunited
 
-import androidx.compose.runtime.*
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cataniaunited.logic.game.GameBoardLogic
+import com.example.cataniaunited.ui.HostAndJoinScreen
+import com.example.cataniaunited.ui.JoinGameScreen
+import com.example.cataniaunited.ui.game.GameScreen
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
-12-Host-and-Join-Game
-import com.example.cataniaunited.ui.HostAndJoinScreen
-import com.example.cataniaunited.ui.JoinGameScreen
-
-import com.example.cataniaunited.ui.game_board.board.GameScreen
-
-import com.example.cataniaunited.ui.game.GameScreen
-main
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -91,7 +87,7 @@ class MainActivity : ComponentActivity() {
                     composable(
                         route = "game/{lobbyId}",
 
-                    ) { backStackEntry ->
+                        ) { backStackEntry ->
                         val lobbyIdArg = backStackEntry.arguments?.getString("lobbyId")
                         if (lobbyIdArg == null) {
                             Log.e("Navigation", "Lobby ID missing! Navigating back.")

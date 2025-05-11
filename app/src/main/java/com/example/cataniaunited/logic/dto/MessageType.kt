@@ -19,10 +19,6 @@ enum class MessageType {
     PLACE_SETTLEMENT,
     PLACE_ROAD,
     CREATE_GAME_BOARD,
-12-Host-and-Join-Game
-    BUY_DEVELOPMENT_CARD
-
-
+    BUY_DEVELOPMENT_CARD,
     ROLL_DICE
-main
 }

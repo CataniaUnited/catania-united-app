@@ -60,6 +60,7 @@ class MainApplicationInstrumentedTest {
 
         mockGameViewModel = mockk<GameViewModel>(relaxed = true)
         every { mockGameViewModel.updatePlayerResources(any()) } just runs
+        every { mockGameViewModel.updateDiceResult(any(), any()) } just runs
 
         try {
             playerIdField = MainApplication::class.java.getDeclaredField("_playerId")

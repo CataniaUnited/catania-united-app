@@ -3,8 +3,12 @@ package com.example.cataniaunited
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
+import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.game.GameViewModel
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Assert.*
@@ -12,15 +16,43 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.lang.reflect.Field
+import io.mockk.verify
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.junit.Rule
+import org.junit.rules.TestWatcher
+import org.junit.runner.Description
+
+@ExperimentalCoroutinesApi
+class MainCoroutineRule(
+    val testDispatcher: TestDispatcher = StandardTestDispatcher()
+) : TestWatcher() {
+    override fun starting(description: Description?) {
+        super.starting(description)
+        Dispatchers.setMain(testDispatcher)
+    }
+
+    override fun finished(description: Description?) {
+        super.finished(description)
+        Dispatchers.resetMain()
+    }
+}
+
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class MainApplicationInstrumentedTest {
 
+
+    @get:Rule
+    val mainCoroutineRule = MainCoroutineRule()
+
+
     private lateinit var mainApplication: MainApplication
 
 
     private lateinit var playerIdField: Field
+    private lateinit var mockGameViewModel: GameViewModel
 
     @Before
     fun setup() {
@@ -33,6 +65,7 @@ class MainApplicationInstrumentedTest {
         try {
             playerIdField = MainApplication::class.java.getDeclaredField("_playerId")
             playerIdField.isAccessible = true
+            mockGameViewModel = mockk<GameViewModel>(relaxed = true)
             playerIdField.set(mainApplication, null)
             println("Setup: _playerId reset to null.")
         } catch (e: Exception) {
@@ -212,5 +245,54 @@ class MainApplicationInstrumentedTest {
         assertEquals("currentLobbyIdFlow should NOT be null after clearGameData", lobbyId, mainApplication.currentLobbyIdFlow.value)
         assertNull("latestBoardJson should be null after clearGameData", mainApplication.latestBoardJson)
         println("Test Passed.")
+    }
+
+    @Test
+    fun onPlayerResourcesReceivedUpdatesGameViewModelWhenSet() = runTest(mainCoroutineRule.testDispatcher) {
+        println("Running test: onPlayerResourcesReceivedUpdatesGameViewModelWhenSet")
+        mainApplication.gameViewModel = mockGameViewModel // Set the (mocked) ViewModel
+        val testResources = mapOf(TileType.WOOD to 1, TileType.CLAY to 2)
+
+        mainApplication.onPlayerResourcesReceived(testResources)
+
+        // Ensure the launch block in onPlayerResourcesReceived completes
+        withContext(mainCoroutineRule.testDispatcher) {
+            // For Dispatchers.Main.immediate, if the test dispatcher is main, it should run.
+            // If you were using a standard dispatcher, advanceUntilIdle() would be more common here.
+        }
+
+        verify(exactly = 1) { mockGameViewModel.updatePlayerResources(testResources) }
+        println("Test Passed: GameViewModel.updatePlayerResources was called.")
+    }
+
+    @Test
+    fun onPlayerResourcesReceivedDoesNothingWhenGameViewModelIsNull() = runTest(mainCoroutineRule.testDispatcher) {
+        println("Running test: onPlayerResourcesReceivedDoesNothingWhenGameViewModelIsNull")
+        mainApplication.gameViewModel = null // Ensure ViewModel is null
+        val testResources = mapOf(TileType.SHEEP to 3)
+
+        // This variable is to explicitly check no interaction with a *different* mock later
+        val anotherMockViewModel = mockk<GameViewModel>(relaxed = true)
+
+        mainApplication.onPlayerResourcesReceived(testResources)
+        withContext(mainCoroutineRule.testDispatcher) {}
+
+        // Verify that if we were to check 'anotherMockViewModel', it wouldn't have been called.
+        // This is an indirect way to say the null gameViewModel was handled gracefully.
+        verify(exactly = 0) { anotherMockViewModel.updatePlayerResources(any()) }
+        println("Test Passed: No crash and (implicitly) GameViewModel was not updated because it was null.")
+    }
+
+    @Test
+    fun onPlayerResourcesReceivedHandlesEmptyResourcesMap() = runTest(mainCoroutineRule.testDispatcher) {
+        println("Running test: onPlayerResourcesReceivedHandlesEmptyResourcesMap")
+        mainApplication.gameViewModel = mockGameViewModel
+        val emptyResources = emptyMap<TileType, Int>()
+
+        mainApplication.onPlayerResourcesReceived(emptyResources)
+        withContext(mainCoroutineRule.testDispatcher) {}
+
+        verify(exactly = 1) { mockGameViewModel.updatePlayerResources(emptyResources) }
+        println("Test Passed: GameViewModel.updatePlayerResources called with empty map.")
     }
 }

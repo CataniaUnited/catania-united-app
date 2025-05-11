@@ -42,9 +42,17 @@ class MainActivity : ComponentActivity() {
                 val application = application as MainApplication
 
                 val currentLobbyIdState by application.currentLobbyIdFlow.collectAsState()
+                val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = null)
+                val currentRoute = currentBackStackEntry?.destination?.route
 
                 LaunchedEffect(currentLobbyIdState) {
                     Log.d("MainActivity", "Collected Lobby ID State changed: $currentLobbyIdState")
+                    if(currentLobbyIdState != null){
+                        if(currentRoute == "hostandjoin") {
+                            gameBoardLogic.requestBoardForLobby(lobbyId = currentLobbyIdState!!)
+                        }
+                        navController.navigate("game/${currentLobbyIdState}")
+                    }
                 }
 
 
@@ -68,19 +76,9 @@ class MainActivity : ComponentActivity() {
                     composable("starting") {
                         StartingScreen(
                             onLearnClick = { navController.navigate("tutorial") },
-                            onCreateLobbyClick = {
-                                navController.navigate("hostandjoin")
-                                Log.i("MainActivity", "Create Lobby button clicked.")
-                                try {
-                                    gameBoardLogic.requestCreateLobby()
-                                } catch (e: Exception) {
-                                    Log.e("MainActivity", "Error requesting lobby creation", e)
-                                }
-                            },
                             onStartClick = {
                                 navController.navigate("hostandjoin")
                             },
-                            currentLobbyId = currentLobbyIdState // Pass the collected state
                         )
                     }
                     composable("tutorial") {
@@ -105,13 +103,6 @@ class MainActivity : ComponentActivity() {
                             onBackClick = { navController.navigateUp() },
                             onHostSelected = {
                                 hostJoinLogic.sendCreateLobby()
-
-                                //TODO: Remove after implementation of lobby and start game
-                                val lobbyId: String? = application.currentLobbyId
-                                if(lobbyId != null){
-                                    gameBoardLogic.requestBoardForLobby(lobbyId = lobbyId)
-                                    navController.navigate("game/${lobbyId}")
-                                }
                              },
                             onJoinSelected = { navController.navigate("joingame") }
                         )

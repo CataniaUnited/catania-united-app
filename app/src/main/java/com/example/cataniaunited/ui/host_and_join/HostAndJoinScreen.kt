@@ -1,4 +1,4 @@
-package com.example.cataniaunited.ui
+package com.example.cataniaunited.ui.host_and_join
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
@@ -17,9 +17,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.theme.catanClay
 import com.example.cataniaunited.ui.theme.catanGold
@@ -44,7 +42,7 @@ fun HostAndJoinScreen(
             modifier = Modifier
                 .align(Alignment.Center)
                 .width(430.dp)
-                .height(340.dp)
+                .height(400.dp)
                 .border(
                     width = 9.dp,
                     color = catanRessourceBar,
@@ -63,29 +61,11 @@ fun HostAndJoinScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .size(40.dp)
-                    .background(catanGold, CircleShape)
-                    .border(BorderStroke(1.dp, Color.Black), CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.Black
-                )
-            }
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Text(
-                text = "CATAN UNIVERSE",
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
-                color = catanGold,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 30.dp)
+            Image(
+                painter = painterResource(id = R.drawable.catania_united_logo),
+                contentDescription = "Catania United Logo",
+                contentScale = ContentScale.Fit
             )
 
             val buttonShape = RoundedCornerShape(30.dp)
@@ -116,7 +96,7 @@ fun HostAndJoinScreen(
                 text = "OR",
                 style = MaterialTheme.typography.titleLarge,
                 color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(top = 15.dp, bottom = 15.dp)
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
             )
 
             Button(
@@ -140,6 +120,22 @@ fun HostAndJoinScreen(
                     color = MaterialTheme.colorScheme.onPrimary,
                 )
             }
+        }
+
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 32.dp, start = 16.dp)
+                .size(40.dp)
+                .background(catanGold, CircleShape)
+                .border(BorderStroke(1.dp, Color.Black), CircleShape)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.Black
+            )
         }
     }
 }

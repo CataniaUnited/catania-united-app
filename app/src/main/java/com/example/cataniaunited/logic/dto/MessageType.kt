@@ -19,6 +19,7 @@ enum class MessageType {
     PLACE_SETTLEMENT,
     PLACE_ROAD,
     CREATE_GAME_BOARD,
+    GET_GAME_BOARD,
     BUY_DEVELOPMENT_CARD,
     ROLL_DICE
 }

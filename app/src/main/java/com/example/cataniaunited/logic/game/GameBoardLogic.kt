@@ -73,7 +73,7 @@ class GameBoardLogic @Inject constructor(
                 webSocketClient.sendMessage(joinLobbyMessage)
             }
 
-            val messageToSend = MessageDTO( MessageType.CREATE_GAME_BOARD, playerId, lobbyId, null, messagePayload )
+            val messageToSend = MessageDTO( MessageType.GET_GAME_BOARD, playerId, lobbyId, null, messagePayload )
             webSocketClient.sendMessage(messageToSend)
 
             val setPlayerActiveMessage = MessageDTO( MessageType.SET_ACTIVE_PLAYER, playerId, lobbyId )

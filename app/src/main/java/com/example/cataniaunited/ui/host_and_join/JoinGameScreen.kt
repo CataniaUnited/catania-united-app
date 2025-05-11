@@ -1,4 +1,4 @@
-package com.example.cataniaunited.ui
+package com.example.cataniaunited.ui.host_and_join
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -67,22 +67,6 @@ fun JoinGameScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            IconButton(
-                onClick = onBackClick,
-                modifier = Modifier
-                    .align(Alignment.Start)
-                    .size(40.dp)
-                    .background(catanGold, CircleShape)
-                    .border(BorderStroke(1.dp, Color.Black), CircleShape)
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color.Black
-                )
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "ENTER GAME ID",
@@ -96,7 +80,6 @@ fun JoinGameScreen(
                 value = gameCode,
                 onValueChange = { gameCode = it },
                 placeholder = { Text("Game Code") },
-                visualTransformation = PasswordVisualTransformation(),
                 singleLine = true,
                 shape = RoundedCornerShape(40.dp),
                 modifier = Modifier
@@ -136,6 +119,22 @@ fun JoinGameScreen(
                     color = MaterialTheme.colorScheme.onPrimary
                 )
             }
+        }
+
+        IconButton(
+            onClick = onBackClick,
+            modifier = Modifier
+                .align(Alignment.TopStart)
+                .padding(top = 32.dp, start = 16.dp)
+                .size(40.dp)
+                .background(catanGold, CircleShape)
+                .border(BorderStroke(1.dp, Color.Black), CircleShape)
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = Color.Black
+            )
         }
     }
 }

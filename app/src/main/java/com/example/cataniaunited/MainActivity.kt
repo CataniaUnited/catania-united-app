@@ -12,9 +12,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.cataniaunited.logic.HostJoinLogic
 import com.example.cataniaunited.logic.game.GameBoardLogic
-import com.example.cataniaunited.ui.HostAndJoinScreen
-import com.example.cataniaunited.ui.JoinGameScreen
+import com.example.cataniaunited.ui.host_and_join.HostAndJoinScreen
+import com.example.cataniaunited.ui.host_and_join.JoinGameScreen
 import com.example.cataniaunited.ui.game.GameScreen
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
@@ -28,6 +29,8 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject
     lateinit var gameBoardLogic: GameBoardLogic
+    @Inject
+    lateinit var hostJoinLogic: HostJoinLogic
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -100,22 +103,29 @@ class MainActivity : ComponentActivity() {
                     composable("hostandjoin") {
                         HostAndJoinScreen(
                             onBackClick = { navController.navigateUp() },
-                            onHostSelected = { navController.navigate("hostgame") },
+                            onHostSelected = {
+                                hostJoinLogic.sendCreateLobby()
+
+                                //TODO: Remove after implementation of lobby and start game
+                                val lobbyId: String? = application.currentLobbyId;
+                                if(lobbyId != null){
+                                    gameBoardLogic.requestBoardForLobby(lobbyId)
+                                    navController.navigate("game/${lobbyId}")
+                                }
+                             },
                             onJoinSelected = { navController.navigate("joingame") }
                         )
                     }
                     composable("joingame") {
                         JoinGameScreen(
                             onBackClick = { navController.navigateUp() },
-                            onJoinClick = { /* Do something when user joins, or just leave empty for now */ }
-                        )
-                    }
+                            onJoinClick = { lobbyId ->
+                                hostJoinLogic.sendJoinLobby(lobbyId)
 
-                    composable("hostgame") {
-                        HostAndJoinScreen(
-                            onBackClick = { navController.navigateUp() },
-                            onHostSelected = {},
-                            onJoinSelected = {}
+                                //TODO: Remove after implementation of lobby and start game
+                                gameBoardLogic.requestBoardForLobby(lobbyId)
+                                navController.navigate("game/${lobbyId}")
+                            }
                         )
                     }
                 }

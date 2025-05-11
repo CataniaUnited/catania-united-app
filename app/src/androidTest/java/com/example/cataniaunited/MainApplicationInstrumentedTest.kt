@@ -3,11 +3,9 @@ package com.example.cataniaunited
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
+import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.game.GameViewModel
-import io.mockk.every
-import io.mockk.just
-import io.mockk.mockk
-import io.mockk.runs
+import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -49,23 +47,22 @@ class MainApplicationInstrumentedTest {
 
 
     private lateinit var mainApplication: MainApplication
-
-
     private lateinit var playerIdField: Field
     private lateinit var mockGameViewModel: GameViewModel
 
     @Before
     fun setup() {
         mainApplication = ApplicationProvider.getApplicationContext<MainApplication>()
-        mainApplication.onCreate()
 
         println("Setup: Resetting state...")
         mainApplication.clearLobbyData()
+        mainApplication.gameViewModel = null
+
+        mockGameViewModel = mockk<GameViewModel>(relaxed = true)
 
         try {
             playerIdField = MainApplication::class.java.getDeclaredField("_playerId")
             playerIdField.isAccessible = true
-            mockGameViewModel = mockk<GameViewModel>(relaxed = true)
             playerIdField.set(mainApplication, null)
             println("Setup: _playerId reset to null.")
         } catch (e: Exception) {
@@ -77,13 +74,18 @@ class MainApplicationInstrumentedTest {
 
     @After
     fun tearDown() {
+        mainApplication.gameViewModel = null
         println("Teardown complete.")
+
     }
 
     @Test
     fun webSocketClientShouldBeInitializedAfterOnCreate() {
         println("Running webSocketClientShouldBeInitializedAfterOnCreate...")
-        assertNotNull("WebSocketClient should not be null after Application onCreate", mainApplication.getWebSocketClient())
+        assertNotNull(
+            "WebSocketClient should not be null after Application onCreate",
+            mainApplication.getWebSocketClient()
+        )
         println("Test Passed.")
     }
 
@@ -107,7 +109,11 @@ class MainApplicationInstrumentedTest {
         println("Running setAndGetPlayerIdWorks...")
         val testId = "player-id-${System.currentTimeMillis()}"
         mainApplication.setPlayerId(testId)
-        assertEquals("Stored Player ID should match set value", testId, mainApplication.getPlayerId())
+        assertEquals(
+            "Stored Player ID should match set value",
+            testId,
+            mainApplication.getPlayerId()
+        )
         println("Test Passed.")
     }
 
@@ -115,7 +121,11 @@ class MainApplicationInstrumentedTest {
     @Test
     fun currentLobbyIdFlowInitiallyNull() = runTest {
         println("Running test: currentLobbyIdFlowInitiallyNull")
-        assertEquals("Initial lobby ID flow value should be null", null, mainApplication.currentLobbyIdFlow.value)
+        assertEquals(
+            "Initial lobby ID flow value should be null",
+            null,
+            mainApplication.currentLobbyIdFlow.value
+        )
         mainApplication.currentLobbyIdFlow.test {
             assertEquals("Flow should emit null initially", null, awaitItem())
             expectNoEvents()
@@ -136,7 +146,11 @@ class MainApplicationInstrumentedTest {
             assertEquals("Flow should emit the set lobbyId", expectedLobbyId, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
-        assertEquals("Getter property should reflect flow value", expectedLobbyId, mainApplication.currentLobbyId)
+        assertEquals(
+            "Getter property should reflect flow value",
+            expectedLobbyId,
+            mainApplication.currentLobbyId
+        )
         println("Test Passed.")
     }
 
@@ -150,7 +164,11 @@ class MainApplicationInstrumentedTest {
 
         mainApplication.latestBoardJson = boardJson
 
-        assertEquals("latestBoardJson should be updated", boardJson, mainApplication.latestBoardJson)
+        assertEquals(
+            "latestBoardJson should be updated",
+            boardJson,
+            mainApplication.latestBoardJson
+        )
         println("Test Passed.")
     }
 
@@ -223,8 +241,14 @@ class MainApplicationInstrumentedTest {
         mainApplication.clearLobbyData()
         advanceUntilIdle()
 
-        assertNull("currentLobbyIdFlow should be null after clearLobbyData", mainApplication.currentLobbyIdFlow.value)
-        assertNull("latestBoardJson should be null after clearLobbyData", mainApplication.latestBoardJson)
+        assertNull(
+            "currentLobbyIdFlow should be null after clearLobbyData",
+            mainApplication.currentLobbyIdFlow.value
+        )
+        assertNull(
+            "latestBoardJson should be null after clearLobbyData",
+            mainApplication.latestBoardJson
+        )
         println("Test Passed.")
     }
 
@@ -247,49 +271,52 @@ class MainApplicationInstrumentedTest {
         println("Test Passed.")
     }
 
-    /*
-    @Disabled
     @Test
-    fun onPlayerResourcesReceivedUpdatesGameViewModelWhenSet() = runTest(mainCoroutineRule.testDispatcher) {
-        println("Running test: onPlayerResourcesReceivedUpdatesGameViewModelWhenSet")
-        mainApplication.gameViewModel = mockGameViewModel // Set the (mocked) ViewModel
-        val testResources = mapOf(TileType.WOOD to 1, TileType.CLAY to 2)
+    fun onPlayerResourcesReceivedCallsGameViewModelUpdatePlayerResourcesWhenViewModelIsSet() =
+        runTest {
+            println("Running test: onPlayerResourcesReceived_calls_gameViewModel_updatePlayerResources_when_viewModel_is_set")
+            mainApplication.gameViewModel = mockGameViewModel
 
-        mainApplication.onPlayerResourcesReceived(testResources)
+            val sampleResources = mapOf(TileType.WOOD to 2, TileType.SHEEP to 1)
+            every { mockGameViewModel.updatePlayerResources(any()) } just runs
 
-        withContext(mainCoroutineRule.testDispatcher) {}
+            mainApplication.onPlayerResourcesReceived(sampleResources)
+            advanceUntilIdle()
 
-        verify(exactly = 1) { mockGameViewModel.updatePlayerResources(testResources) }
-        println("Test Passed: GameViewModel.updatePlayerResources was called.")
-    }
+            verify(exactly = 1) { mockGameViewModel.updatePlayerResources(sampleResources) }
+            println("Test Passed.")
+        }
 
-    @Disabled
     @Test
-    fun onPlayerResourcesReceivedDoesNothingWhenGameViewModelIsNull() = runTest(mainCoroutineRule.testDispatcher) {
-        println("Running test: onPlayerResourcesReceivedDoesNothingWhenGameViewModelIsNull")
-        mainApplication.gameViewModel = null // Ensure ViewModel is null
-        val testResources = mapOf(TileType.SHEEP to 3)
+    fun onPlayerResourcesReceivedDoesNotCrashAndNotCallViewModelWhenViewModelIsNull() =
+        runTest {
+            println("Running test: onPlayerResourcesReceived_does_not_crash_and_not_call_viewModel_when_viewModel_is_null")
+            mainApplication.gameViewModel = null
 
-        val anotherMockViewModel = mockk<GameViewModel>(relaxed = true)
+            val sampleResources = mapOf(TileType.CLAY to 3)
 
-        mainApplication.onPlayerResourcesReceived(testResources)
-        withContext(mainCoroutineRule.testDispatcher) {}
+            mainApplication.onPlayerResourcesReceived(sampleResources)
+            advanceUntilIdle()
 
-        verify(exactly = 0) { anotherMockViewModel.updatePlayerResources(any()) }
-        println("Test Passed: No crash and (implicitly) GameViewModel was not updated because it was null.")
-    }
+            verify(exactly = 0) { mockGameViewModel.updatePlayerResources(any()) }
+            println("Test Passed: No crash and ViewModel method not called.")
+        }
 
-    @Disabled
     @Test
-    fun onPlayerResourcesReceivedHandlesEmptyResourcesMap() = runTest(mainCoroutineRule.testDispatcher) {
-        println("Running test: onPlayerResourcesReceivedHandlesEmptyResourcesMap")
-        mainApplication.gameViewModel = mockGameViewModel
-        val emptyResources = emptyMap<TileType, Int>()
+    fun onPlayerResourcesReceivedUpdatesGameViewModelViaApplicationScopeDispatcher() =
+        runTest(mainCoroutineRule.testDispatcher) {
 
-        mainApplication.onPlayerResourcesReceived(emptyResources)
-        withContext(mainCoroutineRule.testDispatcher) {}
+            println("Running test: onPlayerResourcesReceived_updates_gameViewModel_via_applicationScope_dispatcher")
+            mainApplication.gameViewModel = mockGameViewModel
 
-        verify(exactly = 1) { mockGameViewModel.updatePlayerResources(emptyResources) }
-        println("Test Passed: GameViewModel.updatePlayerResources called with empty map.")
-    }*/
+            val sampleResources = mapOf(TileType.WHEAT to 5)
+
+            every { mockGameViewModel.updatePlayerResources(any()) } just runs
+
+            mainApplication.onPlayerResourcesReceived(sampleResources)
+
+            mainCoroutineRule.testDispatcher.scheduler.advanceUntilIdle()
+
+            verify(exactly = 1) { mockGameViewModel.updatePlayerResources(sampleResources) }
+        }
 }

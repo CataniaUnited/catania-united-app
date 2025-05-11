@@ -15,6 +15,14 @@ class GameBoardLogic @Inject constructor(
 ) {
 
     fun placeSettlement(settlementPositionId: Int, lobbyId: String) {
+        sendSettlementMessage(MessageType.PLACE_SETTLEMENT, settlementPositionId, lobbyId)
+    }
+
+    fun upgradeSettlement(settlementPositionId: Int, lobbyId: String) {
+        sendSettlementMessage(MessageType.UPGRADE_SETTLEMENT, settlementPositionId, lobbyId)
+    }
+
+    private fun sendSettlementMessage(messageType: MessageType, settlementPositionId: Int, lobbyId: String){
         val playerId = try{
             playerSessionManager.getPlayerId()
         }catch (ise: IllegalStateException){
@@ -23,8 +31,8 @@ class GameBoardLogic @Inject constructor(
         val message = buildJsonObject { put("settlementPositionId", settlementPositionId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
-            webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_SETTLEMENT, playerId, lobbyId, null, message))
-        } else { Log.e("GameBoardLogic", "WS not connected for placeSettlement") }
+            webSocketClient.sendMessage(MessageDTO(messageType, playerId, lobbyId, null, message))
+        } else { Log.e("GameBoardLogic", "WS not connected for upgradeSettlement") }
     }
 
     fun placeRoad(roadId: Int, lobbyId: String) {

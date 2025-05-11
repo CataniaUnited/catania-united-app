@@ -77,6 +77,32 @@ class GameBoardLogicTest {
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
 
+    @Test
+    fun upgradeSettlementSendsCorrectMessageWhenConnected() {
+        val expectedPayload = buildJsonObject { put("settlementPositionId", testSettlementId) }
+        val expectedMessage = MessageDTO(
+            type = MessageType.UPGRADE_SETTLEMENT, player = testPlayerId, lobbyId = testLobbyId, players = null, message = expectedPayload
+        )
+        val messageSlot = slot<MessageDTO>()
+        gameBoardLogic.upgradeSettlement(testSettlementId, testLobbyId)
+        verify(exactly = 1) { mockWebSocketClient.sendMessage(capture(messageSlot)) }
+        assertEquals(expectedMessage, messageSlot.captured)
+    }
+
+    @Test
+    fun upgradeSettlementDoesNotSendWhenNotConnected() {
+        every { mockWebSocketClient.isConnected() } returns false
+        gameBoardLogic.placeSettlement(testSettlementId, testLobbyId)
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
+    @Test
+    fun upgradeSettlementDoesNotSendWhenGetPlayerIdThrows() {
+        val exception = IllegalStateException("Player ID not set")
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
+        gameBoardLogic.placeSettlement(testSettlementId, testLobbyId)
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
 
     @Test
     fun placeRoadSendsCorrectMessageWhenConnected() {

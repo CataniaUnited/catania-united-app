@@ -30,7 +30,7 @@ fun SettlementComposable(
     size: Dp,
     isClickable: Boolean,
     playerId: String,
-    onSettlementClick: (SettlementPosition) -> Unit = {}
+    onSettlementClick: (Pair<SettlementPosition, Boolean>)  -> Unit = {}
 ) {
 
     val building: Building? = settlementPosition.building
@@ -52,13 +52,14 @@ fun SettlementComposable(
         Color.White //Dark background -> light icon
     }
 
-    val isOccupied = building != null && building.owner != playerId
+    val isOccupied: Boolean = building != null && building.owner != playerId
     val canBuild: Boolean = isClickable && (building == null || (building.owner == playerId && building.type == "Settlement"))
+    val isUpgrade: Boolean = building != null && building.owner == playerId && building.type == "Settlement"
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .then(if (canBuild) Modifier.clickable { onSettlementClick(settlementPosition)  } else Modifier)
+            .then(if (canBuild) Modifier.clickable { onSettlementClick(Pair(settlementPosition, isUpgrade))  } else Modifier)
             .size(size)
             .clip(CircleShape)
             .background(buildingColor)

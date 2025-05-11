@@ -12,6 +12,7 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -23,7 +24,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cataniaunited.MainApplication
@@ -120,9 +123,13 @@ fun GameScreen(
                                 )
                                 gameViewModel.handleTileClick(tile, lobbyId)
                             },
-                            onSettlementClicked = { settlementPos ->
+                            onSettlementClicked = { (settlementPos, isUpgrade) ->
                                 Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
-                                gameViewModel.handleSettlementClick(settlementPos, lobbyId)
+                                gameViewModel.handleSettlementClick(
+                                    settlementPos,
+                                    isUpgrade,
+                                    lobbyId
+                                )
                             },
                             onRoadClicked = { road ->
                                 Log.d("GameScreen", "Road Clicked: ID=${road.id}")
@@ -154,6 +161,16 @@ fun GameScreen(
                                 showDicePopup = true
                             }
                         }
+
+                        Text(
+                            text = "Lobby ID: $lobbyId",
+                            fontSize = 12.sp,
+                            color = Color.DarkGray,
+                            textAlign = TextAlign.End,
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .padding(8.dp)
+                        )
                     }
                 }
             }

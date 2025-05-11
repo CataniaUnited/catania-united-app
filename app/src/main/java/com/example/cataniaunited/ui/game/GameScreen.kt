@@ -2,6 +2,7 @@ package com.example.cataniaunited.ui.game
 
 import android.util.Log
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -43,6 +44,7 @@ fun GameScreen(
     val application = LocalContext.current.applicationContext as MainApplication // Get app instance
     var showDicePopup by remember { mutableStateOf(false) }
     val diceResult by gameViewModel.diceResult.collectAsState()
+    val playerResources by gameViewModel.playerResources.collectAsState()
 
     // Snackbar state
     val snackbarHostState = remember { SnackbarHostState() }
@@ -82,72 +84,89 @@ fun GameScreen(
             }
         }
     ) { paddingValues ->
-
-        Box(
+        // wrap in column to position on bottom
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
+                .padding(paddingValues) // Apply Scaffold padding to the Column
         ) {
-            when (val board = gameBoardState) {
-                null -> {
-                    CircularProgressIndicator()
-                }
 
-                else -> {
-                    CatanBoard(
-                        modifier = Modifier.fillMaxSize(),
-                        tiles = board.tiles,
-                        settlementPositions = board.settlementPositions,
-                        roads = board.roads,
-                        isBuildMode = isBuildMenuOpen,
-                        playerId = gameViewModel.playerId,
-
-                        // Add click handlers
-                        onTileClicked = { tile ->
-                            Log.d(
-                                "GameScreen",
-                                "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}"
-                            )
-                            gameViewModel.handleTileClick(tile, lobbyId)
-                        },
-                        onSettlementClicked = { settlementPos ->
-                            Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
-                            gameViewModel.handleSettlementClick(settlementPos, lobbyId)
-                        },
-                        onRoadClicked = { road ->
-                            Log.d("GameScreen", "Road Clicked: ID=${road.id}")
-                            gameViewModel.handleRoadClick(road, lobbyId)
-                        }
-                    )
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(y = 32.dp)
-                            .zIndex(1f)
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        BuildButton(
-                            isOpen = isBuildMenuOpen,
-                            onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
-                        )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+                    .padding(paddingValues),
+                contentAlignment = Alignment.Center
+            ) {
+                when (val board = gameBoardState) {
+                    null -> {
+                        CircularProgressIndicator()
                     }
 
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .offset(y = 32.dp)
-                            .zIndex(1f)
-                            .padding(horizontal = 4.dp)
-                    ) {
-                        RollDiceButton {
-                            showDicePopup = true
+                    else -> {
+                        CatanBoard(
+                            modifier = Modifier.fillMaxSize(),
+                            tiles = board.tiles,
+                            settlementPositions = board.settlementPositions,
+                            roads = board.roads,
+                            isBuildMode = isBuildMenuOpen,
+                            playerId = gameViewModel.playerId,
+
+                            // Add click handlers
+                            onTileClicked = { tile ->
+                                Log.d(
+                                    "GameScreen",
+                                    "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}"
+                                )
+                                gameViewModel.handleTileClick(tile, lobbyId)
+                            },
+                            onSettlementClicked = { settlementPos ->
+                                Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
+                                gameViewModel.handleSettlementClick(settlementPos, lobbyId)
+                            },
+                            onRoadClicked = { road ->
+                                Log.d("GameScreen", "Road Clicked: ID=${road.id}")
+                                gameViewModel.handleRoadClick(road, lobbyId)
+                            }
+                        )
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .offset(y = 32.dp)
+                                .zIndex(1f)
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            BuildButton(
+                                isOpen = isBuildMenuOpen,
+                                onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .offset(y = 32.dp)
+                                .zIndex(1f)
+                                .padding(horizontal = 4.dp)
+                        ) {
+                            RollDiceButton {
+                                showDicePopup = true
+                            }
                         }
                     }
                 }
             }
+
+
+            // Player Resources Bar at the bottom
+            if (gameBoardState != null) {
+                PlayerResourcesBar(
+                    resources = playerResources
+                )
+            }
         }
+
         if (showDicePopup) {
             DiceRollerPopup(
                 onDiceRolled = { gameViewModel.rollDice(lobbyId) },

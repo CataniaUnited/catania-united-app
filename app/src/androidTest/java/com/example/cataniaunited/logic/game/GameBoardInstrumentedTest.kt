@@ -4,13 +4,12 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -26,7 +25,6 @@ import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.kotlin.mock
 import org.mockito.kotlin.spy
 
 import java.util.concurrent.CountDownLatch
@@ -34,8 +32,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 
 @RunWith(AndroidJUnit4::class)
-class GameBoardInstrumentedTest {
-
+class GameBoardInstrumentedTest() {
 
     private lateinit var mainApplication: MainApplication
     private lateinit var realClient: WebSocketClient
@@ -44,6 +41,7 @@ class GameBoardInstrumentedTest {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var playerId: String
     private lateinit var playerSessionManagerMock: PlayerSessionManager
+    private lateinit var mockGameViewModel: GameViewModel
     private val gameDataHandlerMock = GameDataHandler()
     private val testJsonParser = Json { encodeDefaults = true }
 
@@ -98,6 +96,7 @@ class GameBoardInstrumentedTest {
     private val dummyOnGameBoardReceived: (String, String) -> Unit = { lid, json -> println("DummyCallback: onGameBoardReceived $lid, json len: ${json.length}") }
     private val dummyOnClosed: (Int, String) -> Unit = { code, reason -> println("DummyCallback: onClosed $code $reason") }
     private val dummyOnDiceResult: (Int, Int) -> Unit = { _, _ -> }
+    private val dummyOnPlayerResourcesRecieved: (Map<TileType, Int>) -> Unit = { _ -> }
 
     @Test
     fun testPlaceSettlement() {
@@ -138,7 +137,8 @@ class GameBoardInstrumentedTest {
                 },
                 onClosed = dummyOnClosed,
                 gameDataHandler = gameDataHandlerMock,
-                onDiceResult = dummyOnDiceResult
+                onDiceResult = dummyOnDiceResult,
+                onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -211,7 +211,8 @@ class GameBoardInstrumentedTest {
                 },
                 onClosed = dummyOnClosed,
                 onDiceResult = dummyOnDiceResult,
-                gameDataHandlerMock,
+                gameDataHandler = gameDataHandlerMock,
+                onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -283,7 +284,8 @@ class GameBoardInstrumentedTest {
                 },
                 onClosed = dummyOnClosed,
                 onDiceResult = dummyOnDiceResult,
-                gameDataHandlerMock,
+                gameDataHandler = gameDataHandlerMock,
+                onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)

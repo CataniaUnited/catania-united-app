@@ -18,6 +18,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
@@ -108,7 +109,7 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleGameBoardJson(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
-        val boardJsonObject: JsonObject? = messageDTO.message // The payload is the board object
+        val boardJsonObject: JsonObject? = messageDTO.message?.get("gameboard")?.jsonObject // The payload is the board object
 
         if (lobbyId != null && boardJsonObject != null) {
             try {

@@ -12,7 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.cataniaunited.logic.HostJoinLogic
+import com.example.cataniaunited.logic.host_and_join.HostJoinLogic
 import com.example.cataniaunited.logic.game.GameBoardLogic
 import com.example.cataniaunited.ui.host_and_join.HostAndJoinScreen
 import com.example.cataniaunited.ui.host_and_join.JoinGameScreen

@@ -1,4 +1,4 @@
-package com.example.cataniaunited.logic
+package com.example.cataniaunited.logic.host_and_join
 
 import android.util.Log
 import com.example.cataniaunited.MainApplication
@@ -34,23 +34,6 @@ class HostJoinLogic @Inject constructor(
             return
         }
 
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        if (webSocketClient.isConnected()) {
-            val msg = MessageDTO(MessageType.JOIN_LOBBY, playerId, lobbyId, null, null)
-            webSocketClient.sendMessage(msg)
-            Log.i("HostJoinLogic", "JOIN_LOBBY sent with lobbyId: $lobbyId")
-        } else {
-            Log.e("HostJoinLogic", "WebSocket not connected")
-        }
-    }
-
-    //TODO: (Re-)move after implementation of lobby screen and start game
-    private fun getGameboard(lobbyId: String){
-        val playerId = try{
-            playerSessionManager.getPlayerId()
-        }catch (ise: IllegalStateException){
-            return
-        }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
             val msg = MessageDTO(MessageType.JOIN_LOBBY, playerId, lobbyId, null, null)

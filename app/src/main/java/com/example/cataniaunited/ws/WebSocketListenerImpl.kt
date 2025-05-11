@@ -3,6 +3,7 @@ package com.example.cataniaunited.ws
 import android.util.Log
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
@@ -10,6 +11,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import kotlinx.coroutines.launch
@@ -17,6 +19,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -30,6 +33,7 @@ open class WebSocketListenerImpl @Inject constructor(
     private val onError: OnWebSocketError,
     private val onClosed: OnWebSocketClosed,
     private val onDiceResult: OnDiceResult,
+    private val onPlayerResourcesReceived: OnPlayerResourcesReceived,
     private val gameDataHandler: GameDataHandler
 ) : WebSocketListener() {
 
@@ -54,6 +58,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.GAME_BOARD_JSON, MessageType.PLACE_SETTLEMENT, MessageType.PLACE_ROAD -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
+                MessageType.PLAYER_RESOURCES -> handlePlayerResources(messageDTO)
                 // TODO: Other Messages
 
                 MessageType.ERROR -> {
@@ -65,6 +70,29 @@ open class WebSocketListenerImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e("WebSocketListener", "Error parsing or handling message: $text", e)
             onError.onError(e)
+        }
+    }
+
+    private fun handlePlayerResources(messageDTO: MessageDTO) {
+        val resourcesJson = messageDTO.message
+        if (resourcesJson != null) {
+            try {
+                val typedResources = mutableMapOf<TileType, Int>()
+                TileType.entries.forEach { tileType ->
+                    if (tileType != TileType.WASTE) {
+                        val count = resourcesJson[tileType.name.uppercase()]?.jsonPrimitive?.intOrNull ?: 0
+                        typedResources[tileType] = count
+                    }
+                }
+                Log.d("WebSocketListener", "Parsed Player Resources: $typedResources")
+                onPlayerResourcesReceived.onPlayerResourcesReceived(typedResources)
+            } catch (e: Exception) {
+                Log.e("WebSocketListener", "Error parsing player resources from: $resourcesJson", e)
+                onError.onError(IllegalArgumentException("Invalid PLAYER_RESOURCES format", e))
+            }
+        } else {
+            Log.e("WebSocketListener", "PLAYER_RESOURCES message missing resource object")
+            onError.onError(IllegalArgumentException("PLAYER_RESOURCES message missing resource object"))
         }
     }
 

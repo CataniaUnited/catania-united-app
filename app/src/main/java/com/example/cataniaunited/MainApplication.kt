@@ -2,6 +2,7 @@ package com.example.cataniaunited
 
 import android.app.Application
 import android.util.Log
+import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
@@ -9,6 +10,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
@@ -32,6 +34,7 @@ open class MainApplication : Application(),
     OnWebSocketError,
     OnWebSocketClosed,
     OnDiceResult,
+    OnPlayerResourcesReceived,
     WebSocketErrorProvider {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -143,6 +146,13 @@ open class MainApplication : Application(),
     override fun onClosed(code: Int, reason: String) {
         Log.w("MainApplication", "Callback: onClosed. Code=$code, Reason=$reason")
         clearGameData()
+    }
+
+    override fun onPlayerResourcesReceived(resources: Map<TileType, Int>) {
+        Log.d("MainApplication", "Callback: onPlayerResourcesReceived. Resources: $resources")
+        applicationScope.launch {
+            gameViewModel?.updatePlayerResources(resources)
+        }
     }
 
 

@@ -1,10 +1,9 @@
-package com.example.cataniaunited.ui.game // Or your preferred UI package
+package com.example.cataniaunited.ui.game
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,7 +13,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.cataniaunited.R // Assuming your drawables are here
+import com.example.cataniaunited.R
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.ui.theme.catanRessourceBar
 

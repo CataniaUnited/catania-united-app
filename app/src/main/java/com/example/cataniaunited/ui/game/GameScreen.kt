@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarData
@@ -35,7 +34,6 @@ import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ui.dice.DiceRollerPopup
 import com.example.cataniaunited.ui.dice.ShakeDetector
 import com.example.cataniaunited.ui.game_board.board.CatanBoard
-import com.example.cataniaunited.ui.theme.catanGold
 import kotlinx.coroutines.flow.collectLatest
 
 
@@ -127,7 +125,11 @@ fun GameScreen(
                             },
                             onSettlementClicked = { (settlementPos, isUpgrade) ->
                                 Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
-                                gameViewModel.handleSettlementClick(settlementPos, isUpgrade, lobbyId)
+                                gameViewModel.handleSettlementClick(
+                                    settlementPos,
+                                    isUpgrade,
+                                    lobbyId
+                                )
                             },
                             onRoadClicked = { road ->
                                 Log.d("GameScreen", "Road Clicked: ID=${road.id}")

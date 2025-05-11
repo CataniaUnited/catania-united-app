@@ -34,7 +34,6 @@ import kotlin.concurrent.thread
 @RunWith(AndroidJUnit4::class)
 class GameBoardInstrumentedTest() {
 
-
     private lateinit var mainApplication: MainApplication
     private lateinit var realClient: WebSocketClient
     private lateinit var spyClient: WebSocketClient
@@ -42,6 +41,7 @@ class GameBoardInstrumentedTest() {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var playerId: String
     private lateinit var playerSessionManagerMock: PlayerSessionManager
+    private lateinit var mockGameViewModel: GameViewModel
     private val gameDataHandlerMock = GameDataHandler()
     private val testJsonParser = Json { encodeDefaults = true }
 

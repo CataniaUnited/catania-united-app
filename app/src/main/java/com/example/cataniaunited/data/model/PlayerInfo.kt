@@ -6,6 +6,6 @@ import kotlinx.serialization.Serializable
 data class PlayerInfo(
     val playerId: String = "",
     val username: String,
-    val colorHex: String = "#000000",
+    val colorHex: String = "#8C4E27",
     val victoryPoints: Int = 0
 )

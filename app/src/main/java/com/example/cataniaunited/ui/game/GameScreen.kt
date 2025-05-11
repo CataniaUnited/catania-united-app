@@ -1,23 +1,10 @@
 package com.example.cataniaunited.ui.game
 
 import android.util.Log
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.offset
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
-import androidx.compose.material3.SnackbarData
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,7 +20,6 @@ import com.example.cataniaunited.ui.game_board.board.CatanBoard
 import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import kotlinx.coroutines.flow.collectLatest
 
-
 @Composable
 fun GameScreen(
     lobbyId: String,
@@ -41,132 +27,118 @@ fun GameScreen(
 ) {
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
     val isBuildMenuOpen by gameViewModel.isBuildMenuOpen.collectAsState()
-    val application = LocalContext.current.applicationContext as MainApplication // Get app instance
+    val application = LocalContext.current.applicationContext as MainApplication
     var showDicePopup by remember { mutableStateOf(false) }
     val diceResult by gameViewModel.diceResult.collectAsState()
-
-    // Snackbar state
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(snackbarHostState) {
-        gameViewModel.errorFlow.collectLatest { errorMessage ->
-            snackbarHostState.showSnackbar(
-                message = errorMessage,
-                withDismissAction = true
-            )
-        }
-    }
-
-    // Trigger initial load when the screen enters composition if state is null
-    LaunchedEffect(Unit) { // Run once when GameScreen enters composition
+    LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
-        if (gameViewModel.gameBoardState.value == null) {
+        if (gameBoardState == null) {
             gameViewModel.initializeBoardState(application.latestBoardJson)
         }
     }
 
-    ShakeDetector(onShake = {
+    LaunchedEffect(snackbarHostState) {
+        gameViewModel.errorFlow.collectLatest { message ->
+            snackbarHostState.showSnackbar(message, withDismissAction = true)
+        }
+    }
+
+    ShakeDetector {
         if (!showDicePopup) {
             showDicePopup = true
             gameViewModel.rollDice(lobbyId)
         }
-    })
+    }
 
     Scaffold(
+        containerColor = Color(0xff177fde), // FULL SCREEN BLUE
         snackbarHost = {
-            SnackbarHost(snackbarHostState) { data: SnackbarData ->
+            SnackbarHost(snackbarHostState) {
                 Snackbar(
-                    snackbarData = data,
+                    snackbarData = it,
                     containerColor = Color.Red,
                     contentColor = Color.White
                 )
             }
         }
-    ) { paddingValues ->
-
-        Box(
+    ) { padding ->
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues),
-            contentAlignment = Alignment.Center
+                .padding(padding)
+                .background(Color(0xff177fde)) // also ensure blue if scaffold fails
         ) {
-            when (val board = gameBoardState) {
-                null -> {
-                    CircularProgressIndicator()
+            // Top player bar, fixed height
+            LivePlayerVictoryBar(
+                viewModel = gameViewModel,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp)
+            )
+
+            // Board & buttons in Box taking rest of screen
+            Box(modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
+            ) {
+                when (val board = gameBoardState) {
+                    null -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    else -> {
+                        // Main game board
+                        CatanBoard(
+                            modifier = Modifier.fillMaxSize(),
+                            tiles = board.tiles,
+                            settlementPositions = board.settlementPositions,
+                            roads = board.roads,
+                            isBuildMode = isBuildMenuOpen,
+                            playerId = gameViewModel.playerId,
+                            onTileClicked = { gameViewModel.handleTileClick(it, lobbyId) },
+                            onSettlementClicked = { gameViewModel.handleSettlementClick(it, lobbyId) },
+                            onRoadClicked = { gameViewModel.handleRoadClick(it, lobbyId) }
+                        )
+
+                        // Build button
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(top = 32.dp, end = 16.dp)
+                                .zIndex(2f)
+                        ) {
+                            BuildButton(
+                                isOpen = isBuildMenuOpen,
+                                onClick = { gameViewModel.setBuildMenuOpen(it) }
+                            )
+                        }
+
+                        // Dice button
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .padding(top = 32.dp, start = 8.dp)
+                                .zIndex(2f)
+                        ) {
+                            RollDiceButton {
+                                showDicePopup = true
+                            }
+                        }
+                    }
                 }
 
-                else -> {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopCenter)
-                            .padding(top = 12.dp)
-                            .zIndex(2f)
-                    ) {
-                        LivePlayerVictoryBar(viewModel = gameViewModel)
-                    }
-                    CatanBoard(
-                        modifier = Modifier.fillMaxSize(),
-                        tiles = board.tiles,
-                        settlementPositions = board.settlementPositions,
-                        roads = board.roads,
-                        isBuildMode = isBuildMenuOpen,
-                        playerId = gameViewModel.playerId,
-
-                        // Add click handlers
-                        onTileClicked = { tile ->
-                            Log.d(
-                                "GameScreen",
-                                "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}"
-                            )
-                            gameViewModel.handleTileClick(tile, lobbyId)
+                // Dice popup
+                if (showDicePopup) {
+                    DiceRollerPopup(
+                        onDiceRolled = { gameViewModel.rollDice(lobbyId) },
+                        onClose = {
+                            showDicePopup = false
+                            gameViewModel.updateDiceResult(null, null)
                         },
-                        onSettlementClicked = { settlementPos ->
-                            Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
-                            gameViewModel.handleSettlementClick(settlementPos, lobbyId)
-                        },
-                        onRoadClicked = { road ->
-                            Log.d("GameScreen", "Road Clicked: ID=${road.id}")
-                            gameViewModel.handleRoadClick(road, lobbyId)
-                        }
+                        dice1Result = diceResult?.first,
+                        dice2Result = diceResult?.second
                     )
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .offset(y = 32.dp)
-                            .zIndex(1f)
-                            .padding(horizontal = 16.dp)
-                    ) {
-                        BuildButton(
-                            isOpen = isBuildMenuOpen,
-                            onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopStart)
-                            .offset(y = 32.dp)
-                            .zIndex(1f)
-                            .padding(horizontal = 4.dp)
-                    ) {
-                        RollDiceButton {
-                            showDicePopup = true
-                        }
-                    }
                 }
             }
-        }
-        if (showDicePopup) {
-            DiceRollerPopup(
-                onDiceRolled = { gameViewModel.rollDice(lobbyId) },
-                onClose = {
-                    showDicePopup = false
-                    gameViewModel.updateDiceResult(null, null)
-                },
-                dice1Result = diceResult?.first,
-                dice2Result = diceResult?.second
-            )
         }
     }
 }

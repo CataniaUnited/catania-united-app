@@ -14,7 +14,7 @@ import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.data.model.PlayerInfo
 
 @Composable
-fun LivePlayerVictoryBar(viewModel: GameViewModel) {
+fun LivePlayerVictoryBar(viewModel: GameViewModel, modifier: Modifier = Modifier) {
     val boardState by viewModel.gameBoardState.collectAsState()
     val vpMap by viewModel.victoryPoints.collectAsState()
 
@@ -24,7 +24,7 @@ fun LivePlayerVictoryBar(viewModel: GameViewModel) {
                 playerId = player.playerId,
                 username = player.username,
                 colorHex = player.colorHex,
-                victoryPoints = vpMap[player.username] ?: 0
+                victoryPoints = vpMap[player.playerId] ?: 0
             )
         } ?: emptyList()
     }

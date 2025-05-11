@@ -127,13 +127,20 @@ open class WebSocketListenerImpl @Inject constructor(
                 onGameBoardReceived.onGameBoardReceived(lobbyId, boardJsonString)
 
 
-                val vpJson = boardJsonObject["victoryPoints"]?.jsonObject
-                if (vpJson != null) {
-                    val parsedVPs = vpJson.mapValues { it.value.jsonPrimitive.intOrNull ?: 0 }
+                val playersJson = messageDTO.message?.get("players")?.jsonObject
+                if (playersJson != null) {
+                    val vpMap = mutableMapOf<String, Int>()
+                    for ((playerId, playerNode) in playersJson) {
+                        val vp = playerNode.jsonObject["victoryPoints"]?.jsonPrimitive?.intOrNull ?: 0
+                        vpMap[playerId] = vp
+                    }
+
+
                     MainApplication.getInstance().applicationScope.launch {
-                        gameDataHandler.updateVictoryPoints(parsedVPs)
+                        gameDataHandler.updateVictoryPoints(vpMap)
                     }
                 }
+
 
                 MainApplication.getInstance().applicationScope.launch {
                     gameDataHandler.updateGameBoard(boardJsonString)

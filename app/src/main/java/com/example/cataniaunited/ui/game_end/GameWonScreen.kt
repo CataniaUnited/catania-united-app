@@ -41,7 +41,7 @@ fun GameWinScreen(
     Box(
         modifier = Modifier
             .widthIn(max = 800.dp)
-            .heightIn(max = 800.dp)
+            .heightIn(max = 370.dp)
             .border(4.5.dp, catanClayDark, RoundedCornerShape(12.dp))
             .background(catanClayLight, RoundedCornerShape(12.dp)),
 

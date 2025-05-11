@@ -2,6 +2,7 @@ package com.example.cataniaunited.ws
 
 import android.util.Log
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
@@ -17,6 +18,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
@@ -70,6 +72,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
+                MessageType.GAME_WON -> handleGameWon(messageDTO)
 
                 // TODO: Other Messages
 
@@ -146,6 +149,33 @@ open class WebSocketListenerImpl @Inject constructor(
             onError.onError(e)
         }
     }
+
+    private fun handleGameWon(messageDTO: MessageDTO) {
+        try {
+            val winnerId = messageDTO.message?.get("winner")?.jsonPrimitive?.contentOrNull
+            val leaderboard = messageDTO.message?.get("leaderboard")?.jsonArray
+
+            if (winnerId != null && leaderboard != null) {
+                val players = leaderboard.mapNotNull { entry ->
+                    val obj = entry.jsonObject
+                    PlayerInfo(
+                        playerId = "",
+                        username = obj["username"]?.jsonPrimitive?.contentOrNull ?: "",
+                        colorHex = "#8C4E27",
+                        victoryPoints = obj["vp"]?.jsonPrimitive?.intOrNull ?: 0
+                    )
+                }
+
+                MainApplication.getInstance().applicationScope.launch {
+                    MainApplication.getInstance().onGameWon(players.first(), players)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("WebSocketListener", "Error processing GAME_WON message", e)
+        }
+    }
+
+
 
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {

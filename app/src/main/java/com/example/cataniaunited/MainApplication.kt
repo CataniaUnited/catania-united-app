@@ -2,6 +2,7 @@ package com.example.cataniaunited
 
 import android.app.Application
 import android.util.Log
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
@@ -63,6 +64,10 @@ open class MainApplication : Application(),
         set(value) { // Setter updates the flow
             _currentLobbyIdFlow.value = value
         }
+
+    private val _gameWonState = MutableStateFlow<Pair<PlayerInfo, List<PlayerInfo>>?>(null)
+    val gameWonState: StateFlow<Pair<PlayerInfo, List<PlayerInfo>>?> = _gameWonState.asStateFlow()
+
 
     companion object {
         @Volatile // Ensure visibility across threads
@@ -126,6 +131,13 @@ open class MainApplication : Application(),
         }
         latestBoardJson = boardJson
     }
+
+    fun onGameWon(winner: PlayerInfo, leaderboard: List<PlayerInfo>) {
+        applicationScope.launch {
+            _gameWonState.value = winner to leaderboard
+        }
+    }
+
 
 
     override fun onDiceResult(dice1: Int, dice2: Int) {

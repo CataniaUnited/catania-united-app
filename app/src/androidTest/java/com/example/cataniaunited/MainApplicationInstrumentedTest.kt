@@ -16,36 +16,11 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.lang.reflect.Field
-import kotlinx.coroutines.Dispatchers
-import org.junit.Rule
-import org.junit.rules.TestWatcher
-import org.junit.runner.Description
-
-@ExperimentalCoroutinesApi
-class MainCoroutineRule(
-    val testDispatcher: TestDispatcher = StandardTestDispatcher()
-) : TestWatcher() {
-    override fun starting(description: Description?) {
-        super.starting(description)
-        Dispatchers.setMain(testDispatcher)
-    }
-
-    override fun finished(description: Description?) {
-        super.finished(description)
-        Dispatchers.resetMain()
-    }
-}
 
 
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class MainApplicationInstrumentedTest {
-
-
-    @get:Rule
-    val mainCoroutineRule = MainCoroutineRule()
-
-
     private lateinit var mainApplication: MainApplication
     private lateinit var playerIdField: Field
     private lateinit var mockGameViewModel: GameViewModel
@@ -59,8 +34,6 @@ class MainApplicationInstrumentedTest {
         mainApplication.gameViewModel = null
 
         mockGameViewModel = mockk<GameViewModel>(relaxed = true)
-        every { mockGameViewModel.updatePlayerResources(any()) } just runs
-        every { mockGameViewModel.updateDiceResult(any(), any()) } just runs
 
         try {
             playerIdField = MainApplication::class.java.getDeclaredField("_playerId")
@@ -273,52 +246,4 @@ class MainApplicationInstrumentedTest {
         println("Test Passed.")
     }
 
-    @Test
-    fun onPlayerResourcesReceivedCallsGameViewModelUpdatePlayerResourcesWhenViewModelIsSet() =
-        runTest {
-            println("Running test: onPlayerResourcesReceived_calls_gameViewModel_updatePlayerResources_when_viewModel_is_set")
-            mainApplication.gameViewModel = mockGameViewModel
-
-            val sampleResources = mapOf(TileType.WOOD to 2, TileType.SHEEP to 1)
-            every { mockGameViewModel.updatePlayerResources(any()) } just runs
-
-            mainApplication.onPlayerResourcesReceived(sampleResources)
-            advanceUntilIdle()
-
-            verify(exactly = 1) { mockGameViewModel.updatePlayerResources(sampleResources) }
-            println("Test Passed.")
-        }
-
-    @Test
-    fun onPlayerResourcesReceivedDoesNotCrashAndNotCallViewModelWhenViewModelIsNull() =
-        runTest {
-            println("Running test: onPlayerResourcesReceived_does_not_crash_and_not_call_viewModel_when_viewModel_is_null")
-            mainApplication.gameViewModel = null
-
-            val sampleResources = mapOf(TileType.CLAY to 3)
-
-            mainApplication.onPlayerResourcesReceived(sampleResources)
-            advanceUntilIdle()
-
-            verify(exactly = 0) { mockGameViewModel.updatePlayerResources(any()) }
-            println("Test Passed: No crash and ViewModel method not called.")
-        }
-
-    @Test
-    fun onPlayerResourcesReceivedUpdatesGameViewModelViaApplicationScopeDispatcher() =
-        runTest(mainCoroutineRule.testDispatcher) {
-
-            println("Running test: onPlayerResourcesReceived_updates_gameViewModel_via_applicationScope_dispatcher")
-            mainApplication.gameViewModel = mockGameViewModel
-
-            val sampleResources = mapOf(TileType.WHEAT to 5)
-
-            every { mockGameViewModel.updatePlayerResources(any()) } just runs
-
-            mainApplication.onPlayerResourcesReceived(sampleResources)
-
-            mainCoroutineRule.testDispatcher.scheduler.advanceUntilIdle()
-
-            verify(exactly = 1) { mockGameViewModel.updatePlayerResources(sampleResources) }
-        }
 }

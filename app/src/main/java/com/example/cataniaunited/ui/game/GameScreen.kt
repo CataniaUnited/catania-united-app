@@ -14,6 +14,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ui.dice.DiceRollerPopup
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.collectLatest
 @Composable
 fun GameScreen(
     lobbyId: String,
+    navController: NavController,
     gameViewModel: GameViewModel = hiltViewModel(),
 ) {
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
@@ -159,10 +161,9 @@ fun GameScreen(
                         onReturnToMenu = {
                             application.clearGameData()
                             application.clearLobbyData()
-                        },
-                        onStartNewGame = {
-                            application.clearGameData()
-                            application.clearLobbyData()
+                            navController.navigate("starting") {
+                                popUpTo("starting") { inclusive = true }
+                            }
                         }
                     )
                 }
@@ -171,3 +172,6 @@ fun GameScreen(
 
     }
 }
+
+
+

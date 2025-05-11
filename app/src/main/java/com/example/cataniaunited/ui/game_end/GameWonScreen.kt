@@ -36,7 +36,6 @@ fun GameWinScreen(
     winner: PlayerInfo,
     leaderboard: List<PlayerInfo>,
     onReturnToMenu: () -> Unit,
-    onStartNewGame: () -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -160,21 +159,6 @@ fun GameWinScreen(
             )
         }
 
-        Button(
-            onClick = onStartNewGame,
-            colors = ButtonDefaults.buttonColors(containerColor = catanGold),
-            shape = RoundedCornerShape(12.dp),
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-                .shadow(elevation = 5.dp, shape = RoundedCornerShape(12.dp))
-        ) {
-            Text(
-                text = "Start new game",
-                style = appTypography.bodyLarge.copy(fontWeight = Bold),
-                color = Color.Black
-            )
-        }
 
 
     }
@@ -191,6 +175,5 @@ fun PreviewGameWinScreen() {
             PlayerInfo("3", "Jean", "#D4AF37", 7)
         ),
         onReturnToMenu = {},
-        onStartNewGame = {}
     )
 }

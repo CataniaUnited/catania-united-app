@@ -142,7 +142,9 @@ class WebSocketListenerImplInstrumentedTest {
         val messageJson = buildJsonObject {
             put("type", MessageType.GAME_BOARD_JSON.name)
             put("lobbyId", lobbyId)
-            put("message", boardJsonObject)
+            put("message", buildJsonObject {
+                put("gameboard", boardJsonObject)
+            })
         }.toString()
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
@@ -170,7 +172,9 @@ class WebSocketListenerImplInstrumentedTest {
         val messageJson = buildJsonObject {
             put("type", MessageType.GAME_BOARD_JSON.name)
             put("lobbyId", lobbyId)
-            put("message", boardJsonObject)
+            put("message", buildJsonObject {
+                put("gameboard", boardJsonObject)
+            })
         }.toString()
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
@@ -189,7 +193,9 @@ class WebSocketListenerImplInstrumentedTest {
         val messageJson = buildJsonObject {
             put("type", MessageType.PLACE_SETTLEMENT.name)
             put("lobbyId", lobbyId)
-            put("message", boardJsonObject)
+            put("message", buildJsonObject {
+                put("gameboard", boardJsonObject)
+            })
         }.toString()
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
@@ -208,7 +214,9 @@ class WebSocketListenerImplInstrumentedTest {
         val messageJson = buildJsonObject {
             put("type", MessageType.PLACE_ROAD.name)
             put("lobbyId", lobbyId)
-            put("message", boardJsonObject)
+            put("message", buildJsonObject {
+                put("gameboard", boardJsonObject)
+            })
         }.toString()
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
@@ -323,8 +331,8 @@ class WebSocketListenerImplInstrumentedTest {
 
     @Test
     fun handleDiceResult_callsOnDiceResultWithParsedValues() {
-        var receivedDice1 = 3
-        var receivedDice2 = 4
+        val receivedDice1 = 3
+        val receivedDice2 = 4
 
         val message = buildJsonObject {
             put("dice1", receivedDice1)

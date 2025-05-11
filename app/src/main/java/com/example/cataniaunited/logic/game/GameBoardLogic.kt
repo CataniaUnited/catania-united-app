@@ -65,7 +65,7 @@ class GameBoardLogic @Inject constructor(
         }
     }
 
-    fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4) {
+    fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4, isCreate: Boolean = true) {
 
         val playerId = try{
             playerSessionManager.getPlayerId()
@@ -81,7 +81,8 @@ class GameBoardLogic @Inject constructor(
                 webSocketClient.sendMessage(joinLobbyMessage)
             }
 
-            val messageToSend = MessageDTO( MessageType.CREATE_GAME_BOARD, playerId, lobbyId, null, messagePayload )
+            val type: MessageType = if(isCreate) MessageType.CREATE_GAME_BOARD else MessageType.GET_GAME_BOARD
+            val messageToSend = MessageDTO(type, playerId, lobbyId, null, messagePayload )
             webSocketClient.sendMessage(messageToSend)
 
             val setPlayerActiveMessage = MessageDTO( MessageType.SET_ACTIVE_PLAYER, playerId, lobbyId )

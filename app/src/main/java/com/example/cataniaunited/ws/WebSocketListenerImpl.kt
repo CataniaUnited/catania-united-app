@@ -109,7 +109,7 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleGameBoardJson(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
-        val boardJsonObject: JsonObject? = messageDTO.message?.getValue("gameboard")?.jsonObject // The payload is the board object
+        val boardJsonObject: JsonObject? = messageDTO.message?.get("gameboard")?.jsonObject // The payload is the board object
 
         if (lobbyId != null && boardJsonObject != null) {
             try {

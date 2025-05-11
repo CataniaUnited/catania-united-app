@@ -107,9 +107,9 @@ class MainActivity : ComponentActivity() {
                                 hostJoinLogic.sendCreateLobby()
 
                                 //TODO: Remove after implementation of lobby and start game
-                                val lobbyId: String? = application.currentLobbyId;
+                                val lobbyId: String? = application.currentLobbyId
                                 if(lobbyId != null){
-                                    gameBoardLogic.requestBoardForLobby(lobbyId)
+                                    gameBoardLogic.requestBoardForLobby(lobbyId = lobbyId)
                                     navController.navigate("game/${lobbyId}")
                                 }
                              },
@@ -123,7 +123,7 @@ class MainActivity : ComponentActivity() {
                                 hostJoinLogic.sendJoinLobby(lobbyId)
 
                                 //TODO: Remove after implementation of lobby and start game
-                                gameBoardLogic.requestBoardForLobby(lobbyId)
+                                gameBoardLogic.requestBoardForLobby(lobbyId = lobbyId, isCreate = false)
                                 navController.navigate("game/${lobbyId}")
                             }
                         )

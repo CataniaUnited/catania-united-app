@@ -57,7 +57,7 @@ class GameBoardLogic @Inject constructor(
         }
     }
 
-    fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4, isCreate: Boolean = false) {
+    fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4, isCreate: Boolean = true) {
 
         val playerId = try{
             playerSessionManager.getPlayerId()

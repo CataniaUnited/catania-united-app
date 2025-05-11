@@ -120,9 +120,9 @@ fun GameScreen(
                                 )
                                 gameViewModel.handleTileClick(tile, lobbyId)
                             },
-                            onSettlementClicked = { settlementPos ->
+                            onSettlementClicked = { (settlementPos, isUpgrade) ->
                                 Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
-                                gameViewModel.handleSettlementClick(settlementPos, lobbyId)
+                                gameViewModel.handleSettlementClick(settlementPos, isUpgrade, lobbyId)
                             },
                             onRoadClicked = { road ->
                                 Log.d("GameScreen", "Road Clicked: ID=${road.id}")

@@ -18,6 +18,7 @@ enum class MessageType {
     SET_USERNAME,
     SET_ACTIVE_PLAYER, //-> TODO: Remove after implementation of player order
     PLACE_SETTLEMENT,
+    UPGRADE_SETTLEMENT,
     PLACE_ROAD,
     CREATE_GAME_BOARD,
     ROLL_DICE

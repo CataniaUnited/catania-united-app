@@ -98,28 +98,20 @@ class GameViewModel @Inject constructor(
         // 3) call gameBoardLogic....
     }
 
-    fun handleSettlementClick(settlementPosition: SettlementPosition, lobbyId: String) {
+    fun handleSettlementClick(settlementPosition: SettlementPosition, isUpgrade: Boolean, lobbyId: String) {
         Log.d(
             "GameViewModel",
             "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}"
         )
-        // TODO: Implement logic for placing/upgrading settlement DON'T FORGET UPGRADE XD
-        // 1) Check game state (setup or not? your turn?)
-        // 2) Check resources
-        // 3) Validate placement rules (distance, road connection)
-        // 4) Get lobbyId and PlayerId
-        // 5) Call gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
-        gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
+        if(isUpgrade){
+            gameBoardLogic.upgradeSettlement(settlementPosition.id, lobbyId)
+        }else{
+            gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
+        }
     }
 
     fun handleRoadClick(road: Road, lobbyId: String) {
         Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
-        // TODO: Implement logic for placing road
-        // 1) Check game state (setup or not? your turn?)
-        // 2) Check resources
-        // 3) Validate placement rules (road connection, empty)
-        // 4) Get lobbyId and PlayerId
-        // 5) Call gameBoardLogic.placeRoad(road.id, lobbyId)
         gameBoardLogic.placeRoad(road.id, lobbyId)
     }
 

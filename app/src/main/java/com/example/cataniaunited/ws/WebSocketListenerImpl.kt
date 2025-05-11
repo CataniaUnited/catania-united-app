@@ -111,55 +111,41 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleGameBoardJson(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
-
-        val message = messageDTO.message
-        val boardJsonObject: JsonObject? = when {
-            message == null -> null
-            message.containsKey("gameboard") -> message["gameboard"]?.jsonObject
-            else -> message
+        val message = messageDTO.message ?: run {
+            Log.e("WebSocketListener", "Message is null")
+            return
         }
 
-        if (lobbyId != null && boardJsonObject != null) {
-            try {
+        try {
+            val fullMessageString = jsonParser.encodeToString(JsonObject.serializer(), message)
 
-                val boardJsonString = jsonParser.encodeToString(JsonObject.serializer(), boardJsonObject)
-                Log.d("WebSocketListener", "Cleaned gameboard JSON to parse: $boardJsonString")
-                onGameBoardReceived.onGameBoardReceived(lobbyId, boardJsonString)
+            val gameboardNode = message["gameboard"]?.jsonObject ?: message // Fallback to full message
+            val playersNode = message["players"]?.jsonObject
 
-
-                val playersJson = messageDTO.message?.get("players")?.jsonObject
-                if (playersJson != null) {
-                    val vpMap = mutableMapOf<String, Int>()
-                    for ((playerId, playerNode) in playersJson) {
-                        val vp = playerNode.jsonObject["victoryPoints"]?.jsonPrimitive?.intOrNull ?: 0
-                        vpMap[playerId] = vp
-                    }
-
-
-                    MainApplication.getInstance().applicationScope.launch {
-                        gameDataHandler.updateVictoryPoints(vpMap)
-                    }
-                }
-
-
-                MainApplication.getInstance().applicationScope.launch {
-                    gameDataHandler.updateGameBoard(boardJsonString)
-                }
-
-            } catch (e: Exception) {
-                Log.e("WebSocketListener", "Error converting board message JsonObject to String", e)
-                onError.onError(e)
+            MainApplication.getInstance().applicationScope.launch {
+                gameDataHandler.updateGameBoard(fullMessageString)
             }
-        } else {
-            Log.e("WebSocketListener", "GAME_BOARD_JSON missing lobbyId ('${lobbyId}') or message object ('${boardJsonObject}')")
-            onError.onError(IllegalArgumentException("Invalid GAME_BOARD_JSON format"))
+
+            // Update victory points if players data exists
+            playersNode?.let { playersJson ->
+                val vpMap = mutableMapOf<String, Int>()
+                for ((playerId, playerNode) in playersJson) {
+                    val vp = playerNode.jsonObject["victoryPoints"]?.jsonPrimitive?.intOrNull ?: 0
+                    vpMap[playerId] = vp
+                }
+                Log.d("WebSocketListener", "Parsed VP map: $vpMap")
+                MainApplication.getInstance().applicationScope.launch {
+                    gameDataHandler.updateVictoryPoints(vpMap)
+                }
+            }
+
+            onGameBoardReceived.onGameBoardReceived(lobbyId ?: "", fullMessageString)
+
+        } catch (e: Exception) {
+            Log.e("WebSocketListener", "Error processing game board", e)
+            onError.onError(e)
         }
     }
-
-
-
-
-
 
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {

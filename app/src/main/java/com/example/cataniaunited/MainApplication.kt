@@ -127,6 +127,7 @@ open class MainApplication : Application(),
         latestBoardJson = boardJson
     }
 
+
     override fun onDiceResult(dice1: Int, dice2: Int) {
         Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")
         applicationScope.launch {

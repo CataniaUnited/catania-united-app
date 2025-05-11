@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.Response
@@ -47,13 +48,29 @@ open class WebSocketListenerImpl @Inject constructor(
         Log.d("WebSocketListener", "Raw Message Received: $text")
         try {
             val messageDTO = jsonParser.decodeFromString<MessageDTO>(text)
-            Log.d("WebSocketListener", "Parsed: Type=${messageDTO.type}, Lobby=${messageDTO.lobbyId}, MsgObj=${messageDTO.message}")
+
+            Log.d("WebSocketListener", "Parsed MessageDTO:")
+            Log.d("WebSocketListener", "  → Type: ${messageDTO.type}")
+            Log.d("WebSocketListener", "  → LobbyId: ${messageDTO.lobbyId}")
+            Log.d("WebSocketListener", "  → Player: ${messageDTO.player}")
+            Log.d("WebSocketListener", "  → Message: ${messageDTO.message}")
+
+
+            val rootJson = messageDTO.message
+            val gameboardNode = rootJson?.get("gameboard")
+            val playersNode = rootJson?.get("players")
+
+            Log.d("WebSocketListener", "Extracted 'gameboard' field: $gameboardNode")
+            Log.d("WebSocketListener", "Extracted 'players' field: $playersNode")
+
 
             when (messageDTO.type) {
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
                 MessageType.GAME_BOARD_JSON, MessageType.PLACE_SETTLEMENT, MessageType.PLACE_ROAD -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
+                MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
+
                 // TODO: Other Messages
 
                 MessageType.ERROR -> {
@@ -65,6 +82,19 @@ open class WebSocketListenerImpl @Inject constructor(
         } catch (e: Exception) {
             Log.e("WebSocketListener", "Error parsing or handling message: $text", e)
             onError.onError(e)
+        }
+    }
+
+    private fun handlePlayerJoined(messageDTO: MessageDTO) {
+        val playerId = messageDTO.player
+        val lobbyId = messageDTO.lobbyId
+        val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
+
+        if (playerId != null && lobbyId != null) {
+            Log.i("WebSocketListener", "Player '$playerId' joined Lobby '$lobbyId' with color $color")
+            // TODO: notify UI or GameDataHandler if needed
+        } else {
+            Log.w("WebSocketListener", "PLAYER_JOINED message missing player or lobbyId")
         }
     }
 
@@ -81,20 +111,25 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleGameBoardJson(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
-        val boardJsonObject: JsonObject? = messageDTO.message // The payload is the board object
+
+        val message = messageDTO.message
+        val boardJsonObject: JsonObject? = when {
+            message == null -> null
+            message.containsKey("gameboard") -> message["gameboard"]?.jsonObject
+            else -> message
+        }
 
         if (lobbyId != null && boardJsonObject != null) {
             try {
-                // Convert the board JsonObject back to a JSON String
+
                 val boardJsonString = jsonParser.encodeToString(JsonObject.serializer(), boardJsonObject)
-                Log.d("WebSocketListener", "Extracted board JSON string for lobby: $lobbyId")
-                onGameBoardReceived.onGameBoardReceived(lobbyId, boardJsonString) // Use callback
+                Log.d("WebSocketListener", "Cleaned gameboard JSON to parse: $boardJsonString")
+                onGameBoardReceived.onGameBoardReceived(lobbyId, boardJsonString)
+
 
                 val vpJson = boardJsonObject["victoryPoints"]?.jsonObject
                 if (vpJson != null) {
-                    val parsedVPs = vpJson.mapValues { entry ->
-                        entry.value.jsonPrimitive.content.toIntOrNull() ?: 0
-                    }
+                    val parsedVPs = vpJson.mapValues { it.value.jsonPrimitive.intOrNull ?: 0 }
                     MainApplication.getInstance().applicationScope.launch {
                         gameDataHandler.updateVictoryPoints(parsedVPs)
                     }
@@ -103,15 +138,22 @@ open class WebSocketListenerImpl @Inject constructor(
                 MainApplication.getInstance().applicationScope.launch {
                     gameDataHandler.updateGameBoard(boardJsonString)
                 }
+
             } catch (e: Exception) {
                 Log.e("WebSocketListener", "Error converting board message JsonObject to String", e)
-                onError.onError(e) // Use callback
+                onError.onError(e)
             }
         } else {
             Log.e("WebSocketListener", "GAME_BOARD_JSON missing lobbyId ('${lobbyId}') or message object ('${boardJsonObject}')")
             onError.onError(IllegalArgumentException("Invalid GAME_BOARD_JSON format"))
         }
     }
+
+
+
+
+
+
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
         Log.i("WebSocketListener", "Closing: Code=$code, Reason=$reason")

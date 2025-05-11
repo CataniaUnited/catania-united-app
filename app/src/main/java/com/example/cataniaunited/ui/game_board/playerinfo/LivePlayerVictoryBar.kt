@@ -1,8 +1,10 @@
 package com.example.cataniaunited.ui.game_board.playerinfo
 
+import android.util.Log
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -25,6 +27,10 @@ fun LivePlayerVictoryBar(viewModel: GameViewModel) {
                 victoryPoints = vpMap[player.username] ?: 0
             )
         } ?: emptyList()
+    }
+
+    LaunchedEffect(players) {
+        Log.d("VictoryBar", "Loaded players: $players")
     }
 
     val currentPlayerId = viewModel.playerId

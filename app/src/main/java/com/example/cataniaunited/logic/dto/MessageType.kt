@@ -7,8 +7,11 @@ enum class MessageType {
     ERROR,
     LOBBY_UPDATED,
     PLAYER_JOINED,
+    START_GAME,
     LOBBY_CREATED,
     GAME_BOARD_JSON,
+       // ← already existed on server, add to Android
+    GAME_STARTED,
 
     //Client Messages
     CREATE_LOBBY,

@@ -6,61 +6,128 @@ import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
+import java.util.UUID
 import javax.inject.Inject
 
+/**
+ * Thin client-side helper that only knows how to fire WebSocket
+ * commands.  All game logic lives on the server.
+ */
 class GameBoardLogic @Inject constructor() {
 
+    private val tag = "GameBoardLogic"
 
-    fun placeSettlement(settlementPositionId: Int, lobbyId: String) {
-        val playerId = try { MainApplication.getInstance().getPlayerId() } catch (e: Exception) { Log.e("GameBoardLogic", "PlayerID Error", e); return }
-        val message = buildJsonObject { put("settlementPositionId", settlementPositionId) }
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        if (webSocketClient.isConnected()) {
-            webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_SETTLEMENT, playerId, lobbyId, null, message))
-        } else { Log.e("GameBoardLogic", "WS not connected for placeSettlement") }
+    /* ─────────────────────────────────────────────────────────────── */
+    /*  Lobby creation                                                 */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    fun requestCreateLobby() {
+        val playerId = runCatching { MainApplication.getInstance().getPlayerId() }
+            .getOrElse {
+                Log.e(tag, "Player-ID not available (CREATE_LOBBY)", it); return
+            }
+
+        val ws = MainApplication.getInstance().webSocketClient
+
+        if (!ws.isConnected()) {
+            Log.e(tag, "WS not connected – cannot CREATE_LOBBY"); return
+        }
+
+        ws.sendMessage(
+            MessageDTO(
+                type    = MessageType.CREATE_LOBBY,
+                player  = playerId,
+                lobbyId = null
+            )
+        )
+        Log.i(tag, "CREATE_LOBBY sent by $playerId")
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /*  Start Game (host button)                                       */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    /**
+     * 1️⃣  auto-joins `(playerCount-1)` dummy players so the lobby has enough seats
+     * 2️⃣  sends **START_GAME** – the server now does the heavy work
+     */
+    fun requestStartGame(lobbyId: String, playerCount: Int = 4) {
+        val playerId = runCatching { MainApplication.getInstance().getPlayerId() }
+            .getOrElse {
+                Log.e(tag, "Player-ID not available (START_GAME)", it); return
+            }
+
+        val ws = MainApplication.getInstance().webSocketClient
+
+        if (!ws.isConnected()) {
+            Log.e(tag, "WS not connected – cannot START_GAME"); return
+        }
+
+        /* 1 . Auto-join dummy players so lobby has [playerCount] seats */
+        repeat(playerCount - 1) {
+            ws.sendMessage(
+                MessageDTO(
+                    type    = MessageType.JOIN_LOBBY,
+                    player  = UUID.randomUUID().toString(),
+                    lobbyId = lobbyId
+                )
+            )
+        }
+
+        /* 2 . Fire the real START_GAME */
+        ws.sendMessage(
+            MessageDTO(
+                type    = MessageType.START_GAME,
+                player  = playerId,
+                lobbyId = lobbyId
+            )
+        )
+        Log.i(tag, "START_GAME sent (total=$playerCount) for lobby $lobbyId")
+    }
+
+    /* ─────────────────────────────────────────────────────────────── */
+    /*  In-game actions                                                */
+    /* ─────────────────────────────────────────────────────────────── */
+
+    fun placeSettlement(posId: Int, lobbyId: String) {
+        sendBoardAction(
+            type   = MessageType.PLACE_SETTLEMENT,
+            lobby  = lobbyId
+        ) { put("settlementPositionId", posId) }
     }
 
     fun placeRoad(roadId: Int, lobbyId: String) {
-        val playerId = try { MainApplication.getInstance().getPlayerId() } catch (e: Exception) { Log.e("GameBoardLogic", "PlayerID Error", e); return }
-        val message = buildJsonObject { put("roadId", roadId) }
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        if (webSocketClient.isConnected()) {
-            webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, message))
-        } else { Log.e("GameBoardLogic", "WS not connected for placeRoad") }
+        sendBoardAction(
+            type   = MessageType.PLACE_ROAD,
+            lobby  = lobbyId
+        ) { put("roadId", roadId) }
     }
 
-    fun requestCreateLobby() {
-        val playerId = try {
-            MainApplication.getInstance().getPlayerId()
-        } catch (e: IllegalStateException) {
-            Log.e("GameBoardLogic", "Player ID not initialized when requesting lobby creation.", e)
-            return
-        }
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        if (webSocketClient.isConnected()) {
-            val messageToSend = MessageDTO( MessageType.CREATE_LOBBY, playerId, null, null, null)
-            webSocketClient.sendMessage(messageToSend)
-            Log.i("GameBoardLogic", "Sent CREATE_LOBBY request.")
-        } else {
-            Log.e("GameBoardLogic", "WebSocket not connected when trying to create lobby.")
-        }
-    }
+    /* Helper – builds small JSON payloads and fires over WS */
+    private inline fun sendBoardAction(
+        type: MessageType,
+        lobby: String,
+        payloadBuilder: kotlinx.serialization.json.JsonObjectBuilder.() -> Unit
+    ) {
+        val playerId = runCatching { MainApplication.getInstance().getPlayerId() }
+            .getOrElse { Log.e(tag, "Player-ID not available ($type)", it); return }
 
-    fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4) {
-        val playerId = try {
-            MainApplication.getInstance().getPlayerId()
-        } catch (e: IllegalStateException) {
-            Log.e("GameBoardLogic", "Player ID not initialized when requesting new game board.", e)
-            return
+        val ws = MainApplication.getInstance().webSocketClient
+
+        if (!ws.isConnected()) {
+            Log.e(tag, "WS not connected – cannot send $type"); return
         }
-        val messagePayload = buildJsonObject { put("playerCount", playerCount) }
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        if (webSocketClient.isConnected()) {
-            val messageToSend = MessageDTO( MessageType.CREATE_GAME_BOARD, playerId, lobbyId, null, messagePayload )
-            webSocketClient.sendMessage(messageToSend)
-            Log.i("GameBoardLogic", "Sent CREATE_GAME_BOARD request for $playerCount players in lobby $lobbyId.")
-        } else {
-            Log.e("GameBoardLogic", "WebSocket not connected when trying to create game board.")
-        }
+
+        val payload = buildJsonObject(payloadBuilder)
+
+        ws.sendMessage(
+            MessageDTO(
+                type    = type,
+                player  = playerId,
+                lobbyId = lobby,
+                message = payload
+            )
+        )
+        Log.d(tag, "$type sent in lobby $lobby with payload $payload")
     }
 }

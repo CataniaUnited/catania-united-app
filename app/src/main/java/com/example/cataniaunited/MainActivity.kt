@@ -1,51 +1,52 @@
 package com.example.cataniaunited
 
-import androidx.compose.runtime.*
-import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import android.os.Bundle
+import android.util.Log
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cataniaunited.logic.game.GameBoardLogic
-import com.example.cataniaunited.ui.startingpage.StartingScreen
-import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
-import com.example.cataniaunited.ui.tutorial.TutorialScreen
 import com.example.cataniaunited.ui.game_board.board.GameScreen
+import com.example.cataniaunited.ui.startingpage.StartingScreen
+import com.example.cataniaunited.ui.tutorial.TutorialScreen
+import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-    private val gameBoardLogic = GameBoardLogic()
+
+    @Inject lateinit var gameBoardLogic: GameBoardLogic
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         enableEdgeToEdge()
+
         setContent {
             CataniaUnitedTheme(darkTheme = false, dynamicColor = false) {
                 val navController = rememberNavController()
-                val application = application as MainApplication
+                val app = application as MainApplication
 
-                val currentLobbyIdState by application.currentLobbyIdFlow.collectAsState()
-
-                LaunchedEffect(currentLobbyIdState) {
-                    Log.d("MainActivity", "Collected Lobby ID State changed: $currentLobbyIdState")
+                // 1) Observe current lobby ID for display
+                val currentLobbyId by app.currentLobbyIdFlow.collectAsState()
+                LaunchedEffect(currentLobbyId) {
+                    Log.d("MainActivity", "Lobby ID changed: $currentLobbyId")
                 }
 
-
-
+                // 2) When server pushes GAME_STARTED, navigate to GameScreen
                 LaunchedEffect(Unit) {
-                    Log.d("MainActivity", "Setting up navigation listener.")
-                    application.navigateToGameFlow
+                    app.navigateToGameFlow
                         .onEach { lobbyId ->
-                            Log.i("MainActivity", "Received navigation trigger for Lobby: $lobbyId")
+                            Log.i("MainActivity", "Navigating to GameScreen for lobby: $lobbyId")
                             navController.navigate("game/$lobbyId") {
                                 popUpTo("starting") { inclusive = true }
                             }
@@ -53,61 +54,40 @@ class MainActivity : ComponentActivity() {
                         .launchIn(lifecycleScope)
                 }
 
-                NavHost(
-                    navController = navController,
-                    startDestination = "starting"
-                ) {
+                // 3) Nav graph
+                NavHost(navController = navController, startDestination = "starting") {
                     composable("starting") {
                         StartingScreen(
-                            onLearnClick = { navController.navigate("tutorial") },
+                            currentLobbyId     = currentLobbyId,
+                            onLearnClick       = { navController.navigate("tutorial") },
                             onCreateLobbyClick = {
-                                Log.i("MainActivity", "Create Lobby button clicked.")
-                                try {
-                                    gameBoardLogic.requestCreateLobby()
-                                } catch (e: Exception) {
-                                    Log.e("MainActivity", "Error requesting lobby creation", e)
-                                }
+                                Log.i("MainActivity", "CREATE_LOBBY clicked")
+                                gameBoardLogic.requestCreateLobby()
                             },
-                            onStartClick = {
-                                val lobbyToStart = currentLobbyIdState // Use collected state
-                                if (lobbyToStart != null) {
-                                    Log.i("MainActivity", "Start Game button clicked for known lobby: $lobbyToStart")
-                                    try {
-                                        gameBoardLogic.requestBoardForLobby(lobbyId = lobbyToStart, playerCount = 4)
-                                    } catch (e: Exception) {
-                                        Log.e("MainActivity", "Error requesting board for lobby", e)
-                                    }
-                                } else {
-                                    Log.e("MainActivity", "Start Game clicked, but no current Lobby ID state!")
-                                }
+                            onStartClick       = {
+                                currentLobbyId?.let { lobby ->
+                                    Log.i("MainActivity", "START_GAME clicked for $lobby")
+                                    gameBoardLogic.requestStartGame(lobby, playerCount = 4)
+                                } ?: Log.e("MainActivity","No lobby ID yet, can't start game!")
                             },
-                            onTestClick = { navController.navigate("test") },
-                            currentLobbyId = currentLobbyIdState // Pass the collected state
+                            onTestClick        = { navController.navigate("test") }
                         )
                     }
+
                     composable("tutorial") {
                         TutorialScreen(onBackClick = { navController.navigateUp() })
                     }
 
-                    composable(
-                        route = "game/{lobbyId}",
-
-                    ) { backStackEntry ->
-                        val lobbyIdArg = backStackEntry.arguments?.getString("lobbyId")
-                        if (lobbyIdArg == null) {
-                            Log.e("Navigation", "Lobby ID missing! Navigating back.")
+                    composable("game/{lobbyId}") { backStackEntry ->
+                        backStackEntry.arguments?.getString("lobbyId")?.let { id ->
+                            GameScreen(lobbyId = id)
+                        } ?: run {
+                            Log.e("MainActivity","Missing lobbyId, popping back")
                             LaunchedEffect(Unit) { navController.navigateUp() }
-                        } else {
-                            Log.d("Navigation", "Navigating to GameScreen for lobby: $lobbyIdArg")
-                            GameScreen(lobbyId = lobbyIdArg)
                         }
                     }
                 }
             }
         }
-    }
-
-    override fun onStop() {
-        super.onStop()
     }
 }

@@ -38,9 +38,10 @@ class GameDataHandler @Inject constructor() {
                         PlayerInfo(
                             playerId = id,
                             username = node.jsonObject["username"]?.jsonPrimitive?.contentOrNull ?: "",
-                            colorHex = "#8C4E27",
+                            colorHex = node.jsonObject["color"]?.jsonPrimitive?.contentOrNull ?: "#8C4E27",
                             victoryPoints = node.jsonObject["victoryPoints"]?.jsonPrimitive?.intOrNull ?: 0
                         )
+
                     } catch (e: Exception) {
                         Log.e("GameDataHandler", "Error parsing player $id", e)
                         null

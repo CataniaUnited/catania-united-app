@@ -48,12 +48,13 @@ class JsonParserTest {
     }
 
     @Test
-    fun parseGameBoardJSONWithUnknownKeyReturnsNull() {
+    fun parseGameBoardJSONWithUnknownKeyIsHandledGracefully() {
         val result = parseGameBoard(jsonWithUnknownKey)
-        assertNull(
-            result, "Result should be null when ignoreUnknownKeys=false and unknown key exists"
-        )
+        assertNotNull(result, "Result should not be null even with unknown keys")
+        assertEquals(3, result?.ringsOfBoard)
+        assertEquals(6, result?.sizeOfHex)
     }
+
 
     @Test
     fun parseGameBoardEmptyJSONReturnsNull() {

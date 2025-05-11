@@ -1,6 +1,5 @@
 package com.example.cataniaunited.ui.game_board.playerinfo
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -9,13 +8,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.ui.theme.appTypography
-import com.example.cataniaunited.ui.theme.catanClayLight
+
+private val catanClayLight = Color(0xFFB76B3C)
 
 @Composable
 fun PlayerVictoryBar(
@@ -27,42 +30,64 @@ fun PlayerVictoryBar(
         modifier = modifier
             .fillMaxWidth()
             .padding(top = 12.dp)
-            .background(Color.Transparent),
+            .background(Color(0xff177fde)),
         horizontalArrangement = Arrangement.SpaceEvenly,
-        verticalAlignment = Alignment.Top
+        verticalAlignment = Alignment.CenterVertically
     ) {
         players.forEach { player ->
             val borderColor = Color(android.graphics.Color.parseColor(player.colorHex))
+            val vpTextColor = if (borderColor.luminance() > 0.5f) Color.Black else Color.White
+
             Box(
                 modifier = Modifier
-                    .border(
-                        border = BorderStroke(3.dp, borderColor),
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .background(catanClayLight, RoundedCornerShape(10.dp))
-                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                    .height(40.dp)
+                    .width(260.dp)
+                    .border(2.dp, borderColor, RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.Transparent)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = player.username,
-                        style = appTypography.bodyLarge,
-                        color = Color.White
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
+                Row(modifier = Modifier.fillMaxSize()) {
+
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight()
+                            .background(catanClayLight),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = player.username,
+                            style = appTypography.bodyLarge.copy(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = Color.White
+                        )
+                    }
+
                     Box(
                         modifier = Modifier
                             .width(2.dp)
-                            .height(16.dp)
+                            .fillMaxHeight()
                             .background(borderColor)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "VP ${player.victoryPoints}",
-                        style = appTypography.bodyLarge.copy(fontSize = 18.sp),
-                        color = Color.White
-                    )
+                    
+                    Box(
+                        modifier = Modifier
+                            .width(60.dp)
+                            .fillMaxHeight()
+                            .background(borderColor),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "${player.victoryPoints} VP",
+                            style = appTypography.bodyLarge.copy(
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold
+                            ),
+                            color = vpTextColor
+                        )
+                    }
                 }
             }
         }
@@ -82,4 +107,3 @@ fun PreviewPlayerVictoryBar() {
         currentPlayerId = "2"
     )
 }
-

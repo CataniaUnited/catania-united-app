@@ -122,14 +122,13 @@ open class WebSocketListenerImpl @Inject constructor(
         try {
             val fullMessageString = jsonParser.encodeToString(JsonObject.serializer(), message)
 
-            val gameboardNode = message["gameboard"]?.jsonObject ?: message // Fallback to full message
+            val gameboardNode = message["gameboard"]?.jsonObject ?: message
             val playersNode = message["players"]?.jsonObject
 
             MainApplication.getInstance().applicationScope.launch {
                 gameDataHandler.updateGameBoard(fullMessageString)
             }
 
-            // Update victory points if players data exists
             playersNode?.let { playersJson ->
                 val vpMap = mutableMapOf<String, Int>()
                 for ((playerId, playerNode) in playersJson) {

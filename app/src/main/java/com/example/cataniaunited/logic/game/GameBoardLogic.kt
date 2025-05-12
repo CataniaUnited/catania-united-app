@@ -5,6 +5,7 @@ import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
+import com.example.cataniaunited.ws.WebSocketClient
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import java.util.UUID
@@ -31,6 +32,7 @@ class GameBoardLogic @Inject constructor(
         val message = buildJsonObject { put("settlementPositionId", settlementPositionId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
+            setActivePlayer(webSocketClient, playerId, lobbyId)
             webSocketClient.sendMessage(MessageDTO(messageType, playerId, lobbyId, null, message))
         } else { Log.e("GameBoardLogic", "WS not connected for upgradeSettlement") }
     }
@@ -44,6 +46,7 @@ class GameBoardLogic @Inject constructor(
         val message = buildJsonObject { put("roadId", roadId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
+            setActivePlayer(webSocketClient, playerId, lobbyId)
             webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, message))
         } else { Log.e("GameBoardLogic", "WS not connected for placeRoad") }
     }
@@ -112,6 +115,13 @@ class GameBoardLogic @Inject constructor(
             )
         } catch (e: Exception) {
             Log.e("GameBoard", "Error rolling dice", e)
+        }
+    }
+
+    private fun setActivePlayer(webSocketClient: WebSocketClient, playerId: String, lobbyId: String){
+        if(webSocketClient.isConnected()){
+            val setPlayerActiveMessage = MessageDTO( MessageType.SET_ACTIVE_PLAYER, playerId, lobbyId)
+            webSocketClient.sendMessage(setPlayerActiveMessage)
         }
     }
 }

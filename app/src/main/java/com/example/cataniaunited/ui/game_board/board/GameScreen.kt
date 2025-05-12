@@ -113,4 +113,13 @@ fun GameScreen(
     }) {
         Text("Buy Dev Card")
     }
+
+    //Showing development card popup
+    if (showCardPopup) {
+        DevelopmentCardRowPopup(
+            cards = gameViewModel.myDevelopmentCards,
+            onDismiss = { showCardPopup = false }
+        )
+    }
+
 }

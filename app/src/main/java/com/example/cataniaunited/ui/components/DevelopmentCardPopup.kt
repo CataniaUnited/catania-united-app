@@ -25,10 +25,10 @@ fun DevelopmentCardPopup(
             Text(
                 when (cardType) {
                     "KNIGHT" -> "🛡 Knight"
-                    "VICTORY_POINT" -> "🏆 Victory Point"
-                    "ROAD_BUILDING" -> "🛣 Road Building"
-                    "YEAR_OF_PLENTY" -> "🌾 Year of Plenty"
-                    "MONOPOLY" -> "👑 Monopoly"
+                    "VICTORY_POINT" -> "⭐ Victory Point"
+                    "ROAD_BUILDING" -> "🛠️ Road Building"
+                    "YEAR_OF_PLENTY" -> " 🍇 Year of Plenty"
+                    "MONOPOLY" -> "💰Monopoly"
                     else -> "Unknown Card"
                 },
                 fontSize = 18.sp,

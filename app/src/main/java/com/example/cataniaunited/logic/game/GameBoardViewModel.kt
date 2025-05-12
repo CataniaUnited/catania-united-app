@@ -110,5 +110,11 @@ class GameViewModel @Inject constructor(
         _myDevelopmentCards.add(cardType)
     }
 
+    fun onDevCardDrawn(cardType: String) {
+        Log.i("GameViewModel", "Card received from server: $cardType")
+        addDevelopmentCard(cardType)
+        }
+
+
 }
 

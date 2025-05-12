@@ -6,7 +6,10 @@ import com.example.cataniaunited.logic.game.GameDataHandler
 =======
 import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.data.model.TileType
+<<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> main
 import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType

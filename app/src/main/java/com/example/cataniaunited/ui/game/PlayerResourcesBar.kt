@@ -19,7 +19,6 @@ import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.ui.theme.catanClay
 
 
-
 @Composable
 fun PlayerResourcesBar(
     modifier: Modifier = Modifier,
@@ -59,6 +58,7 @@ private fun ResourceItem(tileType: TileType, count: Int) {
             contentDescription = tileType.name,
             modifier = Modifier.size(30.dp), // Adjust size as needed
             colorFilter = ColorFilter.tint(Color.Black)
+
         )
         Text(
             text = count.toString(),

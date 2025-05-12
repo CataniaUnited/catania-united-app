@@ -7,7 +7,10 @@ import com.example.cataniaunited.MainApplication
 =======
 import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.data.model.TileType
+<<<<<<< HEAD
 >>>>>>> origin/main
+=======
+>>>>>>> main
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.player.PlayerSessionManager

@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val gameBoardLogic: GameBoardLogic,
@@ -46,11 +45,9 @@ class GameViewModel @Inject constructor(
     private val _playerResources = MutableStateFlow<Map<TileType, Int>>(emptyMap())
     val playerResources: StateFlow<Map<TileType, Int>> = _playerResources.asStateFlow()
 
-
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
 
-        // Initialize with default resources
         val initialResources = TileType.entries
             .filter { it != TileType.WASTE }
             .associateWith { 0 }
@@ -70,14 +67,11 @@ class GameViewModel @Inject constructor(
         }
     }
 
-
-    // New function to be called externally (e.g., from the Composable's LaunchedEffect)
     fun initializeBoardState(initialJson: String?) {
-        if (gameBoardState.value == null) { // Only load if not already loaded
+        if (gameBoardState.value == null) {
             Log.i("GameViewModel", "Initializing board state.")
             if (initialJson != null) {
                 loadGameBoardFromJson(initialJson)
-                // Maybe clear application state here if needed via injected dependency?
             } else {
                 Log.e("GameViewModel", "Initial board JSON was null during initialization!")
             }
@@ -90,32 +84,18 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    fun updatePlayerResources(newResources: Map<TileType, Int>) { // ADD THIS
+    fun updatePlayerResources(newResources: Map<TileType, Int>) {
         Log.d("GameViewModel", "Updating player resources: $newResources")
         _playerResources.value = newResources
     }
 
-    // --- Placeholder Click Handlers ---
-
     fun handleTileClick(tile: Tile, lobbyId: String) {
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
         // TODO: Implement logic for tile click (e.g., move robber phase)
-        // 1) Check game state (is it robber phase?)
-        // 2) Validate if the tile is a valid target
-        // 3) call gameBoardLogic....
     }
 
     fun handleSettlementClick(settlementPosition: SettlementPosition, lobbyId: String) {
-        Log.d(
-            "GameViewModel",
-            "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}"
-        )
-        // TODO: Implement logic for placing/upgrading settlement DON'T FORGET UPGRADE XD
-        // 1) Check game state (setup or not? your turn?)
-        // 2) Check resources
-        // 3) Validate placement rules (distance, road connection)
-        // 4) Get lobbyId and PlayerId
-        // 5) Call gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
+        Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}")
         val pid = playerId
         gameBoardLogic.setActivePlayer(pid, lobbyId)
         gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
@@ -123,19 +103,13 @@ class GameViewModel @Inject constructor(
 
     fun handleRoadClick(road: Road, lobbyId: String) {
         Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
-        // TODO: Implement logic for placing road
-        // 1) Check game state (setup or not? your turn?)
-        // 2) Check resources
-        // 3) Validate placement rules (road connection, empty)
-        // 4) Get lobbyId and PlayerId
-        // 5) Call gameBoardLogic.placeRoad(road.id, lobbyId)
         val pid = playerId
         gameBoardLogic.setActivePlayer(pid, lobbyId)
         gameBoardLogic.placeRoad(road.id, lobbyId)
     }
 
     fun setBuildMenuOpen(isOpen: Boolean) {
-        Log.d("GameViewModel", "handleBuildMenuClick: isOpen=${isOpen}")
+        Log.d("GameViewModel", "handleBuildMenuClick: isOpen=$isOpen")
         _isBuildMenuOpen.value = isOpen
     }
 
@@ -162,4 +136,3 @@ class GameViewModel @Inject constructor(
         }
     }
 }
-

@@ -12,7 +12,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -64,7 +66,7 @@ fun GameScreen(
         Scaffold(
             containerColor = Color(0xff177fde),
             snackbarHost = {
-                SnackbarHost(snackbarHostState) { data: SnackbarData ->
+                SnackbarHost(snackbarHostState) { data ->
                     Snackbar(
                         snackbarData = data,
                         containerColor = Color.Red,
@@ -113,9 +115,13 @@ fun GameScreen(
                                     Log.d("GameScreen", "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}")
                                     gameViewModel.handleTileClick(tile, lobbyId)
                                 },
-                                onSettlementClicked = { settlementPos ->
+                                onSettlementClicked = { (settlementPos, isUpgrade) ->
                                     Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
-                                    gameViewModel.handleSettlementClick(settlementPos, lobbyId)
+                                    gameViewModel.handleSettlementClick(
+                                        settlementPos,
+                                        isUpgrade,
+                                        lobbyId
+                                    )
                                 },
                                 onRoadClicked = { road ->
                                     Log.d("GameScreen", "Road Clicked: ID=${road.id}")
@@ -159,7 +165,43 @@ fun GameScreen(
                             dice1Result = diceResult?.first,
                             dice2Result = diceResult?.second
                         )
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .offset(y = 32.dp)
+                                .zIndex(1f)
+                                .padding(horizontal = 16.dp)
+                        ) {
+                            BuildButton(
+                                isOpen = isBuildMenuOpen,
+                                onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.TopStart)
+                                .offset(y = 32.dp)
+                                .zIndex(1f)
+                                .padding(horizontal = 4.dp)
+                        ) {
+                            RollDiceButton {
+                                showDicePopup = true
+                                gameViewModel.rollDice(lobbyId)
+                            }
+                        }
                     }
+
+                    Text(
+                        text = "Lobby ID: $lobbyId",
+                        fontSize = 12.sp,
+                        color = Color.DarkGray,
+                        textAlign = TextAlign.End,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(8.dp)
+                    )
                 }
             }
 

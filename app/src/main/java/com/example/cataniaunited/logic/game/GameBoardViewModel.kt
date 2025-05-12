@@ -94,17 +94,25 @@ class GameViewModel @Inject constructor(
         // TODO: Implement logic for tile click (e.g., move robber phase)
     }
 
-    fun handleSettlementClick(settlementPosition: SettlementPosition, lobbyId: String) {
-        Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}")
-        val pid = playerId
-        gameBoardLogic.setActivePlayer(pid, lobbyId)
-        gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
+    fun handleSettlementClick(settlementPosition: SettlementPosition, isUpgrade: Boolean, lobbyId: String) {
+        Log.d(
+            "GameViewModel",
+            "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}"
+        )
+        if(isUpgrade){
+            gameBoardLogic.upgradeSettlement(settlementPosition.id, lobbyId)
+        }else{
+            gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
+        }
+
     }
 
     fun handleRoadClick(road: Road, lobbyId: String) {
         Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
+
         val pid = playerId
         gameBoardLogic.setActivePlayer(pid, lobbyId)
+
         gameBoardLogic.placeRoad(road.id, lobbyId)
     }
 

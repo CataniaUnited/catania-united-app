@@ -477,10 +477,24 @@ class GameViewModelTest {
                 SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
             val testLobbyId = "click-lobby-1"
 
-            viewModel.handleSettlementClick(testPosition, testLobbyId)
+            viewModel.handleSettlementClick(testPosition, false, testLobbyId)
             advanceUntilIdle()
 
             verify(exactly = 1) { mockGameBoardLogic.placeSettlement(testPosition.id, testLobbyId) }
+
+            println("Test passed: handleSettlementClick calls gameBoardLogic.placeSettlement")
+        }
+
+        @Test
+        fun handleSettlementClickCallsGameBoardLogicUpgradeSettlement() = runTest {
+            val testPosition =
+                SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testLobbyId = "click-lobby-1"
+
+            viewModel.handleSettlementClick(testPosition, true, testLobbyId)
+            advanceUntilIdle()
+
+            verify(exactly = 1) { mockGameBoardLogic.upgradeSettlement(testPosition.id, testLobbyId) }
 
             println("Test passed: handleSettlementClick calls gameBoardLogic.placeSettlement")
         }

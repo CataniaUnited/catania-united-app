@@ -72,7 +72,7 @@ open class WebSocketListenerImpl @Inject constructor(
 
             when (messageDTO.type) {
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
-                MessageType.GAME_BOARD_JSON, MessageType.PLACE_SETTLEMENT, MessageType.PLACE_ROAD -> handleGameBoardJson(messageDTO)
+                MessageType.GAME_BOARD_JSON, MessageType.PLACE_SETTLEMENT, MessageType.PLACE_ROAD, MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
@@ -103,6 +103,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 "WebSocketListener",
                 "Player '$playerId' joined Lobby '$lobbyId' with color $color"
             )
+
             // TODO: notify UI or GameDataHandler if needed
         } else {
             Log.w("WebSocketListener", "PLAYER_JOINED message missing player or lobbyId")
@@ -146,6 +147,7 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleGameBoardJson(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
+
         val message = messageDTO.message ?: run {
             Log.e("WebSocketListener", "Message is null")
             return

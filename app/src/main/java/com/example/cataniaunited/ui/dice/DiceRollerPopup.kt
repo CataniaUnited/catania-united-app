@@ -14,6 +14,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.cataniaunited.R
+import com.example.cataniaunited.data.model.Road
+import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.ui.theme.catanClay
 import kotlinx.coroutines.delay
 
@@ -22,7 +24,8 @@ fun DiceRollerPopup(
     onDiceRolled: () -> Unit,
     onClose: () -> Unit,
     dice1Result: Int?,
-    dice2Result: Int?
+    dice2Result: Int?,
+
 ) {
     var dice1 by remember { mutableIntStateOf(1) }
     var dice2 by remember { mutableIntStateOf(1) }

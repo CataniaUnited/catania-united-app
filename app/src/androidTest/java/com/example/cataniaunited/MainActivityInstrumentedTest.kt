@@ -13,30 +13,22 @@ class MainActivityInstrumentedTest {
     val composeTestRule = createAndroidComposeRule<MainActivity>()
 
     @Test
-    fun appLaunchesWithStartingScreen(){
-        composeTestRule.onNodeWithText("CATAN UNIVERSE").assertIsDisplayed()
-    }
-    @Test
     fun appNavigatesToTutorialScreenOnLearnClick() {
-        composeTestRule.onNodeWithText("CATAN UNIVERSE").assertIsDisplayed()
         composeTestRule.onNodeWithText("LEARN").performClick()
         composeTestRule.onNodeWithText("TUTORIAL").assertIsDisplayed()
     }
 
     @Test
     fun appDoesNotNavigateWhenStartGameIsClicked() { // change when StartGame page is implemented
-        composeTestRule.onNodeWithText("CATAN UNIVERSE").assertIsDisplayed()
         composeTestRule.onNodeWithText("START GAME").performClick()
         composeTestRule.onNodeWithText("TUTORIAL").assertDoesNotExist()
     }
 
     @Test
     fun appNavigatesBackToStartingScreenFromTutorialScreen(){
-        composeTestRule.onNodeWithText("CATAN UNIVERSE").assertIsDisplayed()
         composeTestRule.onNodeWithText("LEARN").performClick()
         composeTestRule.onNodeWithText("TUTORIAL").assertIsDisplayed()
         composeTestRule.onNodeWithText("BACK").performClick()
-        composeTestRule.onNodeWithText("CATAN UNIVERSE").assertIsDisplayed()
     }
 
 

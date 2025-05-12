@@ -58,7 +58,7 @@ fun CatanBoard(
     isBuildMode: Boolean,
     playerId: String,
     onTileClicked: (Tile) -> Unit = {},
-    onSettlementClicked: (SettlementPosition) -> Unit = {},
+    onSettlementClicked: (Pair<SettlementPosition, Boolean>) -> Unit = {},
     onRoadClicked: (Road) -> Unit = {}
 ) {
     // Check if essential data is present

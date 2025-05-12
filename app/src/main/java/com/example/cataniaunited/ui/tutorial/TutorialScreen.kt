@@ -22,7 +22,7 @@ import com.example.cataniaunited.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import com.example.cataniaunited.ui.theme.catanGold
-import com.example.cataniaunited.ui.theme.catanRessourceBar
+import com.example.cataniaunited.ui.theme.catanBorder
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
@@ -46,7 +46,7 @@ fun TutorialScreen(onBackClick: () -> Unit) {
                 .height(400.dp)
                 .border(
                     width = 9.dp,
-                    color = catanRessourceBar,
+                    color = catanBorder,
                     shape = RoundedCornerShape(20.dp)
                 )
                 .background(
@@ -188,7 +188,7 @@ fun TutorialHeading(title: String) {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                catanRessourceBar,
+                catanBorder,
                 shape = RoundedCornerShape(10.dp)
             )
             .padding(vertical = 8.dp)
@@ -211,7 +211,7 @@ fun GeneralHeading(title: String) {
         modifier = Modifier
             .fillMaxWidth()
             .background(
-                catanRessourceBar,
+                catanBorder,
                 shape = RoundedCornerShape(10.dp)
             )
             .padding(vertical = 8.dp)

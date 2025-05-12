@@ -3,8 +3,12 @@ package com.example.cataniaunited
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
+import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.game.GameViewModel
+import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.*
 import org.junit.After
 import org.junit.Assert.*
@@ -13,22 +17,23 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import java.lang.reflect.Field
 
+
 @ExperimentalCoroutinesApi
 @RunWith(AndroidJUnit4::class)
 class MainApplicationInstrumentedTest {
-
     private lateinit var mainApplication: MainApplication
-
-
     private lateinit var playerIdField: Field
+    private lateinit var mockGameViewModel: GameViewModel
 
     @Before
     fun setup() {
         mainApplication = ApplicationProvider.getApplicationContext<MainApplication>()
-        mainApplication.onCreate()
 
         println("Setup: Resetting state...")
         mainApplication.clearLobbyData()
+        mainApplication.gameViewModel = null
+
+        mockGameViewModel = mockk<GameViewModel>(relaxed = true)
 
         try {
             playerIdField = MainApplication::class.java.getDeclaredField("_playerId")
@@ -44,13 +49,18 @@ class MainApplicationInstrumentedTest {
 
     @After
     fun tearDown() {
+        mainApplication.gameViewModel = null
         println("Teardown complete.")
+
     }
 
     @Test
     fun webSocketClientShouldBeInitializedAfterOnCreate() {
         println("Running webSocketClientShouldBeInitializedAfterOnCreate...")
-        assertNotNull("WebSocketClient should not be null after Application onCreate", mainApplication.getWebSocketClient())
+        assertNotNull(
+            "WebSocketClient should not be null after Application onCreate",
+            mainApplication.getWebSocketClient()
+        )
         println("Test Passed.")
     }
 
@@ -74,7 +84,11 @@ class MainApplicationInstrumentedTest {
         println("Running setAndGetPlayerIdWorks...")
         val testId = "player-id-${System.currentTimeMillis()}"
         mainApplication.setPlayerId(testId)
-        assertEquals("Stored Player ID should match set value", testId, mainApplication.getPlayerId())
+        assertEquals(
+            "Stored Player ID should match set value",
+            testId,
+            mainApplication.getPlayerId()
+        )
         println("Test Passed.")
     }
 
@@ -82,7 +96,11 @@ class MainApplicationInstrumentedTest {
     @Test
     fun currentLobbyIdFlowInitiallyNull() = runTest {
         println("Running test: currentLobbyIdFlowInitiallyNull")
-        assertEquals("Initial lobby ID flow value should be null", null, mainApplication.currentLobbyIdFlow.value)
+        assertEquals(
+            "Initial lobby ID flow value should be null",
+            null,
+            mainApplication.currentLobbyIdFlow.value
+        )
         mainApplication.currentLobbyIdFlow.test {
             assertEquals("Flow should emit null initially", null, awaitItem())
             expectNoEvents()
@@ -103,7 +121,11 @@ class MainApplicationInstrumentedTest {
             assertEquals("Flow should emit the set lobbyId", expectedLobbyId, awaitItem())
             cancelAndIgnoreRemainingEvents()
         }
-        assertEquals("Getter property should reflect flow value", expectedLobbyId, mainApplication.currentLobbyId)
+        assertEquals(
+            "Getter property should reflect flow value",
+            expectedLobbyId,
+            mainApplication.currentLobbyId
+        )
         println("Test Passed.")
     }
 
@@ -117,7 +139,11 @@ class MainApplicationInstrumentedTest {
 
         mainApplication.latestBoardJson = boardJson
 
-        assertEquals("latestBoardJson should be updated", boardJson, mainApplication.latestBoardJson)
+        assertEquals(
+            "latestBoardJson should be updated",
+            boardJson,
+            mainApplication.latestBoardJson
+        )
         println("Test Passed.")
     }
 
@@ -190,8 +216,14 @@ class MainApplicationInstrumentedTest {
         mainApplication.clearLobbyData()
         advanceUntilIdle()
 
-        assertNull("currentLobbyIdFlow should be null after clearLobbyData", mainApplication.currentLobbyIdFlow.value)
-        assertNull("latestBoardJson should be null after clearLobbyData", mainApplication.latestBoardJson)
+        assertNull(
+            "currentLobbyIdFlow should be null after clearLobbyData",
+            mainApplication.currentLobbyIdFlow.value
+        )
+        assertNull(
+            "latestBoardJson should be null after clearLobbyData",
+            mainApplication.latestBoardJson
+        )
         println("Test Passed.")
     }
 
@@ -213,4 +245,5 @@ class MainApplicationInstrumentedTest {
         assertNull("latestBoardJson should be null after clearGameData", mainApplication.latestBoardJson)
         println("Test Passed.")
     }
+
 }

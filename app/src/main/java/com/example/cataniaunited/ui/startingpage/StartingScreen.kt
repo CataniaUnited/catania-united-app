@@ -23,7 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import com.example.cataniaunited.R
-import com.example.cataniaunited.ui.theme.catanRessourceBar
+import com.example.cataniaunited.ui.theme.catanBorder
 
 
 @Composable // UI component
@@ -50,7 +50,7 @@ fun StartingScreen(
                 .height(400.dp)
                 .border(
                     width = 9.dp,
-                    color = catanRessourceBar,
+                    color = catanBorder,
                     shape = RoundedCornerShape(20.dp)
                 )
                 .background(

@@ -5,8 +5,24 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import android.util.Log
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -35,6 +51,7 @@ fun GameScreen(
     val application = LocalContext.current.applicationContext as MainApplication
     var showDicePopup by remember { mutableStateOf(false) }
     val diceResult by gameViewModel.diceResult.collectAsState()
+    val playerResources by gameViewModel.playerResources.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val gameWonState by application.gameWonState.collectAsState()
 
@@ -62,11 +79,19 @@ fun GameScreen(
         Scaffold(
             containerColor = Color(0xff177fde),
             snackbarHost = {
-                SnackbarHost(snackbarHostState) {
+                SnackbarHost(snackbarHostState) { data: SnackbarData ->
                     Snackbar(
-                        snackbarData = it,
+                        snackbarData = data,
                         containerColor = Color.Red,
                         contentColor = Color.White
+                    )
+                }
+            },
+            bottomBar = {
+                if (gameBoardState != null) {
+                    PlayerResourcesBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        resources = playerResources
                     )
                 }
             }
@@ -99,9 +124,18 @@ fun GameScreen(
                                 roads = board.roads,
                                 isBuildMode = isBuildMenuOpen,
                                 playerId = gameViewModel.playerId,
-                                onTileClicked = { gameViewModel.handleTileClick(it, lobbyId) },
-                                onSettlementClicked = { gameViewModel.handleSettlementClick(it, lobbyId) },
-                                onRoadClicked = { gameViewModel.handleRoadClick(it, lobbyId) }
+                                onTileClicked = { tile ->
+                                    Log.d("GameScreen", "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}")
+                                    gameViewModel.handleTileClick(tile, lobbyId)
+                                },
+                                onSettlementClicked = { settlementPos ->
+                                    Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
+                                    gameViewModel.handleSettlementClick(settlementPos, lobbyId)
+                                },
+                                onRoadClicked = { road ->
+                                    Log.d("GameScreen", "Road Clicked: ID=${road.id}")
+                                    gameViewModel.handleRoadClick(road, lobbyId)
+                                }
                             )
 
                             Box(
@@ -112,7 +146,7 @@ fun GameScreen(
                             ) {
                                 BuildButton(
                                     isOpen = isBuildMenuOpen,
-                                    onClick = { gameViewModel.setBuildMenuOpen(it) }
+                                    onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
                                 )
                             }
 
@@ -124,6 +158,7 @@ fun GameScreen(
                             ) {
                                 RollDiceButton {
                                     showDicePopup = true
+                                    gameViewModel.rollDice(lobbyId)
                                 }
                             }
                         }
@@ -169,9 +204,5 @@ fun GameScreen(
                 }
             }
         }
-
     }
 }
-
-
-

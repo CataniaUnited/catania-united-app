@@ -8,6 +8,7 @@ import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import io.mockk.mockk
@@ -37,6 +38,7 @@ class WebSocketListenerImplParameterizedTest {
     private lateinit var mockError: OnWebSocketError
     private lateinit var mockClosed: OnWebSocketClosed
     private lateinit var mockGameDataHandler: GameDataHandler
+    private lateinit var mockOnPlayerResourcesReceived: OnPlayerResourcesReceived
 
     @Before
     fun setup() {
@@ -51,6 +53,7 @@ class WebSocketListenerImplParameterizedTest {
         mockClosed = mockk(relaxed = true)
         mockGameDataHandler = mockk(relaxed = true)
         mockWebSocket = mockk(relaxed = true)
+        mockOnPlayerResourcesReceived = mockk(relaxed = true)
 
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = { playerId ->
@@ -62,7 +65,8 @@ class WebSocketListenerImplParameterizedTest {
             onError = mockError,
             onClosed = mockClosed,
             onDiceResult = mockOnDiceResult,
-            gameDataHandler = mockGameDataHandler
+            gameDataHandler = mockGameDataHandler,
+            onPlayerResourcesReceived = mockOnPlayerResourcesReceived
         )
         println("Parameterized Test Setup Complete.")
     }

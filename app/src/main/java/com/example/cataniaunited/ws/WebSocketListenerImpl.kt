@@ -4,6 +4,7 @@ import android.util.Log
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.game.GameDataHandler
+import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
@@ -11,6 +12,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import kotlinx.coroutines.launch
@@ -33,10 +35,12 @@ open class WebSocketListenerImpl @Inject constructor(
     private val onError: OnWebSocketError,
     private val onClosed: OnWebSocketClosed,
     private val onDiceResult: OnDiceResult,
+    private val onPlayerResourcesReceived: OnPlayerResourcesReceived,
     private val gameDataHandler: GameDataHandler
 ) : WebSocketListener() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
+
 
     init {
         Log.d("WebSocketListener", "GameDataHandler hashCode: ${gameDataHandler.hashCode()}")
@@ -73,7 +77,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
                 MessageType.GAME_WON -> handleGameWon(messageDTO)
-
+                MessageType.PLAYER_RESOURCES -> handlePlayerResources(messageDTO)
                 // TODO: Other Messages
 
                 MessageType.ERROR -> {
@@ -88,16 +92,44 @@ open class WebSocketListenerImpl @Inject constructor(
         }
     }
 
+
     private fun handlePlayerJoined(messageDTO: MessageDTO) {
         val playerId = messageDTO.player
         val lobbyId = messageDTO.lobbyId
         val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
 
         if (playerId != null && lobbyId != null) {
-            Log.i("WebSocketListener", "Player '$playerId' joined Lobby '$lobbyId' with color $color")
+            Log.i(
+                "WebSocketListener",
+                "Player '$playerId' joined Lobby '$lobbyId' with color $color"
+            )
             // TODO: notify UI or GameDataHandler if needed
         } else {
             Log.w("WebSocketListener", "PLAYER_JOINED message missing player or lobbyId")
+        }
+    }
+
+    private fun handlePlayerResources(messageDTO: MessageDTO) {
+        val resourcesJson = messageDTO.message
+        if (resourcesJson != null) {
+            try {
+                val typedResources = mutableMapOf<TileType, Int>()
+                TileType.entries.forEach { tileType ->
+                    if (tileType != TileType.WASTE) {
+                        val count = resourcesJson[tileType.name.uppercase()]?.jsonPrimitive?.intOrNull ?: 0
+                        typedResources[tileType] = count
+                    }
+                }
+                Log.d("WebSocketListener", "Parsed Player Resources: $typedResources")
+                onPlayerResourcesReceived.onPlayerResourcesReceived(typedResources)
+            } catch (e: Exception) {
+                Log.e("WebSocketListener", "Error parsing player resources from: $resourcesJson", e)
+                onError.onError(IllegalArgumentException("Invalid PLAYER_RESOURCES format", e))
+            }
+        } else {
+            Log.e("WebSocketListener", "PLAYER_RESOURCES message missing resource object")
+            onError.onError(IllegalArgumentException("PLAYER_RESOURCES message missing resource object"))
+
         }
     }
 

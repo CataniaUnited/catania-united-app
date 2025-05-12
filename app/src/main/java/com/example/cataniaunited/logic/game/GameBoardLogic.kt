@@ -116,4 +116,15 @@ class GameBoardLogic @Inject constructor(
         }
     }
 
+    fun setActivePlayer(playerId: String, lobbyId: String) {
+        val message = MessageDTO(
+            type = MessageType.SET_ACTIVE_PLAYER,
+            player = playerId,
+            lobbyId = lobbyId,
+            message = null
+        )
+        MainApplication.getInstance().getWebSocketClient().sendMessage(message)
+    }
+
+
 }

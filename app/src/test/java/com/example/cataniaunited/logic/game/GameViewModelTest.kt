@@ -112,85 +112,87 @@ class GameViewModelTest {
         }
 
 
-        mockGameDataHandler = mockk {
-            every { gameBoardState } returns gameBoardMutableStateFlow.asStateFlow()
+        mockGameDataHandler = mockk()
 
-            every { updateGameBoard(any<String>()) } answers {
-                val json = it.invocation.args[0] as String
-                println("Mock GameDataHandler.updateGameBoard called with: $json")
-                when (json) {
-                    validBoardJson -> {
-                        gameBoardMutableStateFlow.value = GameBoardModel(
-                            tiles = listOf(
-                                Tile(
-                                    id = 1,
-                                    type = TileType.CLAY,
-                                    value = 5,
-                                    coordinates = listOf(0.0, 0.0)
-                                )
-                            ),
-                            settlementPositions = listOf(
-                                SettlementPosition(
-                                    id = 1,
-                                    building = null,
-                                    coordinates = listOf(0.0, 10.0)
-                                )
-                            ),
-                            roads = listOf(
-                                Road(
-                                    id = 1,
-                                    owner = null,
-                                    coordinates = listOf(0.0, 5.0),
-                                    rotationAngle = 0.0,
-                                    color = "#000000"
-                                )
-                            ),
-                            ringsOfBoard = 1,
-                            sizeOfHex = 6
-                        )
-                    }
+        every { mockGameDataHandler.gameBoardState } returns gameBoardMutableStateFlow.asStateFlow()
+        every { mockGameDataHandler.victoryPointsState } returns MutableStateFlow(emptyMap())
 
-                    anotherValidBoardJson -> {
-                        gameBoardMutableStateFlow.value = GameBoardModel(
-                            tiles = listOf(
-                                Tile(
-                                    id = 2,
-                                    type = TileType.WOOD,
-                                    value = 6,
-                                    coordinates = listOf(1.0, 1.0)
-                                )
-                            ),
-                            settlementPositions = listOf(
-                                SettlementPosition(
-                                    id = 2,
-                                    building = null,
-                                    coordinates = listOf(1.0, 11.0)
-                                )
-                            ),
-                            roads = listOf(
-                                Road(
-                                    id = 2,
-                                    owner = null,
-                                    coordinates = listOf(1.0, 6.0),
-                                    rotationAngle = 0.0,
-                                    color = "#000000"
-                                )
-                            ),
-                            ringsOfBoard = 1,
-                            sizeOfHex = 6
-                        )
-                    }
+        every { mockGameDataHandler.updateGameBoard(any<String>()) } answers {
+            val json = it.invocation.args[0] as String
+            println("Mock GameDataHandler.updateGameBoard called with: $json")
+            when (json) {
+                validBoardJson -> {
+                    gameBoardMutableStateFlow.value = GameBoardModel(
+                        tiles = listOf(
+                            Tile(
+                                id = 1,
+                                type = TileType.CLAY,
+                                value = 5,
+                                coordinates = listOf(0.0, 0.0)
+                            )
+                        ),
+                        settlementPositions = listOf(
+                            SettlementPosition(
+                                id = 1,
+                                building = null,
+                                coordinates = listOf(0.0, 10.0)
+                            )
+                        ),
+                        roads = listOf(
+                            Road(
+                                id = 1,
+                                owner = null,
+                                coordinates = listOf(0.0, 5.0),
+                                rotationAngle = 0.0,
+                                color = "#000000"
+                            )
+                        ),
+                        ringsOfBoard = 1,
+                        sizeOfHex = 6
+                    )
+                }
 
-                    invalidBoardJson -> {
-                        gameBoardMutableStateFlow.value = null
-                    }
+                anotherValidBoardJson -> {
+                    gameBoardMutableStateFlow.value = GameBoardModel(
+                        tiles = listOf(
+                            Tile(
+                                id = 2,
+                                type = TileType.WOOD,
+                                value = 6,
+                                coordinates = listOf(1.0, 1.0)
+                            )
+                        ),
+                        settlementPositions = listOf(
+                            SettlementPosition(
+                                id = 2,
+                                building = null,
+                                coordinates = listOf(1.0, 11.0)
+                            )
+                        ),
+                        roads = listOf(
+                            Road(
+                                id = 2,
+                                owner = null,
+                                coordinates = listOf(1.0, 6.0),
+                                rotationAngle = 0.0,
+                                color = "#000000"
+                            )
+                        ),
+                        ringsOfBoard = 1,
+                        sizeOfHex = 6
+                    )
+                }
 
-                    else -> {
-                        gameBoardMutableStateFlow.value = null
-                    }
+                invalidBoardJson -> {
+                    gameBoardMutableStateFlow.value = null
+                }
+
+                else -> {
+                    gameBoardMutableStateFlow.value = null
                 }
             }
         }
+
 
         viewModel = GameViewModel(
             mockGameBoardLogic,

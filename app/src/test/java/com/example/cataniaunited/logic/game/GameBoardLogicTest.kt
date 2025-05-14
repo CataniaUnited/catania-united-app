@@ -159,7 +159,8 @@ class GameBoardLogicTest {
         )
         val messageList = mutableListOf<MessageDTO>()
         gameBoardLogic.requestBoardForLobby(testLobbyId, testPlayerCount)
-        verify(exactly = testPlayerCount + 2) { mockWebSocketClient.sendMessage(capture(messageList)) }
+        val expectedCalls = (testPlayerCount - 1) + 2
+        verify(exactly = expectedCalls) { mockWebSocketClient.sendMessage(capture(messageList)) }
         assertEquals(expectedMessage, messageList.get(messageList.lastIndex - 1))
     }
 
@@ -172,7 +173,8 @@ class GameBoardLogicTest {
         )
         val messageList = mutableListOf<MessageDTO>()
         gameBoardLogic.requestBoardForLobby(testLobbyId)
-        verify(exactly = defaultPlayerCount + 2) { mockWebSocketClient.sendMessage(capture(messageList)) }
+        val expectedCalls = (defaultPlayerCount - 1) + 2
+        verify(exactly = expectedCalls) { mockWebSocketClient.sendMessage(capture(messageList)) }
         val actualMessage = messageList.get(messageList.lastIndex - 1)
         assertEquals(expectedMessage, actualMessage)
         assertEquals(4, actualMessage.message?.get("playerCount")?.jsonPrimitive?.int)

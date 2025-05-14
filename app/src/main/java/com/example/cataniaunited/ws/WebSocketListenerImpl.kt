@@ -8,6 +8,7 @@ import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
+import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
@@ -112,9 +113,12 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handlePlayerResources(messageDTO: MessageDTO) {
         val resourcesJson = messageDTO.message
+        Log.d("WebSocketListener", "RAW PLAYER_RESOURCES JSON: $resourcesJson")
         if (resourcesJson != null) {
             try {
                 val typedResources = mutableMapOf<TileType, Int>()
+                Log.d("DebugEnum", "TileType from handlePlayerResources: ${TileType.WOOD::class.java.name}")
+                Log.d("DebugEnum", "Incoming JSON keys: ${resourcesJson.keys}")
                 TileType.entries.forEach { tileType ->
                     if (tileType != TileType.WASTE) {
                         val count = resourcesJson[tileType.name.uppercase()]?.jsonPrimitive?.intOrNull ?: 0

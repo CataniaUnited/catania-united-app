@@ -1,5 +1,6 @@
 package com.example.cataniaunited.ui.game
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,8 @@ fun PlayerResourcesBar(
     modifier: Modifier = Modifier,
     resources: Map<TileType, Int>
 ) {
+    Log.d("DebugEnum", "PlayerResourcesBar data: $resources")
+    Log.d("DebugEnum", "TileType.WOOD from UI: ${TileType.WOOD::class.java.name}")
 
     val displayOrder = listOf(
         TileType.WOOD,
@@ -43,6 +46,7 @@ fun PlayerResourcesBar(
     ) {
         displayOrder.forEach { tileType ->
             val count = resources[tileType] ?: 0
+            Log.d("DebugEnum", "Rendering $tileType with count $count")
             ResourceItem(tileType = tileType, count = count)
         }
     }

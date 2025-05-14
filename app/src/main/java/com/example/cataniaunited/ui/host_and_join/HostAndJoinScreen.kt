@@ -65,7 +65,10 @@ fun HostAndJoinScreen(
             Image(
                 painter = painterResource(id = R.drawable.catania_united_logo),
                 contentDescription = "Catania United Logo",
-                contentScale = ContentScale.Fit
+                contentScale = ContentScale.Fit,
+                modifier = Modifier
+                    .height(120.dp)
+                    .padding(bottom = 16.dp)
             )
 
             val buttonShape = RoundedCornerShape(30.dp)

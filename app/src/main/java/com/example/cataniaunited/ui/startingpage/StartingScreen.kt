@@ -5,22 +5,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.common.OrDivider
 import com.example.cataniaunited.ui.common.StyledButton
 import com.example.cataniaunited.ui.theme.catanBorder
 import com.example.cataniaunited.ui.theme.catanClay
-import com.example.cataniaunited.ui.theme.catanGold
 
 @Composable
 fun StartingScreen(
@@ -57,20 +52,12 @@ fun StartingScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text(
-                    text = "CATAN UNIVERSE",
-                    style = MaterialTheme.typography.titleLarge.copy(fontSize = 40.sp),
-                    color = catanGold,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(bottom = 24.dp)
-                )
-
                 Image(
                     painter = painterResource(id = R.drawable.catania_united_logo),
                     contentDescription = "Catania United Logo",
                     contentScale = ContentScale.Fit,
                     modifier = Modifier
-                        .height(80.dp)
+                        .height(120.dp)
                         .padding(bottom = 24.dp)
                 )
 
@@ -83,3 +70,4 @@ fun StartingScreen(
         }
     }
 }
+

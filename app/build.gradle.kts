@@ -194,6 +194,7 @@ dependencies {
     kaptTest(libs.hilt.compiler)
     testImplementation(libs.robolectric)
     androidTestImplementation(libs.turbine)
+    testImplementation(kotlin("test"))
 }
 
 kapt {

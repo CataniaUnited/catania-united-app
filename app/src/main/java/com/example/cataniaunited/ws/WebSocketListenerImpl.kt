@@ -19,6 +19,7 @@ import com.example.cataniaunited.ws.callback.OnWebSocketError
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
@@ -42,6 +43,9 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
 
+    object WebSocketHolder {
+        var socket: WebSocket? = null
+    }
 
     init {
         Log.d("WebSocketListener", "GameDataHandler hashCode: ${gameDataHandler.hashCode()}")
@@ -49,6 +53,7 @@ open class WebSocketListenerImpl @Inject constructor(
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
         Log.d("WebSocket", "Opened connection")
+        WebSocketHolder.socket = webSocket
     }
 
     override fun onMessage(webSocket: WebSocket, text: String) {
@@ -104,12 +109,31 @@ open class WebSocketListenerImpl @Inject constructor(
                 "WebSocketListener",
                 "Player '$playerId' joined Lobby '$lobbyId' with color $color"
             )
+            requestGameBoard(lobbyId, playerId)
 
             // TODO: notify UI or GameDataHandler if needed
         } else {
             Log.w("WebSocketListener", "PLAYER_JOINED message missing player or lobbyId")
         }
     }
+
+    private fun requestGameBoard(lobbyId: String, playerId: String) {
+        try {
+            val messageJson = buildJsonObject {} // empty payload
+            val messageDTO = MessageDTO(
+                type = MessageType.GET_GAME_BOARD,
+                player = playerId,
+                lobbyId = lobbyId,
+                message = messageJson
+            )
+            val jsonString = jsonParser.encodeToString(MessageDTO.serializer(), messageDTO)
+            WebSocketHolder.socket?.send(jsonString)
+            Log.d("WebSocketListener", "Sent GET_GAME_BOARD request for player $playerId")
+        } catch (e: Exception) {
+            Log.e("WebSocketListener", "Failed to send GET_GAME_BOARD", e)
+        }
+    }
+
 
     private fun handlePlayerResources(messageDTO: MessageDTO) {
         val resourcesJson = messageDTO.message
@@ -211,8 +235,6 @@ open class WebSocketListenerImpl @Inject constructor(
             Log.e("WebSocketListener", "Error processing GAME_WON message", e)
         }
     }
-
-
 
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {

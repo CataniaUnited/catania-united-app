@@ -112,11 +112,17 @@ fun GameScreen(
                                 isBuildMode = isBuildMenuOpen,
                                 playerId = gameViewModel.playerId,
                                 onTileClicked = { tile ->
-                                    Log.d("GameScreen", "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}")
+                                    Log.d(
+                                        "GameScreen",
+                                        "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}"
+                                    )
                                     gameViewModel.handleTileClick(tile, lobbyId)
                                 },
                                 onSettlementClicked = { (settlementPos, isUpgrade) ->
-                                    Log.d("GameScreen", "Settlement Clicked: ID=${settlementPos.id}")
+                                    Log.d(
+                                        "GameScreen",
+                                        "Settlement Clicked: ID=${settlementPos.id}"
+                                    )
                                     gameViewModel.handleSettlementClick(
                                         settlementPos,
                                         isUpgrade,
@@ -204,6 +210,7 @@ fun GameScreen(
                     )
                 }
             }
+        }
 
             AnimatedVisibility(
                 visible = gameWonState != null,
@@ -232,4 +239,4 @@ fun GameScreen(
             }
         }
     }
-}
+

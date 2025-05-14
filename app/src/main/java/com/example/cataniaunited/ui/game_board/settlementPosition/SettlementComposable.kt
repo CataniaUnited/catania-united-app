@@ -10,7 +10,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -35,7 +34,7 @@ fun SettlementComposable(
 
     val building: Building? = settlementPosition.building
     val buildingColor = when (building) {
-        null -> Color.Transparent
+        null -> Color.Transparent // Nothing built yet
         else -> Color(building.color.toColorInt())
     }
 
@@ -46,9 +45,9 @@ fun SettlementComposable(
     }
 
     val iconTint = if (buildingColor.luminance() > 0.5f) {
-        Color.Black
+        Color.Black //Light background -> dark icon
     } else {
-        Color.White
+        Color.White //Dark background -> light icon
     }
 
     val isOccupied: Boolean = building != null && building.owner != playerId

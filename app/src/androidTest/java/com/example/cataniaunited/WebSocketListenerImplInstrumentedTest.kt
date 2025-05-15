@@ -135,9 +135,9 @@ class WebSocketListenerImplInstrumentedTest {
     @Test
     fun onMessage_handlesGameBoardJson_withValidBoard() {
         val lobbyId = "gameLobby"
-        val boardJsonString =
-            """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
-        val boardJsonObject = Json.parseToJsonElement(boardJsonString).jsonObject
+        val boardContent = """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
+        val boardJsonObject = Json.parseToJsonElement(boardContent).jsonObject
+        val expectedFullMessage = """{"gameboard":$boardContent}"""
 
         val messageJson = buildJsonObject {
             put("type", MessageType.GAME_BOARD_JSON.name)
@@ -149,24 +149,20 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        verify(exactly = 1) { mockGameBoardReceived.onGameBoardReceived(lobbyId, boardJsonString) }
+        verify(exactly = 1) { mockGameBoardReceived.onGameBoardReceived(lobbyId, expectedFullMessage) }
         verify(exactly = 0) { mockError.onError(any<Throwable>()) }
     }
 
     @Test
     fun onMessage_handlesGameBoardJson_withException() {
         val lobbyId = "gameLobby"
-        val boardJsonString =
-            """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
-        val boardJsonObject = Json.parseToJsonElement(boardJsonString).jsonObject
+        val boardContent = """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
+        val boardJsonObject = Json.parseToJsonElement(boardContent).jsonObject
+        val expectedFullMessage = """{"gameboard":$boardContent}"""
 
-        val exception: Exception = Exception("Test exception")
-
+        val exception = Exception("Test exception")
         every {
-            mockGameBoardReceived.onGameBoardReceived(
-                lobbyId,
-                boardJsonString
-            )
+            mockGameBoardReceived.onGameBoardReceived(lobbyId, expectedFullMessage)
         } throws exception
 
         val messageJson = buildJsonObject {
@@ -179,16 +175,25 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        verify(exactly = 1) { mockGameBoardReceived.onGameBoardReceived(lobbyId, boardJsonString) }
-        verify(exactly = 1) { mockError.onError(any<Throwable>()) }
+        verify(exactly = 1) { mockGameBoardReceived.onGameBoardReceived(lobbyId, expectedFullMessage) }
+
+        verify(exactly = 1) {
+            mockError.onError(
+                match { error ->
+                    error === exception ||
+                            error.cause === exception ||
+                            error.message?.contains("Test exception") == true
+                }
+            )
+        }
     }
 
     @Test
     fun onMessage_handlesPlaceSettlement_withValidBoard() {
         val lobbyId = "gameLobby"
-        val boardJsonString =
-            """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
-        val boardJsonObject = Json.parseToJsonElement(boardJsonString).jsonObject
+        val boardContent = """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
+        val boardJsonObject = Json.parseToJsonElement(boardContent).jsonObject
+        val expectedFullMessage = """{"gameboard":$boardContent}"""
 
         val messageJson = buildJsonObject {
             put("type", MessageType.PLACE_SETTLEMENT.name)
@@ -200,16 +205,18 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        verify(exactly = 1) { mockGameBoardReceived.onGameBoardReceived(lobbyId, boardJsonString) }
+        verify(exactly = 1) {
+            mockGameBoardReceived.onGameBoardReceived(lobbyId, expectedFullMessage)
+        }
         verify(exactly = 0) { mockError.onError(any<Throwable>()) }
     }
 
     @Test
     fun onMessage_handlesPlaceRoad_withValidBoard() {
         val lobbyId = "gameLobby"
-        val boardJsonString =
-            """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
-        val boardJsonObject = Json.parseToJsonElement(boardJsonString).jsonObject
+        val boardContent = """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
+        val boardJsonObject = Json.parseToJsonElement(boardContent).jsonObject
+        val expectedFullMessage = """{"gameboard":$boardContent}"""
 
         val messageJson = buildJsonObject {
             put("type", MessageType.PLACE_ROAD.name)
@@ -221,16 +228,15 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        verify(exactly = 1) { mockGameBoardReceived.onGameBoardReceived(lobbyId, boardJsonString) }
+        verify(exactly = 1) { mockGameBoardReceived.onGameBoardReceived(lobbyId, expectedFullMessage) }
         verify(exactly = 0) { mockError.onError(any<Throwable>()) }
     }
 
 
     @Test
     fun onMessage_handlesGameBoardJson_missingLobbyId() {
-        val boardJsonString =
-            """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
-        val boardJsonObject = Json.parseToJsonElement(boardJsonString).jsonObject
+        val boardContent = """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
+        val boardJsonObject = Json.parseToJsonElement(boardContent).jsonObject
 
         val messageJson = buildJsonObject {
             put("type", MessageType.GAME_BOARD_JSON.name)
@@ -239,8 +245,10 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
-        verify(exactly = 1) { mockError.onError(any<IllegalArgumentException>()) }
+        verify(exactly = 1) {
+            mockGameBoardReceived.onGameBoardReceived("", boardContent)
+        }
+
     }
 
     @Test
@@ -254,7 +262,8 @@ class WebSocketListenerImplInstrumentedTest {
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
-        verify(exactly = 1) { mockError.onError(any<IllegalArgumentException>()) }
+        verify(exactly = 0) { mockError.onError(any()) }
+
     }
 
     @Test

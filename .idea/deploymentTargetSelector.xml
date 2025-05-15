@@ -19,7 +19,19 @@
           </targets>
         </DialogSelection>
       </SelectionState>
-      <SelectionState runConfigName="GameBoardInstrumentedTest">
+      <SelectionState runConfigName="WebSocketListenerImplInstrumentedTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="onMessage_handlesPlaceSettlement_withValidBoard()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="WebSocketListenerImplParameterizedTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="MainApplicationInstrumentedTest">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="onGameWonUpdatesGameWonState()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

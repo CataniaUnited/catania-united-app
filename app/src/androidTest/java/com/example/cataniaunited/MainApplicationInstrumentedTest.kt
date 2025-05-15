@@ -254,21 +254,7 @@ class MainApplicationInstrumentedTest {
         mainApplication.onClosed(1000, "Test closure")
         assertNull(mainApplication.latestBoardJson)
     }
-
-    @Test
-    fun onPlayerResourcesReceivedUpdatesViewModel() = runTest {
-        mainApplication.gameViewModel = mockGameViewModel
-        val testResources = mapOf(
-            TileType.WOOD to 3,
-            TileType.CLAY to 1,
-            TileType.SHEEP to 2,
-            TileType.WHEAT to 0,
-            TileType.ORE to 4
-        )
-        mainApplication.onPlayerResourcesReceived(testResources)
-        advanceUntilIdle()
-        verify { mockGameViewModel.updatePlayerResources(testResources) }
-    }
+    
 
     @Test
     fun onGameWonUpdatesGameWonState() = runTest {

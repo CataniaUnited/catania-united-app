@@ -491,4 +491,80 @@ class WebSocketListenerImplInstrumentedTest {
         verify(exactly = 0) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(any()) }
         verify(exactly = 1) { mockError.onError(match { it is IllegalArgumentException && it.message == "PLAYER_RESOURCES message missing resource object" }) }
     }
+
+    @Test
+    fun onMessage_handlesPlayerJoined_withPlayerAndLobbyId() {
+        val messageJson = buildJsonObject {
+            put("type", MessageType.PLAYER_JOINED.name)
+            put("player", "playerX")
+            put("lobbyId", "lobbyY")
+            put("message", buildJsonObject {
+                put("color", "#FF0000")
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+    @Test
+    fun onMessage_handlesPlayerJoined_missingPlayerOrLobbyId() {
+        val messageJson = buildJsonObject {
+            put("type", MessageType.PLAYER_JOINED.name)
+            put("message", buildJsonObject {
+                put("color", "#00FF00")
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+    @Test
+    fun onMessage_handlesGameWon_withValidData() {
+        val messageJson = buildJsonObject {
+            put("type", MessageType.GAME_WON.name)
+            put("message", buildJsonObject {
+                put("winner", "winnerId")
+                put("leaderboard", kotlinx.serialization.json.buildJsonArray {
+                    add(buildJsonObject {
+                        put("username", "Alice")
+                        put("vp", 10)
+                    })
+                    add(buildJsonObject {
+                        put("username", "Bob")
+                        put("vp", 8)
+                    })
+                })
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+    @Test
+    fun onMessage_handlesGameWon_withMissingFields() {
+        val messageJson = buildJsonObject {
+            put("type", MessageType.GAME_WON.name)
+            put("message", buildJsonObject {
+                put("someOtherField", "value")
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+
+
+
+
+
+
+
 }

@@ -37,7 +37,6 @@ fun LivePlayerVictoryBar(viewModel: GameViewModel, modifier: Modifier = Modifier
 
     PlayerVictoryBar(
         players = players,
-        currentPlayerId = currentPlayerId,
         modifier = Modifier
             .fillMaxWidth()
             .padding(top = 12.dp)

@@ -560,7 +560,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 0) { mockError.onError(any()) }
     }
-    
+
 
     @Test
     fun onMessage_handlesPlayerResources_withInvalidJson_throwsException() {

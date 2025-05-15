@@ -14,8 +14,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.cataniaunited.R
-import com.example.cataniaunited.data.model.Road
-import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.ui.theme.catanClay
 import kotlinx.coroutines.delay
 

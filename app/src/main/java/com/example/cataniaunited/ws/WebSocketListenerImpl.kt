@@ -104,7 +104,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 "Player '$playerId' joined Lobby '$lobbyId' with color $color"
             )
 
-            // TODO: notify UI or GameDataHandler if needed
+            // notify UI or GameDataHandler if needed
         } else {
             Log.w("WebSocketListener", "PLAYER_JOINED message missing player or lobbyId")
         }
@@ -159,7 +159,7 @@ open class WebSocketListenerImpl @Inject constructor(
         try {
             val fullMessageString = jsonParser.encodeToString(JsonObject.serializer(), message)
 
-            val gameboardNode = message["gameboard"]?.jsonObject ?: message
+            message["gameboard"]?.jsonObject ?: message
             val playersNode = message["players"]?.jsonObject
 
             MainApplication.getInstance().applicationScope.launch {

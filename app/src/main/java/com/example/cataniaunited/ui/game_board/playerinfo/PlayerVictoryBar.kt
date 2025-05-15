@@ -12,18 +12,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.ui.theme.appTypography
+import androidx.core.graphics.toColorInt
+
 
 private val catanClayLight = Color(0xFFB76B3C)
 
 @Composable
 fun PlayerVictoryBar(
     players: List<PlayerInfo>,
-    currentPlayerId: String,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -35,7 +35,7 @@ fun PlayerVictoryBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         players.forEach { player ->
-            val borderColor = Color(android.graphics.Color.parseColor(player.colorHex))
+            val borderColor = Color(player.colorHex.toColorInt())
             val vpTextColor = if (borderColor.luminance() > 0.5f) Color.Black else Color.White
 
             Box(
@@ -94,16 +94,4 @@ fun PlayerVictoryBar(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PreviewPlayerVictoryBar() {
-    PlayerVictoryBar(
-        players = listOf(
-            PlayerInfo("1", "Mia", "#FF0000", 4),
-            PlayerInfo("2", "Nassir", "#0000FF", 10),
-            PlayerInfo("3", "Jean", "#D4AF37", 9),
-            PlayerInfo("4", "Candamir", "#800080", 0)
-        ),
-        currentPlayerId = "2"
-    )
-}
+

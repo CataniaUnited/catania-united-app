@@ -76,8 +76,15 @@ class GameBoardLogic @Inject constructor(
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
 
-            for(i in 1..playerCount){
-                val joinLobbyMessage = MessageDTO( MessageType.JOIN_LOBBY, UUID.randomUUID().toString(), lobbyId, null, null)
+            for(i in 1 until playerCount) {
+                val joinLobbyMessage = MessageDTO(
+                    MessageType.JOIN_LOBBY,
+                    UUID.randomUUID().toString(),
+                    lobbyId,
+                    null,
+                    null
+                )
+
                 webSocketClient.sendMessage(joinLobbyMessage)
             }
 
@@ -92,6 +99,9 @@ class GameBoardLogic @Inject constructor(
             Log.e("GameBoardLogic", "WebSocket not connected when trying to create game board.")
         }
     }
+
+
+
 
     fun rollDice(lobbyId: String) {
         try {
@@ -114,4 +124,16 @@ class GameBoardLogic @Inject constructor(
             Log.e("GameBoard", "Error rolling dice", e)
         }
     }
+
+    fun setActivePlayer(playerId: String, lobbyId: String) {
+        val message = MessageDTO(
+            type = MessageType.SET_ACTIVE_PLAYER,
+            player = playerId,
+            lobbyId = lobbyId,
+            message = null
+        )
+        MainApplication.getInstance().getWebSocketClient().sendMessage(message)
+    }
+
+
 }

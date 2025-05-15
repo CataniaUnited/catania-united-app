@@ -1,5 +1,6 @@
 package com.example.cataniaunited.ui.game
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -9,19 +10,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
 import com.example.cataniaunited.data.model.TileType
-import com.example.cataniaunited.ui.theme.catanRessourceBar
+import com.example.cataniaunited.ui.theme.catanClay
+
 
 @Composable
 fun PlayerResourcesBar(
     modifier: Modifier = Modifier,
     resources: Map<TileType, Int>
 ) {
+    Log.d("DebugEnum", "PlayerResourcesBar data: $resources")
+    Log.d("DebugEnum", "TileType.WOOD from UI: ${TileType.WOOD::class.java.name}")
 
     val displayOrder = listOf(
         TileType.WOOD,
@@ -34,13 +39,14 @@ fun PlayerResourcesBar(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .background(catanRessourceBar, shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
+            .background(catanClay, shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
             .padding(horizontal = 8.dp, vertical = 12.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
         displayOrder.forEach { tileType ->
             val count = resources[tileType] ?: 0
+            Log.d("DebugEnum", "Rendering $tileType with count $count")
             ResourceItem(tileType = tileType, count = count)
         }
     }
@@ -54,7 +60,9 @@ private fun ResourceItem(tileType: TileType, count: Int) {
         Image(
             painter = painterResource(id = iconRes),
             contentDescription = tileType.name,
-            modifier = Modifier.size(30.dp) // Adjust size as needed
+            modifier = Modifier.size(30.dp), // Adjust size as needed
+            colorFilter = ColorFilter.tint(Color.Black)
+
         )
         Text(
             text = count.toString(),

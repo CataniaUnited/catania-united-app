@@ -40,6 +40,8 @@ open class WebSocketClient(private val serverUrl: String) {
         }
     }
 
+
+
     fun close() {
         webSocket?.close(1000, "Client closed connection")
         webSocket = null

@@ -1,6 +1,6 @@
 package com.example.cataniaunited.di
 
-import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.logic.game.GameDataHandler
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

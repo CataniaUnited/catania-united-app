@@ -3,7 +3,6 @@ package com.example.cataniaunited.logic.game
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.MainApplication
-import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType

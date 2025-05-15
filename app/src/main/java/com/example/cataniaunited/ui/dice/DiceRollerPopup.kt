@@ -22,7 +22,8 @@ fun DiceRollerPopup(
     onDiceRolled: () -> Unit,
     onClose: () -> Unit,
     dice1Result: Int?,
-    dice2Result: Int?
+    dice2Result: Int?,
+
 ) {
     var dice1 by remember { mutableIntStateOf(1) }
     var dice2 by remember { mutableIntStateOf(1) }

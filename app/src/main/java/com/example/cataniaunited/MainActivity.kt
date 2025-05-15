@@ -95,7 +95,9 @@ class MainActivity : ComponentActivity() {
                             LaunchedEffect(Unit) { navController.navigateUp() }
                         } else {
                             Log.d("Navigation", "Navigating to GameScreen for lobby: $lobbyIdArg")
-                            GameScreen(lobbyId = lobbyIdArg)
+                            GameScreen(
+                                lobbyId = lobbyIdArg,
+                                navController = navController)
                         }
                     }
                     composable("hostandjoin") {

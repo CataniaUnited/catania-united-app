@@ -2,7 +2,7 @@ package com.example.cataniaunited.di
 
 import android.app.Application
 import com.example.cataniaunited.MainApplication
-import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult

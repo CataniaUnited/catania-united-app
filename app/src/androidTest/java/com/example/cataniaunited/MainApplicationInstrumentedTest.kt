@@ -3,10 +3,12 @@ package com.example.cataniaunited
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.game.GameViewModel
 import io.mockk.*
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.*
@@ -244,6 +246,42 @@ class MainApplicationInstrumentedTest {
         assertEquals("currentLobbyIdFlow should NOT be null after clearGameData", lobbyId, mainApplication.currentLobbyIdFlow.value)
         assertNull("latestBoardJson should be null after clearGameData", mainApplication.latestBoardJson)
         println("Test Passed.")
+    }
+
+    @Test
+    fun onClosedCallbackClearsGameData() = runTest {
+        mainApplication.latestBoardJson = """{"test":"data"}"""
+        mainApplication.onClosed(1000, "Test closure")
+        assertNull(mainApplication.latestBoardJson)
+    }
+
+
+    @Test
+    fun onGameWonUpdatesGameWonState() = runTest {
+        val winner = PlayerInfo("winner1", "Winner Player", "#FF0000", 10)
+        val leaderboard = listOf(
+            winner,
+            PlayerInfo("player2", "Second Place", "#00FF00", 8),
+            PlayerInfo("player3", "Third Place", "#0000FF", 6)
+        )
+
+        mainApplication.onGameWon(winner, leaderboard)
+        advanceUntilIdle()
+
+        var attempts = 0
+        while (mainApplication.gameWonState.value == null && attempts < 10) {
+            delay(100)
+            attempts++
+        }
+
+        assertNotNull(mainApplication.gameWonState.value)
+        assertEquals(winner, mainApplication.gameWonState.value?.first)
+        assertEquals(leaderboard, mainApplication.gameWonState.value?.second)
+    }
+
+    @Test
+    fun webSocketListenerIsInjected() {
+        assertNotNull(mainApplication.webSocketListener)
     }
 
 }

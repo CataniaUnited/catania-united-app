@@ -1,7 +1,7 @@
 package com.example.cataniaunited
 
 import androidx.test.core.app.ApplicationProvider
-import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.ws.WebSocketListenerImpl

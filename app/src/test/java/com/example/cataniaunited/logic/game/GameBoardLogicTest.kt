@@ -218,4 +218,21 @@ class GameBoardLogicTest {
         gameBoardLogic.rollDice(testLobbyId)
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
+
+    @Test
+    fun setActivePlayerSendsCorrectMessage() {
+        val messageSlot = slot<MessageDTO>()
+        gameBoardLogic.setActivePlayer(testPlayerId, testLobbyId)
+
+        verify(exactly = 1) {
+            mockWebSocketClient.sendMessage(capture(messageSlot))
+        }
+
+        val captured = messageSlot.captured
+        assertEquals(MessageType.SET_ACTIVE_PLAYER, captured.type)
+        assertEquals(testPlayerId, captured.player)
+        assertEquals(testLobbyId, captured.lobbyId)
+        assertNull(captured.message)
+    }
+
 }

@@ -254,7 +254,7 @@ class MainApplicationInstrumentedTest {
         mainApplication.onClosed(1000, "Test closure")
         assertNull(mainApplication.latestBoardJson)
     }
-    
+
 
     @Test
     fun onGameWonUpdatesGameWonState() = runTest {

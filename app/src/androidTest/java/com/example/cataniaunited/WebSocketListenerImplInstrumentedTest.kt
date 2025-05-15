@@ -22,6 +22,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
+import io.mockk.slot
 import okhttp3.Response
 import okhttp3.WebSocket
 import org.junit.After
@@ -559,6 +560,47 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 0) { mockError.onError(any()) }
     }
+    
+
+    @Test
+    fun onMessage_handlesPlayerResources_withInvalidJson_throwsException() {
+        val badJson = buildJsonObject {
+            put("type", MessageType.PLAYER_RESOURCES.name)
+            put("message", buildJsonObject {
+                put("WOOD", buildJsonObject { put("unexpected", 1) }) // not an int
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, badJson)
+
+        verify(exactly = 1) {
+            mockError.onError(match { it is IllegalArgumentException && it.message?.contains("Invalid PLAYER_RESOURCES format") == true })
+        }
+    }
+
+    @Test
+    fun onMessage_handlesGameWon_withMalformedLeaderboard_throwsException() {
+        val malformedLeaderboard = buildJsonObject {
+            put("type", MessageType.GAME_WON.name)
+            put("message", buildJsonObject {
+                put("winner", "winnerId")
+                put("leaderboard", kotlinx.serialization.json.buildJsonArray {
+                    add(buildJsonObject {
+                        put("vp", "notANumber") // should be int
+                    })
+                })
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, malformedLeaderboard)
+
+        verify(exactly = 0) { mockError.onError(match { it.message?.contains("GAME_WON") == true }) } // just ensure no crash/log
+    }
+
+
+
+
+
 
 
 

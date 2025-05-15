@@ -165,9 +165,13 @@ open class MainApplication : Application(),
     override fun onPlayerResourcesReceived(resources: Map<TileType, Int>) {
         Log.d("MainApplication", "Callback: onPlayerResourcesReceived. Resources: $resources")
         applicationScope.launch {
-            gameViewModel?.updatePlayerResources(resources)
+            gameViewModel?.let {
+                it.updatePlayerResources(resources)
+                Log.d("MainApplication", "Successfully called updatePlayerResources on ViewModel.")
+            } ?: Log.w("MainApplication", "gameViewModel was null — skipping update.")
         }
     }
+
 
 
 }

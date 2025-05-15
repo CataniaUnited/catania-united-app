@@ -33,7 +33,7 @@ fun LivePlayerVictoryBar(viewModel: GameViewModel, modifier: Modifier = Modifier
         Log.d("VictoryBar", "Loaded players: $players")
     }
 
-    val currentPlayerId = viewModel.playerId
+    viewModel.playerId
 
     PlayerVictoryBar(
         players = players,

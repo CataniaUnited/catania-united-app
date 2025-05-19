@@ -25,6 +25,7 @@ import com.example.cataniaunited.ui.dice.ShakeDetector
 import com.example.cataniaunited.ui.game_board.board.CatanBoard
 import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import com.example.cataniaunited.ui.game_end.GameWinScreen
+import com.example.cataniaunited.ui.theme.catanBlue
 import kotlinx.coroutines.flow.collectLatest
 
 @Composable
@@ -87,7 +88,7 @@ fun GameScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .background(Color(0xff177fde))
+                    .background(catanBlue)
             ) {
                 LivePlayerVictoryBar(
                     viewModel = gameViewModel,

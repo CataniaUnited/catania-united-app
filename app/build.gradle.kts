@@ -157,6 +157,10 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.okhttp)
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
@@ -190,6 +194,7 @@ dependencies {
     kaptTest(libs.hilt.compiler)
     testImplementation(libs.robolectric)
     androidTestImplementation(libs.turbine)
+    testImplementation(kotlin("test"))
 }
 
 kapt {

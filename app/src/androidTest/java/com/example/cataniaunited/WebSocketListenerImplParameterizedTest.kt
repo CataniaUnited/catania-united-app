@@ -1,14 +1,14 @@
 package com.example.cataniaunited
 
 import androidx.test.core.app.ApplicationProvider
-import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.ws.WebSocketListenerImpl
-import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import io.mockk.mockk
@@ -23,7 +23,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 import org.junit.runners.Parameterized.Parameter
 import org.junit.runners.Parameterized.Parameters
-import org.mockito.Mockito.mock
 
 @RunWith(Parameterized::class)
 class WebSocketListenerImplParameterizedTest {
@@ -39,6 +38,7 @@ class WebSocketListenerImplParameterizedTest {
     private lateinit var mockError: OnWebSocketError
     private lateinit var mockClosed: OnWebSocketClosed
     private lateinit var mockGameDataHandler: GameDataHandler
+    private lateinit var mockOnPlayerResourcesReceived: OnPlayerResourcesReceived
 
     @Before
     fun setup() {
@@ -53,6 +53,7 @@ class WebSocketListenerImplParameterizedTest {
         mockClosed = mockk(relaxed = true)
         mockGameDataHandler = mockk(relaxed = true)
         mockWebSocket = mockk(relaxed = true)
+        mockOnPlayerResourcesReceived = mockk(relaxed = true)
 
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = { playerId ->
@@ -64,7 +65,8 @@ class WebSocketListenerImplParameterizedTest {
             onError = mockError,
             onClosed = mockClosed,
             onDiceResult = mockOnDiceResult,
-            gameDataHandler = mockGameDataHandler
+            gameDataHandler = mockGameDataHandler,
+            onPlayerResourcesReceived = mockOnPlayerResourcesReceived
         )
         println("Parameterized Test Setup Complete.")
     }

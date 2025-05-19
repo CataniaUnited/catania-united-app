@@ -2,12 +2,13 @@ package com.example.cataniaunited.di
 
 import android.app.Application
 import com.example.cataniaunited.MainApplication
-import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import io.mockk.mockk
@@ -147,9 +148,26 @@ class WebSocketModuleTest {
         }
     }
 
+    @Test
+    fun provideOnPlayerResourcesReceivedReturnsMainApplicationAsOnPlayerResourcesReceived() {
+        val callback = WebSocketModule.provideOnPlayerResourcesReceived(mockMainApplication)
+
+        assertNotNull(callback)
+        assertTrue(callback is OnPlayerResourcesReceived)
+        assertSame(mockMainApplication, callback)
+    }
 
     @Test
-    fun provideWebSocketListener_returnsWebSocketListenerImpl() {
+    fun provideOnPlayerResourcesReceivedThrowsClassCastExceptionWhenApplicationIsNotMainApplication() {
+        val mockApplication = mockk<Application>()
+
+        assertThrows<ClassCastException> {
+            WebSocketModule.provideOnPlayerResourcesReceived(mockApplication)
+        }
+    }
+
+    @Test
+    fun provideWebSocketListenerReturnsWebSocketListenerImpl() {
         val listener = WebSocketModule.provideWebSocketListener(
             onConnectionSuccess = mockMainApplication,
             onLobbyCreated = mockMainApplication,
@@ -157,7 +175,8 @@ class WebSocketModuleTest {
             onError = mockMainApplication,
             onClosed = mockMainApplication,
             onDiceResult = mockMainApplication,
-            gameDataHandler = mockGameDataHandler
+            gameDataHandler = mockGameDataHandler,
+            onPlayerResourcesReceived = mockMainApplication
         )
 
         assertNotNull(listener)

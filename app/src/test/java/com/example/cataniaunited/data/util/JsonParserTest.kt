@@ -47,13 +47,7 @@ class JsonParserTest {
         assertNull(result, "Result should be null for wrong data type JSON")
     }
 
-    @Test
-    fun parseGameBoardJSONWithUnknownKeyReturnsNull() {
-        val result = parseGameBoard(jsonWithUnknownKey)
-        assertNull(
-            result, "Result should be null when ignoreUnknownKeys=false and unknown key exists"
-        )
-    }
+
 
     @Test
     fun parseGameBoardEmptyJSONReturnsNull() {

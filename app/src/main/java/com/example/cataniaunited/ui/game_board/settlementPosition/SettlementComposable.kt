@@ -10,7 +10,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
@@ -30,7 +29,7 @@ fun SettlementComposable(
     size: Dp,
     isClickable: Boolean,
     playerId: String,
-    onSettlementClick: (SettlementPosition) -> Unit = {}
+    onSettlementClick: (Pair<SettlementPosition, Boolean>) -> Unit = {}
 ) {
 
     val building: Building? = settlementPosition.building
@@ -38,7 +37,6 @@ fun SettlementComposable(
         null -> Color.Transparent // Nothing built yet
         else -> Color(building.color.toColorInt())
     }
-    val borderColor = if(isClickable || (building != null)) Color.DarkGray else Color.Transparent
 
     val icon: ImageVector? = when {
         building == null -> null
@@ -52,20 +50,40 @@ fun SettlementComposable(
         Color.White //Dark background -> light icon
     }
 
-    val isOccupied = building != null && building.owner != playerId
+    val isOccupied: Boolean = building != null && building.owner != playerId
     val canBuild: Boolean = isClickable && (building == null || (building.owner == playerId && building.type == "Settlement"))
+    val isUpgrade: Boolean = building != null && building.owner == playerId && building.type == "Settlement"
+
+    val actualBorderColor: Color
+    val borderWidth: Dp
+
+    if (isUpgrade && canBuild) {
+        actualBorderColor = Color(0xFF00C853)
+        borderWidth = 2.dp
+    } else {
+        actualBorderColor = if (isClickable || (building != null)) Color.DarkGray else Color.Transparent
+        borderWidth = 1.dp
+    }
+
+    if (canBuild && building == null) {
+        Box(
+            modifier = Modifier
+                .size(size)
+                .clip(CircleShape)
+                .background(Color(0x3390EE90))
+        ) {
+        }
+    }
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .then(if (canBuild) Modifier.clickable { onSettlementClick(settlementPosition)  } else Modifier)
+            .then(if (canBuild) Modifier.clickable { onSettlementClick(Pair(settlementPosition, isUpgrade)) } else Modifier)
             .size(size)
             .clip(CircleShape)
             .background(buildingColor)
-            .border(1.dp, borderColor, CircleShape)
-            .alpha(if (isClickable && isOccupied) 0.3f else 1f)
+            .border(borderWidth, actualBorderColor, CircleShape)
     ) {
-
         if (icon != null) {
             Icon(
                 imageVector = icon,
@@ -75,5 +93,4 @@ fun SettlementComposable(
             )
         }
     }
-
 }

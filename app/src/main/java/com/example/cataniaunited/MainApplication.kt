@@ -2,6 +2,8 @@ package com.example.cataniaunited
 
 import android.app.Application
 import android.util.Log
+import com.example.cataniaunited.data.model.PlayerInfo
+import com.example.cataniaunited.data.model.TileType
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.graphics.Color
 import androidx.core.graphics.toColorInt
@@ -13,6 +15,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
@@ -29,6 +32,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+
 @HiltAndroidApp
 open class MainApplication : Application(),
     OnConnectionSuccess,
@@ -38,6 +42,7 @@ open class MainApplication : Application(),
     OnWebSocketError,
     OnWebSocketClosed,
     OnDiceResult,
+    OnPlayerResourcesReceived,
     WebSocketErrorProvider {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -68,6 +73,10 @@ open class MainApplication : Application(),
         set(value) { // Setter updates the flow
             _currentLobbyIdFlow.value = value
         }
+
+    private val _gameWonState = MutableStateFlow<Pair<PlayerInfo, List<PlayerInfo>>?>(null)
+    val gameWonState: StateFlow<Pair<PlayerInfo, List<PlayerInfo>>?> = _gameWonState.asStateFlow()
+
 
     companion object {
         @Volatile // Ensure visibility across threads
@@ -115,8 +124,8 @@ open class MainApplication : Application(),
         setPlayerId(playerId)
     }
 
-    override fun onLobbyCreated(lobbyId: String, playerId: String, color: String?) {
-        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with playerId: $playerId and color: $color")
+    override fun onLobbyCreated(lobbyId: String, playerId: String) {
+        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with playerId: $playerId")
         currentLobbyId = lobbyId
         playersInLobby.add(LobbyPlayer(playerId, color.toString()))
     }
@@ -138,6 +147,12 @@ open class MainApplication : Application(),
         latestBoardJson = boardJson
     }
 
+    fun onGameWon(winner: PlayerInfo, leaderboard: List<PlayerInfo>) {
+        applicationScope.launch {
+            _gameWonState.value = winner to leaderboard
+        }
+    }
+
     override fun onDiceResult(dice1: Int, dice2: Int) {
         Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")
         applicationScope.launch {
@@ -156,6 +171,17 @@ open class MainApplication : Application(),
         Log.w("MainApplication", "Callback: onClosed. Code=$code, Reason=$reason")
         clearGameData()
     }
+
+    override fun onPlayerResourcesReceived(resources: Map<TileType, Int>) {
+        Log.d("MainApplication", "Callback: onPlayerResourcesReceived. Resources: $resources")
+        applicationScope.launch {
+            gameViewModel?.let {
+                it.updatePlayerResources(resources)
+                Log.d("MainApplication", "Successfully called updatePlayerResources on ViewModel.")
+            } ?: Log.w("MainApplication", "gameViewModel was null — skipping update.")
+        }
+    }
+
 
 
 }

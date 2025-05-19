@@ -2,13 +2,14 @@ package com.example.cataniaunited.di
 
 import android.app.Application
 import com.example.cataniaunited.MainApplication
-import com.example.cataniaunited.data.GameDataHandler
+import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnPlayerJoined
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import dagger.Module
@@ -65,6 +66,12 @@ object WebSocketModule {
 
     @Provides
     @Singleton
+    fun provideOnPlayerResourcesReceived(application: Application): OnPlayerResourcesReceived {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
     fun provideWebSocketListener(
         onConnectionSuccess: OnConnectionSuccess,
         onLobbyCreated: OnLobbyCreated,
@@ -73,6 +80,7 @@ object WebSocketModule {
         onError: OnWebSocketError,
         onClosed: OnWebSocketClosed,
         onDiceResult: OnDiceResult,
+        onPlayerResourcesReceived: OnPlayerResourcesReceived,
         gameDataHandler: GameDataHandler
     ): WebSocketListenerImpl {
         return WebSocketListenerImpl(
@@ -83,7 +91,8 @@ object WebSocketModule {
             onError = onError,
             onClosed = onClosed,
             onDiceResult = onDiceResult,
-            gameDataHandler = gameDataHandler
+            gameDataHandler = gameDataHandler,
+            onPlayerResourcesReceived = onPlayerResourcesReceived
         )
     }
 }

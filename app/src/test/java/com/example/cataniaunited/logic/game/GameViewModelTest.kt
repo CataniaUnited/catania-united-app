@@ -2,7 +2,6 @@ package com.example.cataniaunited.logic.game
 
 import android.util.Log
 import app.cash.turbine.test
-import com.example.cataniaunited.data.GameDataHandler
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
@@ -29,7 +28,6 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.*
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -114,85 +112,87 @@ class GameViewModelTest {
         }
 
 
-        mockGameDataHandler = mockk {
-            every { gameBoardState } returns gameBoardMutableStateFlow.asStateFlow()
+        mockGameDataHandler = mockk()
 
-            every { updateGameBoard(any<String>()) } answers {
-                val json = it.invocation.args[0] as String
-                println("Mock GameDataHandler.updateGameBoard called with: $json")
-                when (json) {
-                    validBoardJson -> {
-                        gameBoardMutableStateFlow.value = GameBoardModel(
-                            tiles = listOf(
-                                Tile(
-                                    id = 1,
-                                    type = TileType.CLAY,
-                                    value = 5,
-                                    coordinates = listOf(0.0, 0.0)
-                                )
-                            ),
-                            settlementPositions = listOf(
-                                SettlementPosition(
-                                    id = 1,
-                                    building = null,
-                                    coordinates = listOf(0.0, 10.0)
-                                )
-                            ),
-                            roads = listOf(
-                                Road(
-                                    id = 1,
-                                    owner = null,
-                                    coordinates = listOf(0.0, 5.0),
-                                    rotationAngle = 0.0,
-                                    color = "#000000"
-                                )
-                            ),
-                            ringsOfBoard = 1,
-                            sizeOfHex = 6
-                        )
-                    }
+        every { mockGameDataHandler.gameBoardState } returns gameBoardMutableStateFlow.asStateFlow()
+        every { mockGameDataHandler.victoryPointsState } returns MutableStateFlow(emptyMap())
 
-                    anotherValidBoardJson -> {
-                        gameBoardMutableStateFlow.value = GameBoardModel(
-                            tiles = listOf(
-                                Tile(
-                                    id = 2,
-                                    type = TileType.WOOD,
-                                    value = 6,
-                                    coordinates = listOf(1.0, 1.0)
-                                )
-                            ),
-                            settlementPositions = listOf(
-                                SettlementPosition(
-                                    id = 2,
-                                    building = null,
-                                    coordinates = listOf(1.0, 11.0)
-                                )
-                            ),
-                            roads = listOf(
-                                Road(
-                                    id = 2,
-                                    owner = null,
-                                    coordinates = listOf(1.0, 6.0),
-                                    rotationAngle = 0.0,
-                                    color = "#000000"
-                                )
-                            ),
-                            ringsOfBoard = 1,
-                            sizeOfHex = 6
-                        )
-                    }
+        every { mockGameDataHandler.updateGameBoard(any<String>()) } answers {
+            val json = it.invocation.args[0] as String
+            println("Mock GameDataHandler.updateGameBoard called with: $json")
+            when (json) {
+                validBoardJson -> {
+                    gameBoardMutableStateFlow.value = GameBoardModel(
+                        tiles = listOf(
+                            Tile(
+                                id = 1,
+                                type = TileType.CLAY,
+                                value = 5,
+                                coordinates = listOf(0.0, 0.0)
+                            )
+                        ),
+                        settlementPositions = listOf(
+                            SettlementPosition(
+                                id = 1,
+                                building = null,
+                                coordinates = listOf(0.0, 10.0)
+                            )
+                        ),
+                        roads = listOf(
+                            Road(
+                                id = 1,
+                                owner = null,
+                                coordinates = listOf(0.0, 5.0),
+                                rotationAngle = 0.0,
+                                color = "#000000"
+                            )
+                        ),
+                        ringsOfBoard = 1,
+                        sizeOfHex = 6
+                    )
+                }
 
-                    invalidBoardJson -> {
-                        gameBoardMutableStateFlow.value = null
-                    }
+                anotherValidBoardJson -> {
+                    gameBoardMutableStateFlow.value = GameBoardModel(
+                        tiles = listOf(
+                            Tile(
+                                id = 2,
+                                type = TileType.WOOD,
+                                value = 6,
+                                coordinates = listOf(1.0, 1.0)
+                            )
+                        ),
+                        settlementPositions = listOf(
+                            SettlementPosition(
+                                id = 2,
+                                building = null,
+                                coordinates = listOf(1.0, 11.0)
+                            )
+                        ),
+                        roads = listOf(
+                            Road(
+                                id = 2,
+                                owner = null,
+                                coordinates = listOf(1.0, 6.0),
+                                rotationAngle = 0.0,
+                                color = "#000000"
+                            )
+                        ),
+                        ringsOfBoard = 1,
+                        sizeOfHex = 6
+                    )
+                }
 
-                    else -> {
-                        gameBoardMutableStateFlow.value = null
-                    }
+                invalidBoardJson -> {
+                    gameBoardMutableStateFlow.value = null
+                }
+
+                else -> {
+                    gameBoardMutableStateFlow.value = null
                 }
             }
         }
+
 
         viewModel = GameViewModel(
             mockGameBoardLogic,
@@ -226,10 +226,10 @@ class GameViewModelTest {
     @Test
     fun testRollDiceCallsGameBoardLogicWithCorrectLobbyId() = runTest {
         val testLobbyId = "test-lobby-abc"
-        io.mockk.every { mockGameBoardLogic.rollDice(testLobbyId) } just io.mockk.Runs
+        every { mockGameBoardLogic.rollDice(testLobbyId) } just io.mockk.Runs
 
         viewModel.rollDice(testLobbyId)
-        io.mockk.verify(exactly = 1) { mockGameBoardLogic.rollDice(testLobbyId) }
+        verify(exactly = 1) { mockGameBoardLogic.rollDice(testLobbyId) }
 
         assertNull(viewModel.diceResult.first())
     }
@@ -237,7 +237,7 @@ class GameViewModelTest {
     @Test
     fun rollDiceSetsIsProcessingRollFromFalseToTrue() = runTest {
         val testLobbyId = "test-lobby-processing"
-        io.mockk.every { mockGameBoardLogic.rollDice(any()) } just io.mockk.Runs
+        every { mockGameBoardLogic.rollDice(any()) } just io.mockk.Runs
 
         val isProcessingRollField = GameViewModel::class.java.getDeclaredField("isProcessingRoll")
         isProcessingRollField.isAccessible = true
@@ -258,7 +258,7 @@ class GameViewModelTest {
 
         viewModel.rollDice(testLobbyId)
 
-        io.mockk.verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
+        verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
 
         assertNull(viewModel.diceResult.first())
     }
@@ -479,10 +479,24 @@ class GameViewModelTest {
                 SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
             val testLobbyId = "click-lobby-1"
 
-            viewModel.handleSettlementClick(testPosition, testLobbyId)
+            viewModel.handleSettlementClick(testPosition, false, testLobbyId)
             advanceUntilIdle()
 
             verify(exactly = 1) { mockGameBoardLogic.placeSettlement(testPosition.id, testLobbyId) }
+
+            println("Test passed: handleSettlementClick calls gameBoardLogic.placeSettlement")
+        }
+
+        @Test
+        fun handleSettlementClickCallsGameBoardLogicUpgradeSettlement() = runTest {
+            val testPosition =
+                SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testLobbyId = "click-lobby-1"
+
+            viewModel.handleSettlementClick(testPosition, true, testLobbyId)
+            advanceUntilIdle()
+
+            verify(exactly = 1) { mockGameBoardLogic.upgradeSettlement(testPosition.id, testLobbyId) }
 
             println("Test passed: handleSettlementClick calls gameBoardLogic.placeSettlement")
         }
@@ -597,5 +611,89 @@ class GameViewModelTest {
         verify(exactly = 1) { mockPlayerSessionManager.getPlayerId() }
 
         println("Test passed: playerId returns value from session manager")
+    }
+
+    @Nested
+    @DisplayName("Player Resources State")
+    inner class PlayerResourcesTests {
+
+        @Test
+        fun playerResourcesInitializesToZeroForAllTypes() = runTest {
+            val expectedInitialResources = TileType.entries
+                .filter { it != TileType.WASTE }
+                .associateWith { 0 }
+
+            viewModel.playerResources.test {
+                assertEquals(expectedInitialResources, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+            assertEquals(expectedInitialResources, viewModel.playerResources.value)
+            println("Test passed: playerResources initializes to zero for all types")
+        }
+
+        @Test
+        fun updatePlayerResourcesUpdatesStateFlowCorrectly() = runTest {
+            val newResources = mapOf(
+                TileType.WOOD to 5,
+                TileType.CLAY to 2,
+                TileType.SHEEP to 1,
+                TileType.WHEAT to 0,
+                TileType.ORE to 3
+            )
+
+            viewModel.playerResources.test {
+                val initial = awaitItem()
+                val expectedInitialResources = TileType.entries
+                    .filter { it != TileType.WASTE }
+                    .associateWith { 0 }
+                assertEquals(expectedInitialResources, initial)
+
+
+                viewModel.updatePlayerResources(newResources)
+
+                assertEquals(newResources, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+            assertEquals(newResources, viewModel.playerResources.value)
+            println("Test passed: updatePlayerResources updates StateFlow correctly")
+        }
+
+        @Test
+        fun updatePlayerResourcesWithEmptyMapClearsResources() = runTest {
+            val initialSetResources = mapOf(TileType.WOOD to 1, TileType.CLAY to 1)
+            viewModel.updatePlayerResources(initialSetResources)
+            assertEquals(initialSetResources, viewModel.playerResources.value)
+
+            val emptyResources = emptyMap<TileType, Int>()
+            viewModel.playerResources.test {
+                assertEquals(initialSetResources, awaitItem())
+
+                viewModel.updatePlayerResources(emptyResources)
+
+                assertEquals(emptyResources, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+            assertEquals(emptyResources, viewModel.playerResources.value)
+            println("Test passed: updatePlayerResources with empty map clears resources")
+        }
+
+        @Test
+        fun updatePlayerResourcesOverridesPreviousValues() = runTest {
+            val firstResources = mapOf(TileType.WOOD to 1, TileType.ORE to 1)
+            viewModel.updatePlayerResources(firstResources)
+            assertEquals(firstResources, viewModel.playerResources.value)
+
+            val secondResources = mapOf(TileType.WOOD to 2, TileType.CLAY to 3)
+            viewModel.playerResources.test {
+                assertEquals(firstResources, awaitItem())
+
+                viewModel.updatePlayerResources(secondResources)
+
+                assertEquals(secondResources, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+            assertEquals(secondResources, viewModel.playerResources.value)
+            println("Test passed: updatePlayerResources overrides previous values")
+        }
     }
 }

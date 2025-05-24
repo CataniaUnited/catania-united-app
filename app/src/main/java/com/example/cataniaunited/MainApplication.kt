@@ -4,7 +4,9 @@ import android.app.Application
 import android.util.Log
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
+import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.logic.game.GameViewModel
+import com.example.cataniaunited.logic.lobby.LobbyPlayer
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
@@ -12,6 +14,7 @@ import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
@@ -32,6 +35,7 @@ import javax.inject.Inject
 open class MainApplication : Application(),
     OnConnectionSuccess,
     OnLobbyCreated,
+    OnPlayerJoined,
     OnGameBoardReceived,
     OnWebSocketError,
     OnWebSocketClosed,
@@ -46,7 +50,9 @@ open class MainApplication : Application(),
 
     internal lateinit var webSocketClient: WebSocketClient
     private var _playerId: String? = null
-
+    val players = mutableStateListOf<LobbyPlayer>()
+    val _navigateToLobbyChannel = Channel<String>(Channel.BUFFERED)
+    val navigateToLobbyFlow = _navigateToLobbyChannel.receiveAsFlow()
     val _navigateToGameChannel = Channel<String>(Channel.BUFFERED)
     val navigateToGameFlow = _navigateToGameChannel.receiveAsFlow()
 
@@ -118,9 +124,23 @@ open class MainApplication : Application(),
         setPlayerId(playerId)
     }
 
-    override fun onLobbyCreated(lobbyId: String) {
-        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId")
-        currentLobbyId = lobbyId
+    override fun onLobbyCreated(lobbyId: String, playerId: String) {
+        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with playerId: $playerId")
+        if(lobbyId == _currentLobbyIdFlow.value){
+            applicationScope.launch {
+                _navigateToLobbyChannel.send(lobbyId)
+                Log.d("MainApplication", "Navigating to lobby: $lobbyId")
+            }
+            players.add(LobbyPlayer(playerId))
+        } else {
+            Log.w("MainApplication", "Received lobby creation for wrong lobby.")
+        }
+
+    }
+
+    override fun onPlayerJoined(lobbyId: String, playerId: String, color: String?) {
+        Log.d("MainApplication", "Callback: onPlayerJoined. Player ID: $playerId with color: $color")
+        players.add(LobbyPlayer(playerId, color))
     }
 
     override fun onGameBoardReceived(lobbyId: String, boardJson: String) {
@@ -140,8 +160,6 @@ open class MainApplication : Application(),
             _gameWonState.value = winner to leaderboard
         }
     }
-
-
 
     override fun onDiceResult(dice1: Int, dice2: Int) {
         Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")

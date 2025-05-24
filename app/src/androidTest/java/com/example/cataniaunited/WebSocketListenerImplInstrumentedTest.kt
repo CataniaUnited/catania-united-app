@@ -11,6 +11,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
@@ -36,6 +37,7 @@ class WebSocketListenerImplInstrumentedTest {
     private lateinit var webSocketListener: WebSocketListenerImpl
     private lateinit var mockConnectionSuccess: OnConnectionSuccess
     private lateinit var mockLobbyCreated: OnLobbyCreated
+    private lateinit var mockPlayerJoined: OnPlayerJoined
     private lateinit var mockGameBoardReceived: OnGameBoardReceived
     private lateinit var mockError: OnWebSocketError
     private lateinit var mockClosed: OnWebSocketClosed
@@ -49,6 +51,7 @@ class WebSocketListenerImplInstrumentedTest {
     fun setUp() {
         mockConnectionSuccess = mockk(relaxed = true)
         mockLobbyCreated = mockk(relaxed = true)
+        mockPlayerJoined = mockk(relaxed = true)
         mockGameBoardReceived = mockk(relaxed = true)
         mockDiceResult = mockk(relaxed = true)
         mockError = mockk(relaxed = true)
@@ -62,6 +65,7 @@ class WebSocketListenerImplInstrumentedTest {
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = mockConnectionSuccess,
             onLobbyCreated = mockLobbyCreated,
+            onPlayerJoined = mockPlayerJoined,
             onGameBoardReceived = mockGameBoardReceived,
             onError = mockError,
             onClosed = mockClosed,
@@ -596,17 +600,4 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 0) { mockError.onError(match { it.message?.contains("GAME_WON") == true }) } // just ensure no crash/log
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
 }

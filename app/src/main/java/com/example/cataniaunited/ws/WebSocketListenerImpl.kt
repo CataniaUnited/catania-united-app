@@ -12,6 +12,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
@@ -31,6 +32,7 @@ import javax.inject.Inject
 open class WebSocketListenerImpl @Inject constructor(
     private val onConnectionSuccess: OnConnectionSuccess,
     private val onLobbyCreated: OnLobbyCreated,
+    private val onPlayerJoined: OnPlayerJoined,
     private val onGameBoardReceived: OnGameBoardReceived,
     private val onError: OnWebSocketError,
     private val onClosed: OnWebSocketClosed,
@@ -40,7 +42,6 @@ open class WebSocketListenerImpl @Inject constructor(
 ) : WebSocketListener() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
-
 
     init {
         Log.d("WebSocketListener", "GameDataHandler hashCode: ${gameDataHandler.hashCode()}")
@@ -72,7 +73,10 @@ open class WebSocketListenerImpl @Inject constructor(
 
             when (messageDTO.type) {
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
-                MessageType.GAME_BOARD_JSON, MessageType.PLACE_SETTLEMENT, MessageType.PLACE_ROAD, MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
+                MessageType.GAME_BOARD_JSON,
+                MessageType.PLACE_SETTLEMENT,
+                MessageType.PLACE_ROAD,
+                MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
@@ -92,18 +96,17 @@ open class WebSocketListenerImpl @Inject constructor(
         }
     }
 
-
     private fun handlePlayerJoined(messageDTO: MessageDTO) {
         val playerId = messageDTO.player
         val lobbyId = messageDTO.lobbyId
         val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
 
         if (playerId != null && lobbyId != null) {
+            onPlayerJoined.onPlayerJoined(lobbyId, playerId, color)
             Log.i(
                 "WebSocketListener",
                 "Player '$playerId' joined Lobby '$lobbyId' with color $color"
             )
-
             // notify UI or GameDataHandler if needed
         } else {
             Log.w("WebSocketListener", "PLAYER_JOINED message missing player or lobbyId")
@@ -211,9 +214,6 @@ open class WebSocketListenerImpl @Inject constructor(
         }
     }
 
-
-
-
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
         Log.i("WebSocketListener", "Closing: Code=$code, Reason=$reason")
     }
@@ -231,9 +231,12 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleLobbyCreated(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
+        val playerId = messageDTO.player
+        val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
+
         if (lobbyId != null) {
             Log.i("WebSocketListener", "Lobby Created successfully with ID: $lobbyId")
-            onLobbyCreated.onLobbyCreated(lobbyId)
+            onLobbyCreated.onLobbyCreated(lobbyId, playerId, color)
         } else {
             Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")
             onError.onError(IllegalArgumentException("Missing lobbyId in LOBBY_CREATED message"))
@@ -247,8 +250,4 @@ open class WebSocketListenerImpl @Inject constructor(
         Log.d("WebSocketListener", "Processing new dice result: $dice1, $dice2")
         onDiceResult.onDiceResult(dice1, dice2)
     }
-
-
-
-
 }

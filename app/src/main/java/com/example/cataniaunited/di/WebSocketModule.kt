@@ -9,6 +9,7 @@ import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnPlayerJoined
+import com.example.cataniaunited.ws.callback.OnLobbyUpdated
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
@@ -37,6 +38,12 @@ object WebSocketModule {
     @Provides
     @Singleton
     fun provideOnPlayerJoined(application: Application): OnPlayerJoined {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnLobbyUpdated(application: Application): OnLobbyUpdated {
         return application as MainApplication
     }
 
@@ -76,6 +83,7 @@ object WebSocketModule {
         onConnectionSuccess: OnConnectionSuccess,
         onLobbyCreated: OnLobbyCreated,
         onPlayerJoined: OnPlayerJoined,
+        onLobbyUpdated: OnLobbyUpdated,
         onGameBoardReceived: OnGameBoardReceived,
         onError: OnWebSocketError,
         onClosed: OnWebSocketClosed,
@@ -87,6 +95,7 @@ object WebSocketModule {
             onConnectionSuccess = onConnectionSuccess,
             onLobbyCreated = onLobbyCreated,
             onPlayerJoined = onPlayerJoined,
+            onLobbyUpdated = onLobbyUpdated,
             onGameBoardReceived = onGameBoardReceived,
             onError = onError,
             onClosed = onClosed,

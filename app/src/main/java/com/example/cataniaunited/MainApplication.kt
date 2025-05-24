@@ -13,6 +13,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnLobbyUpdated
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
@@ -30,12 +31,12 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltAndroidApp
 open class MainApplication : Application(),
     OnConnectionSuccess,
     OnLobbyCreated,
     OnPlayerJoined,
+    OnLobbyUpdated,
     OnGameBoardReceived,
     OnWebSocketError,
     OnWebSocketClosed,
@@ -190,6 +191,14 @@ open class MainApplication : Application(),
         }
     }
 
+    override fun onLobbyUpdated(
+        lobbyId: String,
+        playerId: String,
+        username: String?,
+        color: String?
+    ) {
+        TODO("Not yet implemented")
+    }
 
 
 }

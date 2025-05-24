@@ -12,6 +12,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnLobbyUpdated
 import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
@@ -33,6 +34,7 @@ open class WebSocketListenerImpl @Inject constructor(
     private val onConnectionSuccess: OnConnectionSuccess,
     private val onLobbyCreated: OnLobbyCreated,
     private val onPlayerJoined: OnPlayerJoined,
+    private val onLobbyUpdated: OnLobbyUpdated,
     private val onGameBoardReceived: OnGameBoardReceived,
     private val onError: OnWebSocketError,
     private val onClosed: OnWebSocketClosed,
@@ -73,15 +75,16 @@ open class WebSocketListenerImpl @Inject constructor(
 
             when (messageDTO.type) {
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
+                MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
+                MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
+                MessageType.LOBBY_UPDATED -> handleLobbyUpdated(messageDTO)
                 MessageType.GAME_BOARD_JSON,
                 MessageType.PLACE_SETTLEMENT,
                 MessageType.PLACE_ROAD,
                 MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
-                MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
-                MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
-                MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
-                MessageType.GAME_WON -> handleGameWon(messageDTO)
                 MessageType.PLAYER_RESOURCES -> handlePlayerResources(messageDTO)
+                MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
+                MessageType.GAME_WON -> handleGameWon(messageDTO)
                 // TODO: Other Messages
 
                 MessageType.ERROR -> {
@@ -94,6 +97,15 @@ open class WebSocketListenerImpl @Inject constructor(
             Log.e("WebSocketListener", "Error parsing or handling message: $text", e)
             onError.onError(e)
         }
+    }
+
+    private fun handleLobbyUpdated(messageDTO: MessageDTO) {
+        val lobbyId = messageDTO.lobbyId
+        val playerId = messageDTO.player
+        val message = messageDTO.message
+        val username = message?.get("username")?.jsonPrimitive?.contentOrNull
+        val color = message?.get("color")?.jsonPrimitive?.contentOrNull
+        //TODO: SET USERNAME
     }
 
     private fun handlePlayerJoined(messageDTO: MessageDTO) {

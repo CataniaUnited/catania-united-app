@@ -11,6 +11,7 @@ import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnLobbyUpdated
 import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
@@ -23,7 +24,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.put
-import io.mockk.slot
 import okhttp3.Response
 import okhttp3.WebSocket
 import org.junit.After
@@ -38,6 +38,7 @@ class WebSocketListenerImplInstrumentedTest {
     private lateinit var mockConnectionSuccess: OnConnectionSuccess
     private lateinit var mockLobbyCreated: OnLobbyCreated
     private lateinit var mockPlayerJoined: OnPlayerJoined
+    private lateinit var mockLobbyUpdated: OnLobbyUpdated
     private lateinit var mockGameBoardReceived: OnGameBoardReceived
     private lateinit var mockError: OnWebSocketError
     private lateinit var mockClosed: OnWebSocketClosed
@@ -52,6 +53,7 @@ class WebSocketListenerImplInstrumentedTest {
         mockConnectionSuccess = mockk(relaxed = true)
         mockLobbyCreated = mockk(relaxed = true)
         mockPlayerJoined = mockk(relaxed = true)
+        mockLobbyUpdated = mockk(relaxed = true)
         mockGameBoardReceived = mockk(relaxed = true)
         mockDiceResult = mockk(relaxed = true)
         mockError = mockk(relaxed = true)
@@ -66,6 +68,7 @@ class WebSocketListenerImplInstrumentedTest {
             onConnectionSuccess = mockConnectionSuccess,
             onLobbyCreated = mockLobbyCreated,
             onPlayerJoined = mockPlayerJoined,
+            onLobbyUpdated = mockLobbyUpdated,
             onGameBoardReceived = mockGameBoardReceived,
             onError = mockError,
             onClosed = mockClosed,
@@ -114,14 +117,23 @@ class WebSocketListenerImplInstrumentedTest {
     @Test
     fun onMessage_handlesLobbyCreated_withLobbyId() {
         val lobbyId = "testLobby1"
+        val playerId = "testPlayer1"
+        val username = "Chicken"
+        val color = "#FF0000"
+
         val messageJson = buildJsonObject {
             put("type", MessageType.LOBBY_CREATED.name)
             put("lobbyId", lobbyId)
+            put("player", playerId)
+            put("message", buildJsonObject {
+                put("username", username)
+                put("color", color)
+            })
         }.toString()
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        verify(exactly = 1) { mockLobbyCreated.onLobbyCreated(lobbyId) }
+        verify(exactly = 1) { mockLobbyCreated.onLobbyCreated(lobbyId, playerId, username, color) }
         verify(exactly = 0) { mockError.onError(any<Throwable>()) }
     }
 
@@ -133,7 +145,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), any(), any(), any()) }
         verify(exactly = 1) { mockError.onError(any<IllegalArgumentException>()) }
     }
 
@@ -279,7 +291,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 1) { mockError.onError(any<Exception>()) }
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), any(), any(), any()) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockClosed.onClosed(any(), any()) }
     }
@@ -294,7 +306,7 @@ class WebSocketListenerImplInstrumentedTest {
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), any(), any(), any()) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockClosed.onClosed(any(), any()) }
     }
@@ -310,7 +322,7 @@ class WebSocketListenerImplInstrumentedTest {
         verify(exactly = 1) { mockError.onError(any<GameException>()) }
 
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), any(), any(), any()) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockClosed.onClosed(any(), any()) }
     }
@@ -324,7 +336,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 1) { mockError.onError(testErrorThrowable) }
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), any(), any(), any()) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockClosed.onClosed(any(), any()) }
     }
@@ -338,7 +350,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 1) { mockClosed.onClosed(code, reason) }
         verify(exactly = 0) { mockConnectionSuccess.onConnectionSuccess(any()) }
-        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any()) }
+        verify(exactly = 0) { mockLobbyCreated.onLobbyCreated(any(), any(), any(), any()) }
         verify(exactly = 0) { mockGameBoardReceived.onGameBoardReceived(any(), any()) }
         verify(exactly = 0) { mockError.onError(any()) }
     }

@@ -102,12 +102,11 @@ open class WebSocketListenerImpl @Inject constructor(
         val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
 
         if (playerId != null && lobbyId != null) {
-            onPlayerJoined.onPlayerJoined(playerId, color)
+            onPlayerJoined.onPlayerJoined(lobbyId, playerId, color)
             Log.i(
                 "WebSocketListener",
                 "Player '$playerId' joined Lobby '$lobbyId' with color $color"
             )
-
             // notify UI or GameDataHandler if needed
         } else {
             Log.w("WebSocketListener", "PLAYER_JOINED message missing player or lobbyId")
@@ -232,9 +231,12 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleLobbyCreated(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
+        val playerId = messageDTO.player
+        val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
+
         if (lobbyId != null) {
             Log.i("WebSocketListener", "Lobby Created successfully with ID: $lobbyId")
-            onLobbyCreated.onLobbyCreated(lobbyId)
+            onLobbyCreated.onLobbyCreated(lobbyId, playerId, color)
         } else {
             Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")
             onError.onError(IllegalArgumentException("Missing lobbyId in LOBBY_CREATED message"))

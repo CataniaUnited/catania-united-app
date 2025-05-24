@@ -21,6 +21,7 @@ import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.theme.catanClay
 import com.example.cataniaunited.ui.theme.catanGold
 import androidx.core.graphics.toColorInt
+import com.example.cataniaunited.logic.lobby.LobbyPlayer
 
 @Composable
 fun LobbyScreen(
@@ -92,7 +93,7 @@ fun LobbyScreen(
                 Button(
                     onClick = onStartGameClick,
                     modifier = Modifier
-                        .width(120.dp)
+                        .width(150.dp)
                         .height(40.dp)
                 ) {
                     Text(text = "Start Game")

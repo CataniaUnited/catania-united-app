@@ -8,7 +8,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,7 +21,6 @@ import com.example.cataniaunited.ui.game.GameScreen
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
-import com.example.cataniaunited.ui.game.GameScreen
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -54,11 +52,19 @@ class MainActivity : ComponentActivity() {
                         if(currentRoute == "hostandjoin") {
                             gameBoardLogic.requestBoardForLobby(lobbyId = currentLobbyIdState!!)
                         }
-                        navController.navigate("game/${currentLobbyIdState}")
+                        navController.navigate("lobby/${currentLobbyIdState}")
                     }
                 }
 
-
+                LaunchedEffect(Unit) {
+                    application.navigateToLobbyFlow
+                        .onEach { lobbyId ->
+                            navController.navigate("lobby/$lobbyId") {
+                                popUpTo("starting") { inclusive = true }
+                            }
+                        }
+                        .launchIn(lifecycleScope)
+                }
 
                 LaunchedEffect(Unit) {
                     Log.d("MainActivity", "Setting up navigation listener.")
@@ -85,26 +91,45 @@ class MainActivity : ComponentActivity() {
                     composable("tutorial") {
                         TutorialScreen(onBackClick = { navController.navigateUp() })
                     }
-
-                    composable("lobby") {
-                        val app = LocalContext.current.applicationContext as MainApplication
-                        LobbyScreen(
-                            players = app.playersInLobby,
-                            onCancelClick = {navController.navigate("starting")},
-                            onStartGameClick = {
-                                val lobbyId = currentLobbyIdState
-                                if (lobbyId != null) {
-                                    Log.i("LobbyScreen", "Starting game for lobby: $lobbyId")
-                                    try {
-                                        gameBoardLogic.requestBoardForLobby(lobbyId = lobbyId, playerCount = 4)
-                                    } catch (e: Exception) {
-                                        Log.e("LobbyScreen", "Error requesting board for lobby", e)
-                                    }
-                                }
+                    composable("hostandjoin") {
+                        HostAndJoinScreen(
+                            onBackClick = { navController.navigateUp() },
+                            onHostSelected = {
+                                hostJoinLogic.sendCreateLobby()
+                                //navController.navigate("lobby/")
+                            },
+                            onJoinSelected = { navController.navigate("joingame") }
+                        )
+                    }
+                    composable("joingame") {
+                        JoinGameScreen(
+                            onBackClick = { navController.navigateUp() },
+                            onJoinClick = { lobbyId ->
+                                hostJoinLogic.sendJoinLobby(lobbyId)
+                                navController.navigate("lobby/$lobbyId")
                             }
                         )
                     }
-
+                    composable(
+                        route = "lobby/{lobbyId}"
+                    ) { backStackEntry ->
+                        val lobbyId = backStackEntry.arguments?.getString("lobbyId")
+                        if (lobbyId == null) {
+                            Log.e("Navigation", "Lobby ID missing! Navigating back.")
+                            LaunchedEffect(Unit) { navController.navigateUp() }
+                        }
+                        else {
+                            LobbyScreen(
+                                players = application.players,
+                                onCancelClick = {navController.navigate("joingame")},
+                                onStartGameClick = {
+                                    Log.i("LobbyScreen", "Starting game for lobby: $lobbyId")
+                                    gameBoardLogic.requestBoardForLobby(lobbyId = lobbyId, isCreate = false)
+                                    navController.navigate("game/${lobbyId}")
+                                }
+                            )
+                        }
+                    }
                     composable(
                         route = "game/{lobbyId}",
 
@@ -119,27 +144,6 @@ class MainActivity : ComponentActivity() {
                                 lobbyId = lobbyIdArg,
                                 navController = navController)
                         }
-                    }
-                    composable("hostandjoin") {
-                        HostAndJoinScreen(
-                            onBackClick = { navController.navigateUp() },
-                            onHostSelected = {
-                                hostJoinLogic.sendCreateLobby()
-                             },
-                            onJoinSelected = { navController.navigate("joingame") }
-                        )
-                    }
-                    composable("joingame") {
-                        JoinGameScreen(
-                            onBackClick = { navController.navigateUp() },
-                            onJoinClick = { lobbyId ->
-                                hostJoinLogic.sendJoinLobby(lobbyId)
-
-                                //TODO: Remove after implementation of lobby and start game
-                                gameBoardLogic.requestBoardForLobby(lobbyId = lobbyId, isCreate = false)
-                                navController.navigate("game/${lobbyId}")
-                            }
-                        )
                     }
                 }
             }

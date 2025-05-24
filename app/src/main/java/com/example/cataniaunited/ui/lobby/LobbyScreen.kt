@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
@@ -25,6 +26,7 @@ import com.example.cataniaunited.logic.lobby.LobbyPlayer
 
 @Composable
 fun LobbyScreen(
+    lobbyId: String,
     players: List<LobbyPlayer>,
     onCancelClick: () -> Unit,
     onStartGameClick: () -> Unit
@@ -109,6 +111,15 @@ fun LobbyScreen(
                 ) {
                     Text(text = "Cancel")
                 }
+
+                Text(
+                    text = "Lobby ID: $lobbyId",
+                    fontSize = 12.sp,
+                    color = Color.Black,
+                    textAlign = TextAlign.End,
+                    modifier = Modifier
+                        .padding(8.dp)
+                )
             }
         }
     }

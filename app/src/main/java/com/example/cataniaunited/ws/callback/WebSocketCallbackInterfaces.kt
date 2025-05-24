@@ -7,11 +7,11 @@ fun interface OnConnectionSuccess {
 }
 
 fun interface OnLobbyCreated {
-    fun onLobbyCreated(lobbyId: String, playerId: String, color: String?)
+    fun onLobbyCreated(lobbyId: String, playerId: String, username: String?, color: String?)
 }
 
 fun interface OnPlayerJoined {
-    fun onPlayerJoined(lobbyId: String, playerId: String?, color: String?)
+    fun onPlayerJoined(lobbyId: String, playerId: String, username: String?, color: String?)
 }
 
 fun interface OnLobbyUpdated {

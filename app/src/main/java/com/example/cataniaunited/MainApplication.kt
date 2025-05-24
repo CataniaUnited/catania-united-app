@@ -125,23 +125,47 @@ open class MainApplication : Application(),
         setPlayerId(playerId)
     }
 
-    override fun onLobbyCreated(lobbyId: String, playerId: String) {
-        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with playerId: $playerId")
+    override fun onLobbyCreated(
+        lobbyId: String,
+        playerId: String,
+        username: String?,
+        color: String?
+    ) {
+        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with playerId: $playerId, username: $username, color: $color")
         if(lobbyId == _currentLobbyIdFlow.value){
             applicationScope.launch {
                 _navigateToLobbyChannel.send(lobbyId)
                 Log.d("MainApplication", "Navigating to lobby: $lobbyId")
             }
-            players.add(LobbyPlayer(playerId))
+            players.add(LobbyPlayer(
+                lobbyId = lobbyId,
+                playerId = playerId,
+                username = username,
+                colorHex = color!!,
+                isHost = true,
+                isReady = false
+            ))
+
         } else {
             Log.w("MainApplication", "Received lobby creation for wrong lobby.")
         }
 
     }
 
-    override fun onPlayerJoined(lobbyId: String, playerId: String, color: String?) {
-        Log.d("MainApplication", "Callback: onPlayerJoined. Player ID: $playerId with color: $color")
-        players.add(LobbyPlayer(playerId, color))
+    override fun onPlayerJoined(
+        lobbyId: String,
+        playerId: String,
+        username: String?,
+        color: String?
+    ) {
+        Log.d("MainApplication", "Callback: onPlayerJoined. Player ID: $playerId with username: $username, color: $color")
+        players.add(LobbyPlayer(
+            lobbyId = lobbyId,
+            playerId = playerId,
+            colorHex = color!!,
+            username = username,
+            isHost = false,
+            isReady = false))
     }
 
     override fun onGameBoardReceived(lobbyId: String, boardJson: String) {

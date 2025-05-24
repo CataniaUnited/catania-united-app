@@ -111,14 +111,12 @@ open class WebSocketListenerImpl @Inject constructor(
     private fun handlePlayerJoined(messageDTO: MessageDTO) {
         val playerId = messageDTO.player
         val lobbyId = messageDTO.lobbyId
+        val username = messageDTO.message?.get("username")?.jsonPrimitive?.contentOrNull
         val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
 
-        if (playerId != null && lobbyId != null) {
-            onPlayerJoined.onPlayerJoined(lobbyId, playerId, color)
-            Log.i(
-                "WebSocketListener",
-                "Player '$playerId' joined Lobby '$lobbyId' with color $color"
-            )
+        if (lobbyId != null && playerId != null) {
+            onPlayerJoined.onPlayerJoined(lobbyId, playerId,username, color)
+            Log.i("WebSocketListener", "Player '$playerId' joined Lobby '$lobbyId' with color $color")
             // notify UI or GameDataHandler if needed
         } else {
             Log.w("WebSocketListener", "PLAYER_JOINED message missing player or lobbyId")
@@ -244,11 +242,13 @@ open class WebSocketListenerImpl @Inject constructor(
     private fun handleLobbyCreated(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
         val playerId = messageDTO.player
-        val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
+        val message = messageDTO.message
+        val username = message?.get("username")?.jsonPrimitive?.contentOrNull
+        val color = message?.get("color")?.jsonPrimitive?.contentOrNull
 
-        if (lobbyId != null) {
+        if (lobbyId != null && playerId != null) {
+            onLobbyCreated.onLobbyCreated(lobbyId, playerId, username, color)
             Log.i("WebSocketListener", "Lobby Created successfully with ID: $lobbyId")
-            onLobbyCreated.onLobbyCreated(lobbyId, playerId, color)
         } else {
             Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")
             onError.onError(IllegalArgumentException("Missing lobbyId in LOBBY_CREATED message"))

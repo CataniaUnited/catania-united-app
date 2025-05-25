@@ -6,7 +6,6 @@ import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
 import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.logic.game.GameViewModel
-import com.example.cataniaunited.logic.lobby.LobbyPlayer
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
@@ -51,7 +50,7 @@ open class MainApplication : Application(),
 
     internal lateinit var webSocketClient: WebSocketClient
     private var _playerId: String? = null
-    val players = mutableStateListOf<LobbyPlayer>()
+    val players = mutableStateListOf<PlayerInfo>()
     val _navigateToLobbyChannel = Channel<String>(Channel.BUFFERED)
     val navigateToLobbyFlow = _navigateToLobbyChannel.receiveAsFlow()
     val _navigateToGameChannel = Channel<String>(Channel.BUFFERED)
@@ -137,8 +136,7 @@ open class MainApplication : Application(),
                 _navigateToLobbyChannel.send(lobbyId)
                 Log.d("MainApplication", "Navigating to lobby: $lobbyId")
             }
-            players.add(LobbyPlayer(
-                lobbyId = lobbyId,
+            players.add(PlayerInfo(
                 playerId = playerId,
                 username = username,
                 colorHex = color!!,
@@ -159,8 +157,7 @@ open class MainApplication : Application(),
         color: String?
     ) {
         Log.d("MainApplication", "Callback: onPlayerJoined. Player ID: $playerId with username: $username, color: $color")
-        players.add(LobbyPlayer(
-            lobbyId = lobbyId,
+        players.add(PlayerInfo(
             playerId = playerId,
             colorHex = color!!,
             username = username,

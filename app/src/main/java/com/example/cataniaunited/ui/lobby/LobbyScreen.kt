@@ -22,12 +22,12 @@ import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.theme.catanClay
 import com.example.cataniaunited.ui.theme.catanGold
 import androidx.core.graphics.toColorInt
-import com.example.cataniaunited.logic.lobby.LobbyPlayer
+import com.example.cataniaunited.data.model.PlayerInfo
 
 @Composable
 fun LobbyScreen(
     lobbyId: String,
-    players: List<LobbyPlayer>,
+    players: List<PlayerInfo>,
     onCancelClick: () -> Unit,
     onStartGameClick: () -> Unit
 ) {
@@ -36,14 +36,14 @@ fun LobbyScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(catanClay)
-    ){
+    ) {
         Column (
             modifier = Modifier
                 .fillMaxSize()
                 .padding(vertical = 40.dp),
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
             Text(
                 text = "SEARCHING FOR OPPONENTS...",
                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 32.sp),
@@ -58,14 +58,14 @@ fun LobbyScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            Row (
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 60.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
-            ){
+            ) {
                 players.forEach { player ->
-                    Column (horizontalAlignment = Alignment.CenterHorizontally){
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Image(
                             painter = painterResource(id = R.drawable.player_icon128),
                             contentDescription = "player icon",
@@ -82,12 +82,11 @@ fun LobbyScreen(
                         )
                     }
                 }
-
             }
 
-            Column (
+            Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(bottom = 10.dp),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
@@ -111,16 +110,18 @@ fun LobbyScreen(
                 ) {
                     Text(text = "Cancel")
                 }
-
-                Text(
-                    text = "Lobby ID: $lobbyId",
-                    fontSize = 12.sp,
-                    color = Color.Black,
-                    textAlign = TextAlign.End,
-                    modifier = Modifier
-                        .padding(8.dp)
-                )
             }
         }
+
+        // Hier wird die Lobby ID am unteren rechten Rand platziert
+        Text(
+            text = "Lobby ID: $lobbyId",
+            fontSize = 12.sp,
+            color = Color.Black,
+            textAlign = TextAlign.End,
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(8.dp)
+        )
     }
 }

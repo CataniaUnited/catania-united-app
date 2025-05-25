@@ -120,6 +120,7 @@ class MainActivity : ComponentActivity() {
                         }
                         else {
                             LobbyScreen(
+                                lobbyId = lobbyId,
                                 players = application.players,
                                 onCancelClick = {navController.navigate("joingame")},
                                 onStartGameClick = {

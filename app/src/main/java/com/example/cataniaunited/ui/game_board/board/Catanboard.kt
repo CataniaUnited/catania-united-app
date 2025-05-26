@@ -47,6 +47,8 @@ private data class BoardBaseLayoutParams(
 // Helper to convert Px to Dp within LaunchedEffect/Density scope
 private fun Float.toDp(density: Density): Dp = with(density) { this@toDp.toDp() }
 
+// fixme too many parameters - change to objects
+// fixme too large method, extract sub functionality
 @Composable
 fun CatanBoard(
     modifier: Modifier = Modifier,
@@ -146,6 +148,7 @@ fun CatanBoard(
                         val initialDrawableRoadLengthPx = (initialCenterToCenterRoadLengthPx - initialSettlementDiameterPx).coerceAtLeast(1f)
                         val initialDrawableRoadLengthDp = initialDrawableRoadLengthPx.toDp(density)
 
+                        // fixme add position data structure (see backend comments)
                         // --- Calculate Initial Offset for Centering ---
                         val initialInternalPaddingNeededPx = initialScaledHexRadiusPx
                         val visualMinX = (minX * initialFitScale) - initialInternalPaddingNeededPx

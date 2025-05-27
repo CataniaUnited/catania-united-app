@@ -76,10 +76,12 @@ fun LobbyScreen(
                             contentScale = ContentScale.Crop
                         )
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = player.playerId,
-                            color = MaterialTheme.colorScheme.onBackground
-                        )
+                        player.username?.let {
+                            Text(
+                                text = it,
+                                color = MaterialTheme.colorScheme.onBackground
+                            )
+                        }
                     }
                 }
             }
@@ -87,7 +89,7 @@ fun LobbyScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 10.dp),
+                    .padding(bottom = 5.dp),
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
@@ -121,7 +123,7 @@ fun LobbyScreen(
             textAlign = TextAlign.End,
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(8.dp)
+                .padding(50.dp)
         )
     }
 }

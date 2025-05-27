@@ -131,14 +131,14 @@ open class MainApplication : Application(),
         color: String?
     ) {
         Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with playerId: $playerId, username: $username, color: $color")
-        if(lobbyId == _currentLobbyIdFlow.value){
+        if(lobbyId == _currentLobbyIdFlow.value || _currentLobbyIdFlow.value == null){
             applicationScope.launch {
                 _navigateToLobbyChannel.send(lobbyId)
                 Log.d("MainApplication", "Navigating to lobby: $lobbyId")
             }
             players.add(PlayerInfo(
                 playerId = playerId,
-                username = username,
+                username = "username",
                 colorHex = color!!,
                 isHost = true,
                 isReady = false
@@ -160,7 +160,7 @@ open class MainApplication : Application(),
         players.add(PlayerInfo(
             playerId = playerId,
             colorHex = color!!,
-            username = username,
+            username = "NewPlayer",
             isHost = false,
             isReady = false))
     }

@@ -55,14 +55,16 @@ fun PlayerVictoryBar(
                             .background(catanClayLight),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = player.username,
-                            style = appTypography.bodyLarge.copy(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = Color.White
-                        )
+                        player.username?.let {
+                            Text(
+                                text = it,
+                                style = appTypography.bodyLarge.copy(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = Color.White
+                            )
+                        }
                     }
 
                     Box(

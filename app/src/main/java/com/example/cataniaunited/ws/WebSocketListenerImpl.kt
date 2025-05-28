@@ -115,7 +115,7 @@ open class WebSocketListenerImpl @Inject constructor(
         val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
 
         if (lobbyId != null && playerId != null) {
-            onPlayerJoined.onPlayerJoined(lobbyId, playerId,username, color)
+            onPlayerJoined.onPlayerJoined(lobbyId, playerId, username, color)
             Log.i("WebSocketListener", "Player '$playerId' joined Lobby '$lobbyId' with color $color")
             // notify UI or GameDataHandler if needed
         } else {

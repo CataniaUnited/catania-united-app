@@ -138,7 +138,7 @@ open class MainApplication : Application(),
             }
             players.add(PlayerInfo(
                 playerId = playerId,
-                username = "username",
+                username = username ?: "HostPlayer",
                 colorHex = color!!,
                 isHost = true,
                 isReady = false
@@ -160,7 +160,7 @@ open class MainApplication : Application(),
         players.add(PlayerInfo(
             playerId = playerId,
             colorHex = color!!,
-            username = "NewPlayer",
+            username = username ?: "NewPlayer",
             isHost = false,
             isReady = false))
     }

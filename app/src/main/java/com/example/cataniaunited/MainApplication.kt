@@ -148,19 +148,26 @@ open class MainApplication : Application(),
         players: Map<String, PlayerInfo>
     ) {
         Log.d("MainApplication", "Callback: onPlayerJoined. Players $players")
+
+        if(currentLobbyId == null) {
+            currentLobbyId = lobbyId;
+        }
         this.players.clear()
         this.players.addAll(players.values)
     }
 
     override fun onLobbyUpdated(lobbyId: String, players: Map<String, PlayerInfo>) {
         Log.d("MainApplication", "Callback: onLobbyUpdated. Players $players")
+        if(currentLobbyId == null) {
+            currentLobbyId = lobbyId;
+        }
         this.players.clear()
         this.players.addAll(players.values)
     }
 
     override fun onGameBoardReceived(lobbyId: String, boardJson: String) {
-        Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId.")
-        if (latestBoardJson == null && lobbyId == _currentLobbyIdFlow.value) {
+        Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId. Current lobby id: $currentLobbyId")
+        if (latestBoardJson == null && lobbyId == currentLobbyId) {
             applicationScope.launch {
                 _navigateToGameChannel.send(lobbyId)
             }

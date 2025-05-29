@@ -65,38 +65,20 @@ class GameBoardLogic @Inject constructor(
         }
     }
 
-    fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4, isCreate: Boolean = true) {
-
-        val playerId = try{
-            playerSessionManager.getPlayerId()
-        }catch (ise: IllegalStateException){
-            return
-        }
-        val messagePayload = buildJsonObject { put("playerCount", playerCount) }
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        if (webSocketClient.isConnected()) {
-
-            for(i in 1 until playerCount) {
-                val joinLobbyMessage = MessageDTO(
-                    MessageType.JOIN_LOBBY,
-                    UUID.randomUUID().toString(),
+    fun startGame(lobbyId: String){
+        try {
+            Log.d("GameBoard", "Starting game for lobby: $lobbyId")
+            val playerId = MainApplication.getInstance().getPlayerId()
+            val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+            webSocketClient.sendMessage(
+                MessageDTO(
+                    MessageType.START_GAME,
+                    playerId,
                     lobbyId,
-                    null,
-                    null
                 )
-
-                webSocketClient.sendMessage(joinLobbyMessage)
-            }
-
-            val type: MessageType = if(isCreate) MessageType.CREATE_GAME_BOARD else MessageType.GET_GAME_BOARD
-            val messageToSend = MessageDTO(type, playerId, lobbyId, null, messagePayload )
-            webSocketClient.sendMessage(messageToSend)
-
-            val setPlayerActiveMessage = MessageDTO( MessageType.SET_ACTIVE_PLAYER, playerId, lobbyId )
-            webSocketClient.sendMessage(setPlayerActiveMessage)
-            Log.i("GameBoardLogic", "Sent CREATE_GAME_BOARD request for $playerCount players in lobby $lobbyId.")
-        } else {
-            Log.e("GameBoardLogic", "WebSocket not connected when trying to create game board.")
+            )
+        } catch (e: Exception) {
+            Log.e("GameBoard", "Error rolling dice", e)
         }
     }
 

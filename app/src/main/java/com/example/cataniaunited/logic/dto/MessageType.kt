@@ -11,6 +11,7 @@ enum class MessageType {
     GAME_BOARD_JSON,
     DICE_RESULT,
     GAME_WON,
+    GAME_STARTED,
     PLAYER_RESOURCES,
 
     //Client Messages
@@ -22,8 +23,8 @@ enum class MessageType {
     PLACE_SETTLEMENT,
     UPGRADE_SETTLEMENT,
     PLACE_ROAD,
+    START_GAME,
     CREATE_GAME_BOARD,
-    GET_GAME_BOARD,
     BUY_DEVELOPMENT_CARD,
     ROLL_DICE,
     SET_READY

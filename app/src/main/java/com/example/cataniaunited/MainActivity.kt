@@ -56,9 +56,6 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(currentLobbyIdState) {
                     Log.d("MainActivity", "Collected Lobby ID State changed: $currentLobbyIdState")
                     if (currentLobbyIdState != null) {
-                        if (currentRoute == "hostandjoin") {
-                            gameBoardLogic.requestBoardForLobby(lobbyId = currentLobbyIdState!!)
-                        }
                         navController.navigate("lobby/${currentLobbyIdState}")
                     }
                 }
@@ -163,10 +160,7 @@ class MainActivity : ComponentActivity() {
                                 onStartGameClick = {
                                     //TODO: Implement correctly
                                     Log.i("LobbyScreen", "Starting game for lobby: $lobbyId")
-                                    gameBoardLogic.requestBoardForLobby(
-                                        lobbyId = lobbyId,
-                                        isCreate = false
-                                    )
+                                    gameBoardLogic.startGame(lobbyId = lobbyId)
                                     navController.navigate("game/${lobbyId}")
                                 },
                                 onToggleReadyClick = {

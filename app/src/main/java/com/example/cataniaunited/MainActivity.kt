@@ -15,6 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.cataniaunited.ui.lobby.LobbyScreen
 import com.example.cataniaunited.logic.host_and_join.HostJoinLogic
 import com.example.cataniaunited.logic.game.GameBoardLogic
+import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.ui.host_and_join.HostAndJoinScreen
 import com.example.cataniaunited.ui.host_and_join.JoinGameScreen
 import com.example.cataniaunited.ui.game.GameScreen
@@ -32,6 +33,8 @@ class MainActivity : ComponentActivity() {
     lateinit var gameBoardLogic: GameBoardLogic
     @Inject
     lateinit var hostJoinLogic: HostJoinLogic
+    @Inject
+    lateinit var lobbyLogic: LobbyLogic
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -96,7 +99,6 @@ class MainActivity : ComponentActivity() {
                             onBackClick = { navController.navigateUp() },
                             onHostSelected = {
                                 hostJoinLogic.sendCreateLobby()
-                                //navController.navigate("lobby/")
                             },
                             onJoinSelected = { navController.navigate("joingame") }
                         )
@@ -116,17 +118,25 @@ class MainActivity : ComponentActivity() {
                         val lobbyId = backStackEntry.arguments?.getString("lobbyId")
                         if (lobbyId == null) {
                             Log.e("Navigation", "Lobby ID missing! Navigating back.")
-                            LaunchedEffect(Unit) { navController.navigateUp() }
+                            LaunchedEffect(Unit) { navController.navigate("starting") }
                         }
                         else {
                             LobbyScreen(
                                 lobbyId = lobbyId,
                                 players = application.players,
-                                onCancelClick = {navController.navigate("joingame")},
+                                onCancelClick = {
+                                    navController.navigate("starting")
+                                    application.clearLobbyData()
+                                },
                                 onStartGameClick = {
+                                    //TODO: Implement correctly
                                     Log.i("LobbyScreen", "Starting game for lobby: $lobbyId")
                                     gameBoardLogic.requestBoardForLobby(lobbyId = lobbyId, isCreate = false)
                                     navController.navigate("game/${lobbyId}")
+                                },
+                                onToggleReadyClick = {
+                                    Log.i("LobbyScreen", "Toggle ready state")
+                                    lobbyLogic.toggleReady(lobbyId)
                                 }
                             )
                         }

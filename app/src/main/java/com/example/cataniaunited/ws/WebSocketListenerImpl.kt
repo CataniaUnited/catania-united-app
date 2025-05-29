@@ -101,11 +101,11 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleLobbyUpdated(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
-        val playerId = messageDTO.player
-        val message = messageDTO.message
-        val username = message?.get("username")?.jsonPrimitive?.contentOrNull
-        val color = message?.get("color")?.jsonPrimitive?.contentOrNull
-        //TODO: SET USERNAME
+        val players = messageDTO.players
+
+        if(lobbyId != null && players != null){
+            onLobbyUpdated.onLobbyUpdated(lobbyId, players)
+        }
     }
 
     private fun handlePlayerJoined(messageDTO: MessageDTO) {

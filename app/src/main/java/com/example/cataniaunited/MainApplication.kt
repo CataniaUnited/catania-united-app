@@ -152,6 +152,12 @@ open class MainApplication : Application(),
         this.players.addAll(players.values)
     }
 
+    override fun onLobbyUpdated(lobbyId: String, players: Map<String, PlayerInfo>) {
+        Log.d("MainApplication", "Callback: onLobbyUpdated. Players $players")
+        this.players.clear()
+        this.players.addAll(players.values)
+    }
+
     override fun onGameBoardReceived(lobbyId: String, boardJson: String) {
         Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId.")
         if (latestBoardJson == null && lobbyId == _currentLobbyIdFlow.value) {
@@ -198,15 +204,5 @@ open class MainApplication : Application(),
             } ?: Log.w("MainApplication", "gameViewModel was null — skipping update.")
         }
     }
-
-    override fun onLobbyUpdated(
-        lobbyId: String,
-        playerId: String,
-        username: String?,
-        color: String?
-    ) {
-        TODO("Not yet implemented")
-    }
-
 
 }

@@ -24,5 +24,6 @@ enum class MessageType {
     CREATE_GAME_BOARD,
     GET_GAME_BOARD,
     BUY_DEVELOPMENT_CARD,
-    ROLL_DICE
+    ROLL_DICE,
+    SET_READY
 }

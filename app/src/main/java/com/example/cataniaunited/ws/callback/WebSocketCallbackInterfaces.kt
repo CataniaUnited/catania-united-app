@@ -16,7 +16,7 @@ fun interface OnPlayerJoined {
 }
 
 fun interface OnLobbyUpdated {
-    fun onLobbyUpdated(lobbyId: String, playerId: String, username: String?, color: String?)
+    fun onLobbyUpdated(lobbyId: String, players: Map<String, PlayerInfo>)
 }
 
 fun interface OnGameBoardReceived {

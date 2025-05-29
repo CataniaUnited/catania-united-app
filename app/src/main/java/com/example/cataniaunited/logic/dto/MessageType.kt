@@ -16,6 +16,7 @@ enum class MessageType {
     //Client Messages
     CREATE_LOBBY,
     JOIN_LOBBY,
+    LEAVE_LOBBY,
     SET_USERNAME,
     SET_ACTIVE_PLAYER, //-> TODO: Remove after implementation of player order
     PLACE_SETTLEMENT,

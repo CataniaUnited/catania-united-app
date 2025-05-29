@@ -3,11 +3,11 @@ package com.example.cataniaunited.ws
 import android.util.Log
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.model.PlayerInfo
-import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
+import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
@@ -62,16 +62,13 @@ open class WebSocketListenerImpl @Inject constructor(
             Log.d("WebSocketListener", "  → Type: ${messageDTO.type}")
             Log.d("WebSocketListener", "  → LobbyId: ${messageDTO.lobbyId}")
             Log.d("WebSocketListener", "  → Player: ${messageDTO.player}")
+            Log.d("WebSocketListener", "  → Players: ${messageDTO.players}")
             Log.d("WebSocketListener", "  → Message: ${messageDTO.message}")
-
 
             val rootJson = messageDTO.message
             val gameboardNode = rootJson?.get("gameboard")
-            val playersNode = rootJson?.get("players")
 
             Log.d("WebSocketListener", "Extracted 'gameboard' field: $gameboardNode")
-            Log.d("WebSocketListener", "Extracted 'players' field: $playersNode")
-
 
             when (messageDTO.type) {
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
@@ -82,16 +79,24 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.PLACE_SETTLEMENT,
                 MessageType.PLACE_ROAD,
                 MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
+
                 MessageType.PLAYER_RESOURCES -> handlePlayerResources(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.GAME_WON -> handleGameWon(messageDTO)
                 // TODO: Other Messages
 
                 MessageType.ERROR -> {
-                    Log.e("WebSocketListener", "Received ERROR message from server: ${messageDTO.message}")
+                    Log.e(
+                        "WebSocketListener",
+                        "Received ERROR message from server: ${messageDTO.message}"
+                    )
                     onError.onError(GameException(messageDTO.message?.getValue("error").toString()))
                 }
-                else -> Log.w("WebSocketListener", "Received unhandled message type: ${messageDTO.type}")
+
+                else -> Log.w(
+                    "WebSocketListener",
+                    "Received unhandled message type: ${messageDTO.type}"
+                )
             }
         } catch (e: Exception) {
             Log.e("WebSocketListener", "Error parsing or handling message: $text", e)
@@ -103,7 +108,7 @@ open class WebSocketListenerImpl @Inject constructor(
         val lobbyId = messageDTO.lobbyId
         val players = messageDTO.players
 
-        if(lobbyId != null && players != null){
+        if (lobbyId != null && players != null) {
             onLobbyUpdated.onLobbyUpdated(lobbyId, players)
         }
     }
@@ -116,7 +121,10 @@ open class WebSocketListenerImpl @Inject constructor(
 
         if (lobbyId != null && players != null) {
             onPlayerJoined.onPlayerJoined(lobbyId, players)
-            Log.i("WebSocketListener", "Player '$playerId' joined Lobby '$lobbyId' with color $color")
+            Log.i(
+                "WebSocketListener",
+                "Player '$playerId' joined Lobby '$lobbyId' with color $color"
+            )
             // notify UI or GameDataHandler if needed
         } else {
             Log.w("WebSocketListener", "PLAYER_JOINED message missing player or lobbyId")
@@ -129,11 +137,15 @@ open class WebSocketListenerImpl @Inject constructor(
         if (resourcesJson != null) {
             try {
                 val typedResources = mutableMapOf<TileType, Int>()
-                Log.d("DebugEnum", "TileType from handlePlayerResources: ${TileType.WOOD::class.java.name}")
+                Log.d(
+                    "DebugEnum",
+                    "TileType from handlePlayerResources: ${TileType.WOOD::class.java.name}"
+                )
                 Log.d("DebugEnum", "Incoming JSON keys: ${resourcesJson.keys}")
                 TileType.entries.forEach { tileType ->
                     if (tileType != TileType.WASTE) {
-                        val count = resourcesJson[tileType.name.uppercase()]?.jsonPrimitive?.intOrNull ?: 0
+                        val count =
+                            resourcesJson[tileType.name.uppercase()]?.jsonPrimitive?.intOrNull ?: 0
                         typedResources[tileType] = count
                     }
                 }
@@ -156,7 +168,10 @@ open class WebSocketListenerImpl @Inject constructor(
             Log.d("WebSocketListener", "Extracted playerId: $playerId")
             onConnectionSuccess.onConnectionSuccess(playerId) // Use callback
         } else {
-            Log.e("WebSocketListener", "CONNECTION_SUCCESSFUL message missing 'playerId': ${messageDTO.message}")
+            Log.e(
+                "WebSocketListener",
+                "CONNECTION_SUCCESSFUL message missing 'playerId': ${messageDTO.message}"
+            )
             onError.onError(IllegalArgumentException("Missing playerId")) // Use callback
         }
     }
@@ -175,7 +190,7 @@ open class WebSocketListenerImpl @Inject constructor(
             message["gameboard"]?.jsonObject ?: message
             val vpMap = mutableMapOf<String, Int>()
             for ((playerId, playerInfo) in players) {
-                vpMap[playerId] =  playerInfo.victoryPoints
+                vpMap[playerId] = playerInfo.victoryPoints
             }
             Log.d("WebSocketListener", "Parsed VP map: $vpMap")
             MainApplication.getInstance().applicationScope.launch {

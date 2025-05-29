@@ -27,7 +27,27 @@ class LobbyLogic @Inject constructor(
                 )
             )
         } else {
-            Log.e("GameBoardLogic", "WS not connected for placeRoad")
+            Log.e("GameBoardLogic", "WS not connected for toggleReady")
+        }
+    }
+
+    fun leaveLobby(lobbyId: String) {
+        val playerId = try {
+            playerSessionManager.getPlayerId()
+        } catch (ise: IllegalStateException) {
+            return
+        }
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        if (webSocketClient.isConnected()) {
+            webSocketClient.sendMessage(
+                MessageDTO(
+                    type = MessageType.LEAVE_LOBBY,
+                    player = playerId,
+                    lobbyId = lobbyId
+                )
+            )
+        } else {
+            Log.e("GameBoardLogic", "WS not connected for leaveLobby")
         }
     }
 

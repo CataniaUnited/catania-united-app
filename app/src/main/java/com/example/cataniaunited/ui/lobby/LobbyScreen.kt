@@ -45,7 +45,7 @@ import com.example.cataniaunited.ui.theme.catanGold
 @Composable
 fun LobbyScreen(
     lobbyId: String,
-    players: List<PlayerInfo>,
+    players: List<PlayerInfo>?,
     gameViewModel: GameViewModel = hiltViewModel(),
     onCancelClick: () -> Unit,
     onStartGameClick: () -> Unit,
@@ -53,7 +53,8 @@ fun LobbyScreen(
 ) {
 
     val playerId = gameViewModel.playerId
-    val playerInfo: PlayerInfo = players.find { it.id == playerId }!!
+    val actualPlayers: List<PlayerInfo> = players ?: emptyList()
+    val playerInfo: PlayerInfo? = actualPlayers.find { it.id == playerId }
 
     Box(
         modifier = Modifier
@@ -74,7 +75,7 @@ fun LobbyScreen(
             )
 
             Text(
-                text = "Players Ready: ${players.filter { it.isReady }.size} / ${players.size}",
+                text = "Players Ready: ${actualPlayers.filter { it.isReady }.size} / ${actualPlayers.size}",
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp)
             )
@@ -87,7 +88,7 @@ fun LobbyScreen(
                     .padding(horizontal = 60.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
             ) {
-                players.forEach { player ->
+                actualPlayers.forEach { player ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Box(
                             modifier = Modifier
@@ -131,10 +132,10 @@ fun LobbyScreen(
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                if (playerInfo.isHost) {
+                if (playerInfo?.isHost == true) {
                     Button(
                         onClick = onStartGameClick,
-                        enabled = players.all { it.isReady },
+                        enabled = actualPlayers.all { it.isReady },
                         colors = ButtonDefaults.buttonColors(
                             containerColor = Color(0xFF008000),
                             contentColor = Color.White,
@@ -155,7 +156,7 @@ fun LobbyScreen(
                         .width(150.dp)
                         .height(40.dp)
                 ) {
-                    if (playerInfo.isReady) {
+                    if (playerInfo?.isReady == true) {
                         Text(text = "Set not ready")
                     } else {
                         Text(text = "Set ready")

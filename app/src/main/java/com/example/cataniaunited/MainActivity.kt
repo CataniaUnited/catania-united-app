@@ -12,13 +12,13 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.cataniaunited.ui.lobby.LobbyScreen
-import com.example.cataniaunited.logic.host_and_join.HostJoinLogic
 import com.example.cataniaunited.logic.game.GameBoardLogic
+import com.example.cataniaunited.logic.host_and_join.HostJoinLogic
 import com.example.cataniaunited.logic.lobby.LobbyLogic
+import com.example.cataniaunited.ui.game.GameScreen
 import com.example.cataniaunited.ui.host_and_join.HostAndJoinScreen
 import com.example.cataniaunited.ui.host_and_join.JoinGameScreen
-import com.example.cataniaunited.ui.game.GameScreen
+import com.example.cataniaunited.ui.lobby.LobbyScreen
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
@@ -31,8 +31,10 @@ import javax.inject.Inject
 class MainActivity : ComponentActivity() {
     @Inject
     lateinit var gameBoardLogic: GameBoardLogic
+
     @Inject
     lateinit var hostJoinLogic: HostJoinLogic
+
     @Inject
     lateinit var lobbyLogic: LobbyLogic
 
@@ -46,16 +48,48 @@ class MainActivity : ComponentActivity() {
                 val application = application as MainApplication
 
                 val currentLobbyIdState by application.currentLobbyIdFlow.collectAsState()
-                val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(initial = null)
+                val currentBackStackEntry by navController.currentBackStackEntryFlow.collectAsState(
+                    initial = null
+                )
                 val currentRoute = currentBackStackEntry?.destination?.route
 
                 LaunchedEffect(currentLobbyIdState) {
                     Log.d("MainActivity", "Collected Lobby ID State changed: $currentLobbyIdState")
-                    if(currentLobbyIdState != null){
-                        if(currentRoute == "hostandjoin") {
+                    if (currentLobbyIdState != null) {
+                        if (currentRoute == "hostandjoin") {
                             gameBoardLogic.requestBoardForLobby(lobbyId = currentLobbyIdState!!)
                         }
                         navController.navigate("lobby/${currentLobbyIdState}")
+                    }
+                }
+
+                LaunchedEffect(currentRoute) { // Der Key ist currentRoute, damit der Effekt bei Routenwechsel neu ausgeführt wird
+                    val previousBackStackEntry = navController.previousBackStackEntry
+                    val previousRoute = previousBackStackEntry?.destination?.route
+
+                    Log.d(
+                        "NavListener",
+                        "Current Route: $currentRoute, Previous Route: $previousRoute"
+                    )
+                    if (currentRoute == "starting" && previousRoute != null && previousRoute.startsWith(
+                            "lobby/"
+                        )
+                    ) {
+                        val lobbyId = previousBackStackEntry.arguments?.getString("lobbyId");
+                        Log.i(
+                            "MainActivity",
+                            "Detected navigation from lobby to starting screen. Performing lobby cleanup: $lobbyId."
+                        )
+                        if (lobbyId != null) {
+                            lobbyLogic.leaveLobby(lobbyId)
+                            application.clearLobbyData()
+                            Log.i("MainActivity", "Cleaned up data for lobby: $lobbyId")
+                        } else {
+                            Log.w(
+                                "MainActivity",
+                                "Attempted to clean up lobby, but currentLobbyId was null."
+                            )
+                        }
                     }
                 }
 
@@ -119,19 +153,20 @@ class MainActivity : ComponentActivity() {
                         if (lobbyId == null) {
                             Log.e("Navigation", "Lobby ID missing! Navigating back.")
                             LaunchedEffect(Unit) { navController.navigate("starting") }
-                        }
-                        else {
+                        } else {
                             LobbyScreen(
                                 lobbyId = lobbyId,
                                 players = application.players,
                                 onCancelClick = {
                                     navController.navigate("starting")
-                                    application.clearLobbyData()
                                 },
                                 onStartGameClick = {
                                     //TODO: Implement correctly
                                     Log.i("LobbyScreen", "Starting game for lobby: $lobbyId")
-                                    gameBoardLogic.requestBoardForLobby(lobbyId = lobbyId, isCreate = false)
+                                    gameBoardLogic.requestBoardForLobby(
+                                        lobbyId = lobbyId,
+                                        isCreate = false
+                                    )
                                     navController.navigate("game/${lobbyId}")
                                 },
                                 onToggleReadyClick = {
@@ -153,7 +188,8 @@ class MainActivity : ComponentActivity() {
                             Log.d("Navigation", "Navigating to GameScreen for lobby: $lobbyIdArg")
                             GameScreen(
                                 lobbyId = lobbyIdArg,
-                                navController = navController)
+                                navController = navController
+                            )
                         }
                     }
                 }

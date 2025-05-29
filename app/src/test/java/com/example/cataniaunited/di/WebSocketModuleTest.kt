@@ -176,7 +176,9 @@ class WebSocketModuleTest {
             onClosed = mockMainApplication,
             onDiceResult = mockMainApplication,
             gameDataHandler = mockGameDataHandler,
-            onPlayerResourcesReceived = mockMainApplication
+            onPlayerResourcesReceived = mockMainApplication,
+            onLobbyUpdated = mockMainApplication,
+            onPlayerJoined = mockMainApplication
         )
 
         assertNotNull(listener)

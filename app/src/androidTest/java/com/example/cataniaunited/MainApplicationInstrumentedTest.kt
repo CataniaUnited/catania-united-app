@@ -4,16 +4,20 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import app.cash.turbine.test
 import com.example.cataniaunited.data.model.PlayerInfo
-import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.game.GameViewModel
-import io.mockk.*
+import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
-import kotlinx.coroutines.test.*
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -243,8 +247,15 @@ class MainApplicationInstrumentedTest {
         mainApplication.clearGameData()
         advanceUntilIdle()
 
-        assertEquals("currentLobbyIdFlow should NOT be null after clearGameData", lobbyId, mainApplication.currentLobbyIdFlow.value)
-        assertNull("latestBoardJson should be null after clearGameData", mainApplication.latestBoardJson)
+        assertEquals(
+            "currentLobbyIdFlow should NOT be null after clearGameData",
+            lobbyId,
+            mainApplication.currentLobbyIdFlow.value
+        )
+        assertNull(
+            "latestBoardJson should be null after clearGameData",
+            mainApplication.latestBoardJson
+        )
         println("Test Passed.")
     }
 
@@ -258,11 +269,11 @@ class MainApplicationInstrumentedTest {
 
     @Test
     fun onGameWonUpdatesGameWonState() = runTest {
-        val winner = PlayerInfo("winner1", "Winner Player", "#FF0000", 10)
+        val winner = PlayerInfo("winner1", "Winner Player", "#FF0000", victoryPoints = 10)
         val leaderboard = listOf(
             winner,
-            PlayerInfo("player2", "Second Place", "#00FF00", 8),
-            PlayerInfo("player3", "Third Place", "#0000FF", 6)
+            PlayerInfo("player2", "Second Place", "#00FF00", victoryPoints = 8),
+            PlayerInfo("player3", "Third Place", "#0000FF", victoryPoints = 6)
         )
 
         mainApplication.onGameWon(winner, leaderboard)

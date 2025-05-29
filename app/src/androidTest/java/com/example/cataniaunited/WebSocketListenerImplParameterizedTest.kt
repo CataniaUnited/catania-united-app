@@ -1,13 +1,15 @@
 package com.example.cataniaunited
 
 import androidx.test.core.app.ApplicationProvider
-import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
+import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnLobbyUpdated
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
@@ -16,7 +18,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import okhttp3.WebSocket
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,6 +42,8 @@ class WebSocketListenerImplParameterizedTest {
     private lateinit var mockClosed: OnWebSocketClosed
     private lateinit var mockGameDataHandler: GameDataHandler
     private lateinit var mockOnPlayerResourcesReceived: OnPlayerResourcesReceived
+    private lateinit var mockOnPlayerJoined: OnPlayerJoined
+    private lateinit var mockOnLobbyUpdated: OnLobbyUpdated
 
     @Before
     fun setup() {
@@ -54,6 +59,8 @@ class WebSocketListenerImplParameterizedTest {
         mockGameDataHandler = mockk(relaxed = true)
         mockWebSocket = mockk(relaxed = true)
         mockOnPlayerResourcesReceived = mockk(relaxed = true)
+        mockOnPlayerJoined = mockk(relaxed = true)
+        mockOnLobbyUpdated = mockk(relaxed = true)
 
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = { playerId ->
@@ -66,7 +73,9 @@ class WebSocketListenerImplParameterizedTest {
             onClosed = mockClosed,
             onDiceResult = mockOnDiceResult,
             gameDataHandler = mockGameDataHandler,
-            onPlayerResourcesReceived = mockOnPlayerResourcesReceived
+            onPlayerResourcesReceived = mockOnPlayerResourcesReceived,
+            onPlayerJoined = mockOnPlayerJoined,
+            onLobbyUpdated = mockOnLobbyUpdated
         )
         println("Parameterized Test Setup Complete.")
     }
@@ -121,10 +130,18 @@ class WebSocketListenerImplParameterizedTest {
         val finalPlayerId = mainApplication.getPlayerId()
 
         if (shouldSetPlayerId) {
-            assertEquals("Player ID should have been set for CONNECTION_SUCCESSFUL", expectedPlayerId, finalPlayerId)
+            assertEquals(
+                "Player ID should have been set for CONNECTION_SUCCESSFUL",
+                expectedPlayerId,
+                finalPlayerId
+            )
             println("Test PASSED for ${actualMessageType}: Player ID was set correctly.")
         } else {
-            assertNotEquals("Player ID should NOT have been set to the test ID for ${actualMessageType}", expectedPlayerId, finalPlayerId)
+            assertNotEquals(
+                "Player ID should NOT have been set to the test ID for ${actualMessageType}",
+                expectedPlayerId,
+                finalPlayerId
+            )
             println("Test PASSED for ${actualMessageType}: Player ID was not set by onConnectionSuccess.")
         }
     }

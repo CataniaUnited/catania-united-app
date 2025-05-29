@@ -12,7 +12,6 @@ enum class MessageType {
     DICE_RESULT,
     GAME_WON,
     GAME_STARTED,
-    PLAYER_RESOURCES,
 
     //Client Messages
     CREATE_LOBBY,

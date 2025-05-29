@@ -105,7 +105,7 @@ class GameBoardInstrumentedTest() {
     private val dummyOnClosed: (Int, String) -> Unit =
         { code, reason -> println("DummyCallback: onClosed $code $reason") }
     private val dummyOnDiceResult: (Int, Int) -> Unit = { _, _ -> }
-    private val dummyOnPlayerResourcesRecieved: (Map<TileType, Int>) -> Unit = { _ -> }
+    private val dummyOnPlayerResourcesRecieved: (Map<String, PlayerInfo>) -> Unit = { _ -> }
 
     @Test
     fun testPlaceSettlement() {

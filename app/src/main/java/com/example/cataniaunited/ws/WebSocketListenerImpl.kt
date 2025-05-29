@@ -3,7 +3,6 @@ package com.example.cataniaunited.ws
 import android.util.Log
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.model.PlayerInfo
-import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
@@ -21,7 +20,6 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -81,7 +79,6 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.GAME_STARTED,
                 MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
 
-                MessageType.PLAYER_RESOURCES -> handlePlayerResources(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.GAME_WON -> handleGameWon(messageDTO)
                 // TODO: Other Messages
@@ -132,37 +129,6 @@ open class WebSocketListenerImpl @Inject constructor(
         }
     }
 
-    private fun handlePlayerResources(messageDTO: MessageDTO) {
-        val resourcesJson = messageDTO.message
-        Log.d("WebSocketListener", "RAW PLAYER_RESOURCES JSON: $resourcesJson")
-        if (resourcesJson != null) {
-            try {
-                val typedResources = mutableMapOf<TileType, Int>()
-                Log.d(
-                    "DebugEnum",
-                    "TileType from handlePlayerResources: ${TileType.WOOD::class.java.name}"
-                )
-                Log.d("DebugEnum", "Incoming JSON keys: ${resourcesJson.keys}")
-                TileType.entries.forEach { tileType ->
-                    if (tileType != TileType.WASTE) {
-                        val count =
-                            resourcesJson[tileType.name.uppercase()]?.jsonPrimitive?.intOrNull ?: 0
-                        typedResources[tileType] = count
-                    }
-                }
-                Log.d("WebSocketListener", "Parsed Player Resources: $typedResources")
-                onPlayerResourcesReceived.onPlayerResourcesReceived(typedResources)
-            } catch (e: Exception) {
-                Log.e("WebSocketListener", "Error parsing player resources from: $resourcesJson", e)
-                onError.onError(IllegalArgumentException("Invalid PLAYER_RESOURCES format", e))
-            }
-        } else {
-            Log.e("WebSocketListener", "PLAYER_RESOURCES message missing resource object")
-            onError.onError(IllegalArgumentException("PLAYER_RESOURCES message missing resource object"))
-
-        }
-    }
-
     private fun handleConnectionSuccessful(messageDTO: MessageDTO) {
         val playerId = messageDTO.message?.get("playerId")?.jsonPrimitive?.contentOrNull
         if (playerId != null) {
@@ -200,6 +166,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 gameDataHandler.updatePlayers(players)
             }
 
+            onPlayerResourcesReceived.onPlayerResourcesReceived(players)
             onGameBoardReceived.onGameBoardReceived(lobbyId ?: "", fullMessageString)
 
         } catch (e: Exception) {
@@ -257,6 +224,14 @@ open class WebSocketListenerImpl @Inject constructor(
         val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.content?.toInt() ?: 0
 
         Log.d("WebSocketListener", "Processing new dice result: $dice1, $dice2")
+
+        if (messageDTO.players != null) {
+            MainApplication.getInstance().applicationScope.launch {
+                gameDataHandler.updatePlayers(messageDTO.players)
+            }
+            onPlayerResourcesReceived.onPlayerResourcesReceived(messageDTO.players)
+        }
+
         onDiceResult.onDiceResult(dice1, dice2)
     }
 }

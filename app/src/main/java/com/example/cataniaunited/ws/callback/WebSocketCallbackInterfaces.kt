@@ -36,5 +36,5 @@ fun interface OnDiceResult {
 }
 
 fun interface OnPlayerResourcesReceived {
-    fun onPlayerResourcesReceived(resources: Map<TileType, Int>)
+    fun onPlayerResourcesReceived(players: Map<String, PlayerInfo>)
 }

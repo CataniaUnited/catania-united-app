@@ -7,7 +7,6 @@ import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
-import java.util.UUID
 import javax.inject.Inject
 
 class GameBoardLogic @Inject constructor(
@@ -75,19 +74,6 @@ class GameBoardLogic @Inject constructor(
         val messagePayload = buildJsonObject { put("playerCount", playerCount) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
-
-            for(i in 1 until playerCount) {
-                val joinLobbyMessage = MessageDTO(
-                    MessageType.JOIN_LOBBY,
-                    UUID.randomUUID().toString(),
-                    lobbyId,
-                    null,
-                    null
-                )
-
-                webSocketClient.sendMessage(joinLobbyMessage)
-            }
-
             val type: MessageType = if(isCreate) MessageType.CREATE_GAME_BOARD else MessageType.GET_GAME_BOARD
             val messageToSend = MessageDTO(type, playerId, lobbyId, null, messagePayload )
             webSocketClient.sendMessage(messageToSend)
@@ -105,10 +91,10 @@ class GameBoardLogic @Inject constructor(
 
     fun rollDice(lobbyId: String) {
         try {
-            Log.d("GameBoard", "Rolling dice for lobby: $lobbyId")
-            val playerId = MainApplication.getInstance().getPlayerId()
+            val playerId = playerSessionManager.getPlayerId()
             val message = buildJsonObject {
                 put("action", "rollDice")
+                put("player", playerId)
             }
             val webSocketClient = MainApplication.getInstance().getWebSocketClient()
             webSocketClient.sendMessage(

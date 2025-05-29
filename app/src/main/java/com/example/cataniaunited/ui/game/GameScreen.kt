@@ -36,11 +36,12 @@ fun GameScreen(
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
     val isBuildMenuOpen by gameViewModel.isBuildMenuOpen.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication
-    var showDicePopup by remember { mutableStateOf(false) }
-    val diceResult by gameViewModel.diceResult.collectAsState()
+    val showDicePopup by gameViewModel.showDicePopup.collectAsState()
+    val diceState by gameViewModel.diceState.collectAsState()
     val playerResources by gameViewModel.playerResources.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val gameWonState by application.gameWonState.collectAsState()
+
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
@@ -57,7 +58,6 @@ fun GameScreen(
 
     ShakeDetector {
         if (!showDicePopup) {
-            showDicePopup = true
             gameViewModel.rollDice(lobbyId)
         }
     }
@@ -146,31 +146,25 @@ fun GameScreen(
                                     onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
                                 )
                             }
-
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .padding(top = 32.dp, start = 8.dp)
-                                    .zIndex(2f)
-                            ) {
-                                RollDiceButton {
-                                    showDicePopup = true
-                                    gameViewModel.rollDice(lobbyId)
-                                }
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopStart)
+                                        .padding(top = 32.dp, start = 8.dp)
+                                        .zIndex(2f)
+                                ) {
+                                    RollDiceButton {
+                                        gameViewModel.rollDice(lobbyId)
+                                    }
                             }
                         }
                     }
 
-                    if (showDicePopup) {
+                    if (showDicePopup && diceState != null) {
                         DiceRollerPopup(
-                            onDiceRolled = { gameViewModel.rollDice(lobbyId) },
-                            onClose = {
-                                showDicePopup = false
-                                gameViewModel.updateDiceResult(null, null)
-                            },
-                            dice1Result = diceResult?.first,
-                            dice2Result = diceResult?.second
+                            viewModel = gameViewModel,
+                            onClose = { gameViewModel.closeDicePopup() }
                         )
+                    }
 
                         Box(
                             modifier = Modifier
@@ -191,12 +185,8 @@ fun GameScreen(
                                 .offset(y = 32.dp)
                                 .zIndex(1f)
                                 .padding(horizontal = 4.dp)
-                        ) {
-                            RollDiceButton {
-                                showDicePopup = true
-                                gameViewModel.rollDice(lobbyId)
-                            }
-                        }
+                        )
+
                     }
 
                     Text(
@@ -238,5 +228,5 @@ fun GameScreen(
                 }
             }
         }
-    }
+
 

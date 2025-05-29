@@ -5,13 +5,17 @@ import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.ws.WebSocketClient
-import io.mockk.*
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.mockkObject
+import io.mockk.slot
+import io.mockk.unmockkObject
+import io.mockk.verify
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -53,7 +57,11 @@ class GameBoardLogicTest {
     fun placeSettlementSendsCorrectMessageWhenConnected() {
         val expectedPayload = buildJsonObject { put("settlementPositionId", testSettlementId) }
         val expectedMessage = MessageDTO(
-            type = MessageType.PLACE_SETTLEMENT, player = testPlayerId, lobbyId = testLobbyId, players = null, message = expectedPayload
+            type = MessageType.PLACE_SETTLEMENT,
+            player = testPlayerId,
+            lobbyId = testLobbyId,
+            players = null,
+            message = expectedPayload
         )
         val messageSlot = slot<MessageDTO>()
         gameBoardLogic.placeSettlement(testSettlementId, testLobbyId)
@@ -80,7 +88,11 @@ class GameBoardLogicTest {
     fun upgradeSettlementSendsCorrectMessageWhenConnected() {
         val expectedPayload = buildJsonObject { put("settlementPositionId", testSettlementId) }
         val expectedMessage = MessageDTO(
-            type = MessageType.UPGRADE_SETTLEMENT, player = testPlayerId, lobbyId = testLobbyId, players = null, message = expectedPayload
+            type = MessageType.UPGRADE_SETTLEMENT,
+            player = testPlayerId,
+            lobbyId = testLobbyId,
+            players = null,
+            message = expectedPayload
         )
         val messageSlot = slot<MessageDTO>()
         gameBoardLogic.upgradeSettlement(testSettlementId, testLobbyId)
@@ -107,7 +119,11 @@ class GameBoardLogicTest {
     fun placeRoadSendsCorrectMessageWhenConnected() {
         val expectedPayload = buildJsonObject { put("roadId", testRoadId) }
         val expectedMessage = MessageDTO(
-            type = MessageType.PLACE_ROAD, player = testPlayerId, lobbyId = testLobbyId, players = null, message = expectedPayload
+            type = MessageType.PLACE_ROAD,
+            player = testPlayerId,
+            lobbyId = testLobbyId,
+            players = null,
+            message = expectedPayload
         )
         val messageSlot = slot<MessageDTO>()
         gameBoardLogic.placeRoad(testRoadId, testLobbyId)
@@ -134,7 +150,11 @@ class GameBoardLogicTest {
     @Test
     fun requestCreateLobbySendsCorrectMessageWhenConnected() {
         val expectedMessage = MessageDTO(
-            type = MessageType.CREATE_LOBBY, player = testPlayerId, lobbyId = null, players = null, message = null
+            type = MessageType.CREATE_LOBBY,
+            player = testPlayerId,
+            lobbyId = null,
+            players = null,
+            message = null
         )
         val messageSlot = slot<MessageDTO>()
         gameBoardLogic.requestCreateLobby()

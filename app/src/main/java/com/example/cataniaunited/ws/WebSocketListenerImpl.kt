@@ -10,6 +10,7 @@ import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
+import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
@@ -35,6 +36,7 @@ open class WebSocketListenerImpl @Inject constructor(
     private val onError: OnWebSocketError,
     private val onClosed: OnWebSocketClosed,
     private val onDiceResult: OnDiceResult,
+    private val onDiceRolling: OnDiceRolling,
     private val onPlayerResourcesReceived: OnPlayerResourcesReceived,
     private val gameDataHandler: GameDataHandler
 ) : WebSocketListener() {
@@ -75,6 +77,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.GAME_BOARD_JSON, MessageType.PLACE_SETTLEMENT, MessageType.PLACE_ROAD, MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
+                MessageType.ROLL_DICE -> handleDiceRolling(messageDTO)
                 MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
                 MessageType.GAME_WON -> handleGameWon(messageDTO)
                 MessageType.PLAYER_RESOURCES -> handlePlayerResources(messageDTO)
@@ -240,11 +243,17 @@ open class WebSocketListenerImpl @Inject constructor(
         }
     }
 
+    internal fun handleDiceRolling(messageDTO: MessageDTO) {
+        val playerName = messageDTO.message?.get("playerName")?.jsonPrimitive?.contentOrNull
+            ?: messageDTO.player.toString()
+        onDiceRolling.onDiceRolling(playerName)
+    }
+
     internal fun handleDiceResult(messageDTO: MessageDTO) {
         val dice1 = messageDTO.message?.get("dice1")?.jsonPrimitive?.content?.toInt() ?: 0
         val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.content?.toInt() ?: 0
 
-        Log.d("WebSocketListener", "Processing new dice result: $dice1, $dice2")
+        Log.d("WebSocketListener", "Processing dice result: $dice1, $dice2")
         onDiceResult.onDiceResult(dice1, dice2)
     }
 

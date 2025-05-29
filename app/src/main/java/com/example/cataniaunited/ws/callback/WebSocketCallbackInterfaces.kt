@@ -1,7 +1,6 @@
 package com.example.cataniaunited.ws.callback
 
 import com.example.cataniaunited.data.model.TileType
-
 fun interface OnConnectionSuccess {
     fun onConnectionSuccess(playerId: String)
 }
@@ -24,6 +23,10 @@ fun interface OnWebSocketClosed {
 
 fun interface OnDiceResult {
     fun onDiceResult(dice1: Int, dice2: Int)
+}
+
+fun interface OnDiceRolling {
+    fun onDiceRolling(playerName: String)
 }
 
 fun interface OnPlayerResourcesReceived {

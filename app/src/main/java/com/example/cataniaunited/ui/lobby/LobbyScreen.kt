@@ -3,8 +3,17 @@ package com.example.cataniaunited.ui.lobby
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -18,26 +27,32 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColorInt
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cataniaunited.R
+import com.example.cataniaunited.data.model.PlayerInfo
+import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ui.theme.catanClay
 import com.example.cataniaunited.ui.theme.catanGold
-import androidx.core.graphics.toColorInt
-import com.example.cataniaunited.data.model.PlayerInfo
 
 @Composable
 fun LobbyScreen(
     lobbyId: String,
     players: List<PlayerInfo>,
+    gameViewModel: GameViewModel = hiltViewModel(),
     onCancelClick: () -> Unit,
     onStartGameClick: () -> Unit
 ) {
+
+    val playerId = gameViewModel.playerId
+    val isHost: Boolean = players.any { it.isHost && it.id == playerId }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
             .background(catanClay)
     ) {
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(vertical = 40.dp),
@@ -71,7 +86,7 @@ fun LobbyScreen(
                             contentDescription = "player icon",
                             modifier = Modifier
                                 .size(80.dp)
-                                .border(8.dp, Color(player.colorHex.toColorInt()), RectangleShape)
+                                .border(8.dp, Color(player.color.toColorInt()), RectangleShape)
                                 .padding(4.dp),
                             contentScale = ContentScale.Crop
                         )
@@ -93,13 +108,15 @@ fun LobbyScreen(
                 verticalArrangement = Arrangement.Bottom,
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Button(
-                    onClick = onStartGameClick,
-                    modifier = Modifier
-                        .width(150.dp)
-                        .height(40.dp)
-                ) {
-                    Text(text = "Start Game")
+                if (isHost) {
+                    Button(
+                        onClick = onStartGameClick,
+                        modifier = Modifier
+                            .width(150.dp)
+                            .height(40.dp)
+                    ) {
+                        Text(text = "Start Game")
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(10.dp))

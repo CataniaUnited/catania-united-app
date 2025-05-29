@@ -35,7 +35,7 @@ fun PlayerVictoryBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         players.forEach { player ->
-            val borderColor = Color(player.colorHex.toColorInt())
+            val borderColor = Color(player.color.toColorInt())
             val vpTextColor = if (borderColor.luminance() > 0.5f) Color.Black else Color.White
 
             Box(

@@ -15,18 +15,11 @@ import com.example.cataniaunited.data.model.PlayerInfo
 
 @Composable
 fun LivePlayerVictoryBar(viewModel: GameViewModel, modifier: Modifier = Modifier) {
-    val boardState by viewModel.gameBoardState.collectAsState()
+    val playerState by viewModel.players.collectAsState()
     val vpMap by viewModel.victoryPoints.collectAsState()
 
-    val players = remember(boardState, vpMap) {
-        boardState?.players?.map { player ->
-            PlayerInfo(
-                playerId = player.playerId,
-                username = player.username,
-                colorHex = player.colorHex,
-                victoryPoints = vpMap[player.playerId] ?: 0
-            )
-        } ?: emptyList()
+    val players: List<PlayerInfo> = remember(playerState, vpMap) {
+        playerState.values.toList()
     }
 
     LaunchedEffect(players) {

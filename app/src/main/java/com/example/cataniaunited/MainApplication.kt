@@ -126,23 +126,16 @@ open class MainApplication : Application(),
 
     override fun onLobbyCreated(
         lobbyId: String,
-        playerId: String,
-        username: String?,
-        color: String?
+        players: Map<String, PlayerInfo>
     ) {
-        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with playerId: $playerId, username: $username, color: $color")
+        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with players: $players")
         if(lobbyId == _currentLobbyIdFlow.value || _currentLobbyIdFlow.value == null){
             applicationScope.launch {
                 _navigateToLobbyChannel.send(lobbyId)
                 Log.d("MainApplication", "Navigating to lobby: $lobbyId")
             }
-            players.add(PlayerInfo(
-                playerId = playerId,
-                username = username ?: "HostPlayer",
-                colorHex = color!!,
-                isHost = true,
-                isReady = false
-            ))
+            this.players.clear()
+            this.players.addAll(players.values)
 
         } else {
             Log.w("MainApplication", "Received lobby creation for wrong lobby.")
@@ -152,17 +145,11 @@ open class MainApplication : Application(),
 
     override fun onPlayerJoined(
         lobbyId: String,
-        playerId: String,
-        username: String?,
-        color: String?
+        players: Map<String, PlayerInfo>
     ) {
-        Log.d("MainApplication", "Callback: onPlayerJoined. Player ID: $playerId with username: $username, color: $color")
-        players.add(PlayerInfo(
-            playerId = playerId,
-            colorHex = color!!,
-            username = username ?: "NewPlayer",
-            isHost = false,
-            isReady = false))
+        Log.d("MainApplication", "Callback: onPlayerJoined. Players $players")
+        this.players.clear()
+        this.players.addAll(players.values)
     }
 
     override fun onGameBoardReceived(lobbyId: String, boardJson: String) {

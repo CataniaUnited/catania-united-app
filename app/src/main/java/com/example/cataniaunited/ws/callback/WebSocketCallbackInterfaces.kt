@@ -1,5 +1,6 @@
 package com.example.cataniaunited.ws.callback
 
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
 
 fun interface OnConnectionSuccess {
@@ -7,11 +8,11 @@ fun interface OnConnectionSuccess {
 }
 
 fun interface OnLobbyCreated {
-    fun onLobbyCreated(lobbyId: String, playerId: String, username: String?, color: String?)
+    fun onLobbyCreated(lobbyId: String, players: Map<String, PlayerInfo>)
 }
 
 fun interface OnPlayerJoined {
-    fun onPlayerJoined(lobbyId: String, playerId: String, username: String?, color: String?)
+    fun onPlayerJoined(lobbyId: String, players: Map<String, PlayerInfo>)
 }
 
 fun interface OnLobbyUpdated {

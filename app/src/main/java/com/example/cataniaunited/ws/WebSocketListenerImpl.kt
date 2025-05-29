@@ -109,13 +109,13 @@ open class WebSocketListenerImpl @Inject constructor(
     }
 
     private fun handlePlayerJoined(messageDTO: MessageDTO) {
-        val playerId = messageDTO.player
         val lobbyId = messageDTO.lobbyId
-        val username = messageDTO.message?.get("username")?.jsonPrimitive?.contentOrNull
+        val playerId = messageDTO.player
         val color = messageDTO.message?.get("color")?.jsonPrimitive?.contentOrNull
+        val players = messageDTO.players
 
-        if (lobbyId != null && playerId != null) {
-            onPlayerJoined.onPlayerJoined(lobbyId, playerId, username, color)
+        if (lobbyId != null && players != null) {
+            onPlayerJoined.onPlayerJoined(lobbyId, players)
             Log.i("WebSocketListener", "Player '$playerId' joined Lobby '$lobbyId' with color $color")
             // notify UI or GameDataHandler if needed
         } else {
@@ -163,6 +163,7 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleGameBoardJson(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
+        val players = messageDTO.players!!
 
         val message = messageDTO.message ?: run {
             Log.e("WebSocketListener", "Message is null")
@@ -171,24 +172,16 @@ open class WebSocketListenerImpl @Inject constructor(
 
         try {
             val fullMessageString = jsonParser.encodeToString(JsonObject.serializer(), message)
-
             message["gameboard"]?.jsonObject ?: message
-            val playersNode = message["players"]?.jsonObject
-
+            val vpMap = mutableMapOf<String, Int>()
+            for ((playerId, playerInfo) in players) {
+                vpMap[playerId] =  playerInfo.victoryPoints
+            }
+            Log.d("WebSocketListener", "Parsed VP map: $vpMap")
             MainApplication.getInstance().applicationScope.launch {
                 gameDataHandler.updateGameBoard(fullMessageString)
-            }
-
-            playersNode?.let { playersJson ->
-                val vpMap = mutableMapOf<String, Int>()
-                for ((playerId, playerNode) in playersJson) {
-                    val vp = playerNode.jsonObject["victoryPoints"]?.jsonPrimitive?.intOrNull ?: 0
-                    vpMap[playerId] = vp
-                }
-                Log.d("WebSocketListener", "Parsed VP map: $vpMap")
-                MainApplication.getInstance().applicationScope.launch {
-                    gameDataHandler.updateVictoryPoints(vpMap)
-                }
+                gameDataHandler.updateVictoryPoints(vpMap)
+                gameDataHandler.updatePlayers(players)
             }
 
             onGameBoardReceived.onGameBoardReceived(lobbyId ?: "", fullMessageString)
@@ -205,16 +198,7 @@ open class WebSocketListenerImpl @Inject constructor(
             val leaderboard = messageDTO.message?.get("leaderboard")?.jsonArray
 
             if (winnerId != null && leaderboard != null) {
-                val players = leaderboard.mapNotNull { entry ->
-                    val obj = entry.jsonObject
-                    PlayerInfo(
-                        playerId = "",
-                        username = obj["username"]?.jsonPrimitive?.contentOrNull ?: "",
-                        colorHex = "#8C4E27",
-                        victoryPoints = obj["vp"]?.jsonPrimitive?.intOrNull ?: 0
-                    )
-                }
-
+                val players: List<PlayerInfo> = jsonParser.decodeFromString(leaderboard.toString())
                 MainApplication.getInstance().applicationScope.launch {
                     MainApplication.getInstance().onGameWon(players.first(), players)
                 }
@@ -241,13 +225,10 @@ open class WebSocketListenerImpl @Inject constructor(
 
     private fun handleLobbyCreated(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
-        val playerId = messageDTO.player
-        val message = messageDTO.message
-        val username = message?.get("username")?.jsonPrimitive?.contentOrNull
-        val color = message?.get("color")?.jsonPrimitive?.contentOrNull
+        val players = messageDTO.players
 
-        if (lobbyId != null && playerId != null) {
-            onLobbyCreated.onLobbyCreated(lobbyId, playerId, username, color)
+        if (lobbyId != null && players != null) {
+            onLobbyCreated.onLobbyCreated(lobbyId, players)
             Log.i("WebSocketListener", "Lobby Created successfully with ID: $lobbyId")
         } else {
             Log.e("WebSocketListener", "LOBBY_CREATED message received without lobbyId.")

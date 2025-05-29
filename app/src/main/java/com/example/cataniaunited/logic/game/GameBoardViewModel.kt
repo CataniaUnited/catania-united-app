@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cataniaunited.data.model.GameBoardModel
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
@@ -45,6 +46,9 @@ class GameViewModel @Inject constructor(
     private val _playerResources = MutableStateFlow<Map<TileType, Int>>(emptyMap())
     val playerResources: StateFlow<Map<TileType, Int>> = _playerResources.asStateFlow()
 
+    private val _players = MutableStateFlow<Map<String, PlayerInfo>>(emptyMap())
+    val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
+
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
 
@@ -58,11 +62,12 @@ class GameViewModel @Inject constructor(
                 Log.e("GameBoardViewModel", "Error Message received")
                 _errorChannel.send(errorMessage)
             }
-        }
-
-        viewModelScope.launch {
             gameDataHandler.victoryPointsState.collect {
                 _victoryPoints.value = it
+            }
+
+            gameDataHandler.playersState.collect {
+                _players.value = it
             }
         }
     }

@@ -14,41 +14,45 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.cataniaunited.R
+import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ui.theme.catanClay
 import kotlinx.coroutines.delay
 
 @Composable
 fun DiceRollerPopup(
-    onDiceRolled: () -> Unit,
-    onClose: () -> Unit,
-    dice1Result: Int?,
-    dice2Result: Int?,
-
+    viewModel: GameViewModel,
+    onClose: () -> Unit
 ) {
-    var dice1 by remember { mutableIntStateOf(1) }
-    var dice2 by remember { mutableIntStateOf(1) }
-    var rolling by remember { mutableStateOf(true) }
+    val diceState by viewModel.diceState.collectAsState()
+    if (diceState == null) return
+
+    var currentDice1 by remember { mutableIntStateOf(1) }
+    var currentDice2 by remember { mutableIntStateOf(1) }
     var showFinalResult by remember { mutableStateOf(false) }
 
     val rotation = rememberInfiniteTransition()
     val angle by rotation.animateFloat(
         initialValue = 0f,
-        targetValue = if (rolling) 360f else 0f,
+        targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = 300, easing = LinearEasing)
+            animation = tween(300, easing = LinearEasing)
         )
     )
 
-    LaunchedEffect(Unit) {
-        onDiceRolled()
-    }
+    LaunchedEffect(diceState) {
+        val state = diceState!!
 
-    LaunchedEffect(dice1Result, dice2Result) {
-        if (dice1Result != null && dice2Result != null) {
-            delay(800)
-            dice1 = dice1Result
-            dice2 = dice2Result
-            rolling = false
+        if (state.isRolling) {
+            showFinalResult = false
+
+            while (state.isRolling && diceState?.isRolling == true) {
+                currentDice1 = (1..6).random()
+                currentDice2 = (1..6).random()
+                delay(100)
+            }
+        } else if (state.showResult) {
+            currentDice1 = state.dice1
+            currentDice2 = state.dice2
             showFinalResult = true
             delay(2000)
             onClose()
@@ -63,22 +67,33 @@ fun DiceRollerPopup(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = if (rolling) "Rolling Dice..." else "Result!",
+                text = if (diceState!!.isRolling)
+                    "${diceState!!.rollingPlayer ?: "Player"} is rolling..."
+                else
+                    "${diceState!!.rollingPlayer ?: "Player"} rolled:",
                 style = MaterialTheme.typography.titleLarge
             )
 
             Spacer(modifier = Modifier.height(24.dp))
 
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                DiceImageDisplay(dice1, rolling, angle)
-                DiceImageDisplay(dice2, rolling, angle)
+                DiceImageDisplay(
+                    value = currentDice1,
+                    rolling = diceState!!.isRolling,
+                    angle = angle
+                )
+                DiceImageDisplay(
+                    value = currentDice2,
+                    rolling = diceState!!.isRolling,
+                    angle = angle
+                )
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             if (showFinalResult) {
                 Text(
-                    text = "Total: ${dice1 + dice2}",
+                    text = "Total: ${currentDice1 + currentDice2}",
                     style = MaterialTheme.typography.titleLarge
                 )
             }
@@ -88,8 +103,7 @@ fun DiceRollerPopup(
 
 @Composable
 fun DiceImageDisplay(value: Int, rolling: Boolean, angle: Float) {
-    val displayValue = if (rolling) (1..6).random() else value
-    val imageRes = when (displayValue) {
+    val imageRes = when (value) {
         1 -> R.drawable.dice_1
         2 -> R.drawable.dice_2
         3 -> R.drawable.dice_3
@@ -100,7 +114,7 @@ fun DiceImageDisplay(value: Int, rolling: Boolean, angle: Float) {
 
     Image(
         painter = painterResource(id = imageRes),
-        contentDescription = "Dice $displayValue",
+        contentDescription = "Dice $value",
         modifier = Modifier
             .size(100.dp)
             .graphicsLayer {

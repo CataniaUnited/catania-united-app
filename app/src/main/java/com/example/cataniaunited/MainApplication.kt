@@ -9,6 +9,7 @@ import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
+import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
@@ -36,6 +37,7 @@ open class MainApplication : Application(),
     OnWebSocketError,
     OnWebSocketClosed,
     OnDiceResult,
+    OnDiceRolling,
     OnPlayerResourcesReceived,
     WebSocketErrorProvider {
 
@@ -143,10 +145,35 @@ open class MainApplication : Application(),
 
 
 
-    override fun onDiceResult(dice1: Int, dice2: Int) {
-        Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")
+    override fun onDiceRolling(playerName: String) {
+        Log.d("MainApplication", "Player $playerName is rolling dice")
         applicationScope.launch {
-            gameViewModel?.updateDiceResult(dice1, dice2)
+            val currentState = gameViewModel?.diceState?.value
+            if (currentState == null) {
+                gameViewModel?.startRolling(playerName)
+            } else if (!currentState.isRolling && !currentState.showResult) {
+                gameViewModel?.resetDiceState()
+                gameViewModel?.startRolling(playerName)
+            } else {
+                Log.d("MainApplication", "Dice already active - rolling: ${currentState.isRolling}, showing result: ${currentState.showResult}")
+            }
+        }
+    }
+
+    override fun onDiceResult(dice1: Int, dice2: Int) {
+        Log.d("MainApplication", "Processing dice result from server: $dice1, $dice2")
+        applicationScope.launch {
+            val currentState = gameViewModel?.diceState?.value
+            if (currentState?.isRolling == true) {
+                gameViewModel?.showResult(currentState.rollingPlayer, dice1, dice2)
+            } else if (currentState == null) {
+                Log.w("MainApplication", "Received dice result without rolling state, showing result immediately")
+                gameViewModel?.startRolling("Unknown Player")
+                kotlinx.coroutines.delay(50)
+                gameViewModel?.showResult("Unknown Player", dice1, dice2)
+            } else {
+                Log.w("MainApplication", "Received dice result but not currently rolling - current state: $currentState")
+            }
         }
     }
 

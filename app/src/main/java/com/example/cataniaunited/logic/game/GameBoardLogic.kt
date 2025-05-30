@@ -65,23 +65,6 @@ class GameBoardLogic @Inject constructor(
         }
     }
 
-    fun startGame(lobbyId: String){
-        try {
-            Log.d("GameBoard", "Starting game for lobby: $lobbyId")
-            val playerId = MainApplication.getInstance().getPlayerId()
-            val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-            webSocketClient.sendMessage(
-                MessageDTO(
-                    MessageType.START_GAME,
-                    playerId,
-                    lobbyId,
-                )
-            )
-        } catch (e: Exception) {
-            Log.e("GameBoard", "Error rolling dice", e)
-        }
-    }
-
     fun rollDice(lobbyId: String) {
         try {
             Log.d("GameBoard", "Rolling dice for lobby: $lobbyId")

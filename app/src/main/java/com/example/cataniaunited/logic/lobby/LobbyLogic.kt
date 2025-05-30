@@ -15,6 +15,7 @@ class LobbyLogic @Inject constructor(
         val playerId = try {
             playerSessionManager.getPlayerId()
         } catch (ise: IllegalStateException) {
+            Log.e("LobbyLogic", "Error when fetching player id", ise)
             return
         }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
@@ -27,7 +28,7 @@ class LobbyLogic @Inject constructor(
                 )
             )
         } else {
-            Log.e("GameBoardLogic", "WS not connected for toggleReady")
+            Log.e("LobbyLogic", "WS not connected for toggleReady")
         }
     }
 
@@ -35,6 +36,7 @@ class LobbyLogic @Inject constructor(
         val playerId = try {
             playerSessionManager.getPlayerId()
         } catch (ise: IllegalStateException) {
+            Log.e("LobbyLogic", "Error when fetching player id", ise)
             return
         }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
@@ -47,8 +49,31 @@ class LobbyLogic @Inject constructor(
                 )
             )
         } else {
-            Log.e("GameBoardLogic", "WS not connected for leaveLobby")
+            Log.e("LobbyLogic", "WS not connected for leaveLobby")
         }
+    }
+
+    fun startGame(lobbyId: String) {
+        Log.d("LobbyLogic", "Starting game for lobby: $lobbyId")
+        val playerId = try {
+            playerSessionManager.getPlayerId()
+        } catch (ise: IllegalStateException) {
+            Log.e("LobbyLogic", "Error when fetching player id", ise)
+            return
+        }
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        if (webSocketClient.isConnected()) {
+            webSocketClient.sendMessage(
+                MessageDTO(
+                    MessageType.START_GAME,
+                    playerId,
+                    lobbyId,
+                )
+            )
+        } else {
+            Log.e("LobbyLogic", "WS not connected for leaveLobby")
+        }
+
     }
 
 }

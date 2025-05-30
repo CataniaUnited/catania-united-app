@@ -160,7 +160,7 @@ class MainActivity : ComponentActivity() {
                                 onStartGameClick = {
                                     //TODO: Implement correctly
                                     Log.i("LobbyScreen", "Starting game for lobby: $lobbyId")
-                                    gameBoardLogic.startGame(lobbyId = lobbyId)
+                                    lobbyLogic.startGame(lobbyId = lobbyId)
                                     navController.navigate("game/${lobbyId}")
                                 },
                                 onToggleReadyClick = {

@@ -119,4 +119,41 @@ class LobbyLogicTest {
 
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
+
+    @Test
+    fun startGameSendsCorrectMessageWhenConnected() {
+        val expectedMessage = MessageDTO(
+            type = MessageType.START_GAME,
+            player = testPlayerId,
+            lobbyId = testLobbyId,
+            players = null,
+            message = null
+        )
+        val messageSlot = slot<MessageDTO>()
+
+        lobbyLogic.startGame(testLobbyId)
+
+        verify(exactly = 1) { mockWebSocketClient.sendMessage(capture(messageSlot)) }
+        assertEquals(expectedMessage, messageSlot.captured)
+    }
+
+    @Test
+    fun startGameDoesNotSendWhenWebSocketNotConnected() {
+        every { mockWebSocketClient.isConnected() } returns false
+
+        lobbyLogic.startGame(testLobbyId)
+
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
+    @Test
+    fun startGameHandlesExceptionWhenGettingPlayerId() {
+        every { mockPlayerSessionManager.getPlayerId() } throws java.lang.IllegalStateException("Player ID not available")
+
+        lobbyLogic.startGame(testLobbyId)
+
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
+
 }

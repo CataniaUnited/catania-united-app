@@ -483,6 +483,57 @@ class WebSocketListenerImplInstrumentedTest {
     }
 
     @Test
+    fun handleDiceResult_callsOnDiceResultAndUpdatesPlayersWhenPlayersArePresent() {
+        val receivedDice1 = 3
+        val receivedDice2 = 4
+        val playersMap = mapOf("player1" to PlayerInfo("player1", "UserA", "#000", false, false, 0, emptyMap()))
+
+        val message = buildJsonObject {
+            put("dice1", receivedDice1)
+            put("dice2", receivedDice2)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "some-player",
+            lobbyId = "some-lobby",
+            message = message,
+            players = playersMap
+        )
+
+        webSocketListener.handleDiceResult(dto)
+
+        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2) }
+        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(playersMap) }
+        verify(exactly = 0) { mockError.onError(any<Throwable>()) }
+    }
+
+    @Test
+    fun handleDiceResult_doesNotUpdatePlayersWhenPlayersAreNull() {
+        val receivedDice1 = 1
+        val receivedDice2 = 2
+
+        val message = buildJsonObject {
+            put("dice1", receivedDice1)
+            put("dice2", receivedDice2)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "some-player",
+            lobbyId = "some-lobby",
+            message = message,
+            players = null
+        )
+
+        webSocketListener.handleDiceResult(dto)
+
+        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2) }
+        verify(exactly = 0) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(any()) } // Should not be called
+        verify(exactly = 0) { mockError.onError(any<Throwable>()) }
+    }
+
+    @Test
     fun onMessage_handlesPlayerJoined_withValidData() {
         val lobbyId = "lobby123"
         val playerInfo1 = PlayerInfo("p1", "Player1", "#FFF", true, true, 0, emptyMap())

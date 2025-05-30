@@ -115,12 +115,12 @@ fun LobbyScreen(
                             }
                         }
                         Spacer(modifier = Modifier.height(4.dp))
-                        player.username?.let {
-                            Text(
-                                text = it,
-                                color = MaterialTheme.colorScheme.onBackground
-                            )
-                        }
+
+                        val usernameText = player.username!! + if(player.id == playerId) " (YOU)" else ""
+                        Text(
+                            text = usernameText,
+                            color = MaterialTheme.colorScheme.onBackground
+                        )
                     }
                 }
             }

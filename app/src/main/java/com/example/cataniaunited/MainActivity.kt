@@ -193,7 +193,6 @@ class MainActivity : ComponentActivity() {
                                         navController.navigate("starting")
                                     },
                                     onStartGameClick = {
-                                        //TODO: Implement correctly
                                         Log.i("LobbyScreen", "Starting game for lobby: $lobbyId")
                                         lobbyLogic.startGame(lobbyId = lobbyId)
                                         navController.navigate("game/${lobbyId}")

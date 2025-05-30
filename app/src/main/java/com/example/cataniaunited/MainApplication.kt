@@ -210,7 +210,7 @@ open class MainApplication : Application(),
         Log.d("MainApplication", "Callback: onPlayerResourcesReceived. Players: $players")
         applicationScope.launch {
             gameViewModel?.let {
-                val resources: Map<TileType, Int>? = players.get(_playerId)?.resources;
+                val resources: Map<TileType, Int>? = players[_playerId]?.resources;
                 if (resources != null) {
                     it.updatePlayerResources(resources)
                     Log.d(

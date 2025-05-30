@@ -1,7 +1,6 @@
 package com.example.cataniaunited.ws.callback
 
 import com.example.cataniaunited.data.model.PlayerInfo
-import com.example.cataniaunited.data.model.TileType
 
 fun interface OnConnectionSuccess {
     fun onConnectionSuccess(playerId: String)

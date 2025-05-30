@@ -8,10 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import javax.inject.Inject
 
 class GameDataHandler @Inject constructor() {
@@ -56,7 +53,7 @@ class GameDataHandler @Inject constructor() {
         Log.d("GameDataHandler", "Updated victory points: $vpMap")
     }
 
-    fun updatePlayers(players: Map<String, PlayerInfo>){
+    fun updatePlayers(players: Map<String, PlayerInfo>) {
         val newPlayersMap = players.toMap()
         if (_playersState.value != newPlayersMap) {
             _playersState.value = newPlayersMap

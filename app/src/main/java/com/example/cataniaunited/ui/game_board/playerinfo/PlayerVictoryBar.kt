@@ -30,7 +30,7 @@ fun PlayerVictoryBar(
         modifier = modifier
             .fillMaxWidth()
             .padding(top = 12.dp)
-            .background(Color(0xff177fde)),
+            .background(Color.Transparent),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -82,6 +82,13 @@ fun GameScreen(
                         resources = playerResources
                     )
                 }
+            },
+            topBar = {
+                LivePlayerVictoryBar(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 12.dp)
+                )
             }
         ) { padding ->
             Column(
@@ -90,13 +97,6 @@ fun GameScreen(
                     .padding(padding)
                     .background(catanBlue)
             ) {
-                LivePlayerVictoryBar(
-                    viewModel = gameViewModel,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp)
-                )
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()

@@ -52,21 +52,31 @@ class GameViewModel @Inject constructor(
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
 
-        val initialResources = TileType.entries
+        _players.value = gameDataHandler.playersState.value
+        val resources: Map<TileType, Int>? = _players.value[playerId]?.resources
+        _playerResources.value = resources ?: TileType.entries
             .filter { it != TileType.WASTE }
             .associateWith { 0 }
-        _playerResources.value = initialResources
+        _victoryPoints.value = gameDataHandler.victoryPointsState.value
+
+        Log.d("GameViewModel", "Players initialized: ${players.value}")
+        Log.d("GameViewModel", "Resources initialized: ${playerResources.value}")
+        Log.d("GameViewModel", "Victory points initialized: ${victoryPoints.value}")
 
         viewModelScope.launch {
+            Log.d("GameViewModel", "View model scoped launched")
+
             errorProvider.errorFlow.collect { errorMessage ->
                 Log.e("GameBoardViewModel", "Error Message received")
                 _errorChannel.send(errorMessage)
             }
             gameDataHandler.victoryPointsState.collect {
+                Log.d("GameViewModel", "Updating victory points value: $it")
                 _victoryPoints.value = it
             }
 
             gameDataHandler.playersState.collect {
+                Log.d("GameViewModel", "RECEIVED playersState in collect: $it")
                 _players.value = it
             }
         }

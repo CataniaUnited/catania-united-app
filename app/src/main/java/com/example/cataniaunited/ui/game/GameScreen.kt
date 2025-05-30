@@ -40,19 +40,12 @@ fun GameScreen(
     var showDicePopup by remember { mutableStateOf(false) }
     val diceResult by gameViewModel.diceResult.collectAsState()
     val playerResources by gameViewModel.playerResources.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
     val gameWonState by application.gameWonState.collectAsState()
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
         if (gameBoardState == null) {
             gameViewModel.initializeBoardState(application.latestBoardJson)
-        }
-    }
-
-    LaunchedEffect(snackbarHostState) {
-        gameViewModel.errorFlow.collectLatest { message ->
-            snackbarHostState.showSnackbar(message, withDismissAction = true)
         }
     }
 
@@ -66,15 +59,6 @@ fun GameScreen(
     Box(Modifier.fillMaxSize()) {
         Scaffold(
             containerColor = Color(0xff177fde),
-            snackbarHost = {
-                SnackbarHost(snackbarHostState) { data ->
-                    Snackbar(
-                        snackbarData = data,
-                        containerColor = Color.Red,
-                        contentColor = Color.White
-                    )
-                }
-            },
             bottomBar = {
                 if (gameBoardState != null) {
                     PlayerResourcesBar(

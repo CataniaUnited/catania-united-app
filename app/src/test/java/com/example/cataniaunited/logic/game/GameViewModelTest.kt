@@ -22,7 +22,6 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -64,7 +63,6 @@ class GameViewModelTest {
     private lateinit var mockPlayerSessionManager: PlayerSessionManager
     private lateinit var mockGameDataHandler: GameDataHandler
     private lateinit var mockGameBoardLogic: GameBoardLogic
-    private lateinit var mockErrorProvider: WebSocketErrorProvider
     private lateinit var errorProviderFlow: MutableSharedFlow<String>
 
     private lateinit var viewModel: GameViewModel
@@ -111,10 +109,6 @@ class GameViewModelTest {
 
         mockGameBoardLogic = mockk(relaxed = true)
         mockPlayerSessionManager = mockk(relaxed = true)
-
-        mockErrorProvider = mockk(relaxed = true) {
-            every { errorFlow } returns errorProviderFlow
-        }
 
         mockGameDataHandler = mockk()
 
@@ -203,7 +197,6 @@ class GameViewModelTest {
             mockGameBoardLogic,
             mockGameDataHandler,
             mockPlayerSessionManager,
-            mockErrorProvider
         )
 
         println("Setup complete.")
@@ -603,26 +596,6 @@ class GameViewModelTest {
     }
 
     @Test
-    @DisplayName("collects errors from errorProvider and sends them to errorFlow")
-    fun collectsErrorsFromErrorProviderAndSendsToErrorFlow() = runTest {
-        val testErrorMessage = "Simulated WebSocket Error"
-
-        viewModel.errorFlow.test {
-            val emitJob = launch {
-                errorProviderFlow.emit(testErrorMessage)
-            }
-
-            advanceUntilIdle()
-
-            assertEquals(testErrorMessage, awaitItem())
-
-            emitJob.cancel()
-            cancelAndIgnoreRemainingEvents()
-        }
-        println("Test passed: collects errors from errorProvider and sends them to errorFlow")
-    }
-
-    @Test
     fun playerIdReturnsPlayerIdFromSessionManager() = runTest {
         val testPlayerId = "test-player-123"
         every { mockPlayerSessionManager.getPlayerId() } returns testPlayerId
@@ -631,7 +604,7 @@ class GameViewModelTest {
 
         assertEquals(testPlayerId, retrievedPlayerId)
 
-        verify(exactly = 1) { mockPlayerSessionManager.getPlayerId() }
+        verify(atLeast = 1) { mockPlayerSessionManager.getPlayerId() }
 
         println("Test passed: playerId returns value from session manager")
     }

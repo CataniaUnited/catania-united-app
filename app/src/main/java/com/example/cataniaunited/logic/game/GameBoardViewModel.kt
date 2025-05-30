@@ -10,13 +10,10 @@ import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
-import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -24,15 +21,11 @@ import javax.inject.Inject
 class GameViewModel @Inject constructor(
     private val gameBoardLogic: GameBoardLogic,
     private val gameDataHandler: GameDataHandler,
-    private val sessionManager: PlayerSessionManager,
-    private val errorProvider: WebSocketErrorProvider
+    private val sessionManager: PlayerSessionManager
 ) : ViewModel() {
 
     val playerId get() = sessionManager.getPlayerId()
     val gameBoardState: StateFlow<GameBoardModel?> = gameDataHandler.gameBoardState
-
-    private val _errorChannel = Channel<String>(Channel.BUFFERED)
-    val errorFlow = _errorChannel.receiveAsFlow()
 
     private val _isBuildMenuOpen = MutableStateFlow(false)
     val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
@@ -66,10 +59,6 @@ class GameViewModel @Inject constructor(
         viewModelScope.launch {
             Log.d("GameViewModel", "View model scoped launched")
 
-            errorProvider.errorFlow.collect { errorMessage ->
-                Log.e("GameBoardViewModel", "Error Message received")
-                _errorChannel.send(errorMessage)
-            }
             gameDataHandler.victoryPointsState.collect {
                 Log.d("GameViewModel", "Updating victory points value: $it")
                 _victoryPoints.value = it
@@ -109,14 +98,18 @@ class GameViewModel @Inject constructor(
         // TODO: Implement logic for tile click (e.g., move robber phase)
     }
 
-    fun handleSettlementClick(settlementPosition: SettlementPosition, isUpgrade: Boolean, lobbyId: String) {
+    fun handleSettlementClick(
+        settlementPosition: SettlementPosition,
+        isUpgrade: Boolean,
+        lobbyId: String
+    ) {
         Log.d(
             "GameViewModel",
             "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}"
         )
-        if(isUpgrade){
+        if (isUpgrade) {
             gameBoardLogic.upgradeSettlement(settlementPosition.id, lobbyId)
-        }else{
+        } else {
             gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
         }
 

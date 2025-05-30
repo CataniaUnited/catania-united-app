@@ -2,9 +2,9 @@ package com.example.cataniaunited
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
-import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
@@ -13,8 +13,8 @@ import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnLobbyUpdated
-import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnPlayerJoined
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
 import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
@@ -57,8 +57,6 @@ open class MainApplication : Application(),
     val navigateToGameFlow = _navigateToGameChannel.receiveAsFlow()
 
     private val _errorChannel = Channel<String>(Channel.BUFFERED)
-
-    //override errorFlow of WebSocketErrorProvider
     override val errorFlow = _errorChannel.receiveAsFlow()
 
     var latestBoardJson: String? = null
@@ -128,8 +126,11 @@ open class MainApplication : Application(),
         lobbyId: String,
         players: Map<String, PlayerInfo>
     ) {
-        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId with players: $players")
-        if(lobbyId == _currentLobbyIdFlow.value || _currentLobbyIdFlow.value == null){
+        Log.i(
+            "MainApplication",
+            "Callback: onLobbyCreated. Lobby ID: $lobbyId with players: $players"
+        )
+        if (lobbyId == _currentLobbyIdFlow.value || _currentLobbyIdFlow.value == null) {
             applicationScope.launch {
                 _navigateToLobbyChannel.send(lobbyId)
                 Log.d("MainApplication", "Navigating to lobby: $lobbyId")
@@ -149,7 +150,7 @@ open class MainApplication : Application(),
     ) {
         Log.d("MainApplication", "Callback: onPlayerJoined. Players $players")
 
-        if(currentLobbyId == null) {
+        if (currentLobbyId == null) {
             currentLobbyId = lobbyId;
         }
         this.players.clear()
@@ -158,7 +159,7 @@ open class MainApplication : Application(),
 
     override fun onLobbyUpdated(lobbyId: String, players: Map<String, PlayerInfo>) {
         Log.d("MainApplication", "Callback: onLobbyUpdated. Players $players")
-        if(currentLobbyId == null) {
+        if (currentLobbyId == null) {
             currentLobbyId = lobbyId;
         }
         this.players.clear()
@@ -166,7 +167,10 @@ open class MainApplication : Application(),
     }
 
     override fun onGameBoardReceived(lobbyId: String, boardJson: String) {
-        Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId. Current lobby id: $currentLobbyId")
+        Log.d(
+            "MainApplication",
+            "Callback: onGameBoardReceived for Lobby $lobbyId. Current lobby id: $currentLobbyId"
+        )
         if (latestBoardJson == null && lobbyId == currentLobbyId) {
             applicationScope.launch {
                 _navigateToGameChannel.send(lobbyId)
@@ -207,9 +211,12 @@ open class MainApplication : Application(),
         applicationScope.launch {
             gameViewModel?.let {
                 val resources: Map<TileType, Int>? = players.get(_playerId)?.resources;
-                if(resources != null){
+                if (resources != null) {
                     it.updatePlayerResources(resources)
-                    Log.d("MainApplication", "Successfully called updatePlayerResources on ViewModel.")
+                    Log.d(
+                        "MainApplication",
+                        "Successfully called updatePlayerResources on ViewModel."
+                    )
                 } else {
                     Log.w("MainApplication", "Resources were null — skipping update.")
                 }

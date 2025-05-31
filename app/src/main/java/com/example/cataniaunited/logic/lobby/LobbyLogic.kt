@@ -10,12 +10,14 @@ import javax.inject.Inject
 class LobbyLogic @Inject constructor(
     private val playerSessionManager: PlayerSessionManager
 ) {
+    
+    val playerIdErrorMessage: String = "Error when fetching player id"
 
     fun toggleReady(lobbyId: String) {
         val playerId = try {
             playerSessionManager.getPlayerId()
         } catch (ise: IllegalStateException) {
-            Log.e("LobbyLogic", "Error when fetching player id", ise)
+            Log.e("LobbyLogic", playerIdErrorMessage, ise)
             return
         }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
@@ -36,7 +38,7 @@ class LobbyLogic @Inject constructor(
         val playerId = try {
             playerSessionManager.getPlayerId()
         } catch (ise: IllegalStateException) {
-            Log.e("LobbyLogic", "Error when fetching player id", ise)
+            Log.e("LobbyLogic", playerIdErrorMessage, ise)
             return
         }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
@@ -58,7 +60,7 @@ class LobbyLogic @Inject constructor(
         val playerId = try {
             playerSessionManager.getPlayerId()
         } catch (ise: IllegalStateException) {
-            Log.e("LobbyLogic", "Error when fetching player id", ise)
+            Log.e("LobbyLogic", playerIdErrorMessage, ise)
             return
         }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()

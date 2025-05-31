@@ -16,8 +16,7 @@ import com.example.cataniaunited.logic.game.GameViewModel
 
 @Composable
 fun LivePlayerVictoryBar(
-    gameViewModel: GameViewModel = hiltViewModel(),
-    modifier: Modifier = Modifier
+    gameViewModel: GameViewModel = hiltViewModel()
 ) {
     val playerState by gameViewModel.players.collectAsState()
     val vpMap by gameViewModel.victoryPoints.collectAsState()

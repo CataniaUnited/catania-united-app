@@ -5,9 +5,22 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,7 +39,6 @@ import com.example.cataniaunited.ui.game_board.board.CatanBoard
 import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import com.example.cataniaunited.ui.game_end.GameWinScreen
 import com.example.cataniaunited.ui.theme.catanBlue
-import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun GameScreen(
@@ -69,9 +81,6 @@ fun GameScreen(
             },
             topBar = {
                 LivePlayerVictoryBar(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp)
                 )
             }
         ) { padding ->
@@ -197,31 +206,31 @@ fun GameScreen(
             }
         }
 
-            AnimatedVisibility(
-                visible = gameWonState != null,
-                enter = fadeIn() + scaleIn(initialScale = 0.9f),
+        AnimatedVisibility(
+            visible = gameWonState != null,
+            enter = fadeIn() + scaleIn(initialScale = 0.9f),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0x99000000)),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0x99000000)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    gameWonState?.let { (winner, leaderboard) ->
-                        GameWinScreen(
-                            winner = winner,
-                            leaderboard = leaderboard,
-                            onReturnToMenu = {
-                                application.clearGameData()
-                                application.clearLobbyData()
-                                navController.navigate("starting") {
-                                    popUpTo("starting") { inclusive = true }
-                                }
+                gameWonState?.let { (winner, leaderboard) ->
+                    GameWinScreen(
+                        winner = winner,
+                        leaderboard = leaderboard,
+                        onReturnToMenu = {
+                            application.clearGameData()
+                            application.clearLobbyData()
+                            navController.navigate("starting") {
+                                popUpTo("starting") { inclusive = true }
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
     }
+}
 

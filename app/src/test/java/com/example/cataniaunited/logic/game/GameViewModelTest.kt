@@ -712,4 +712,54 @@ class GameViewModelTest {
             assertEquals(emptyMap<String, Int>(), viewModel.victoryPoints.value)
         }
     }
+
+    @Nested
+    @DisplayName("Turn and Player State Handlers")
+    inner class TurnAndPlayerStateHandlers {
+
+        private val currentPlayerId = "myPlayerId"
+        private val otherPlayerId = "otherPlayerId"
+
+        @BeforeEach
+        fun setupPlayerId() {
+            every { mockPlayerSessionManager.getPlayerId() } returns currentPlayerId
+        }
+
+        @Test
+        fun handleEndTurnClickCallsLobbyLogicEndTurn() = runTest {
+            val testLobbyId = "end-turn-lobby"
+            every { mockLobbyLogic.endTurn(testLobbyId) } just io.mockk.Runs
+
+            viewModel.handleEndTurnClick(testLobbyId)
+            advanceUntilIdle()
+
+            verify(exactly = 1) { mockLobbyLogic.endTurn(testLobbyId) }
+        }
+
+        @Test
+        fun playersStateCollectClosesBuildMenuWhenNotActivePlayer() = runTest {
+            // Initial state: build menu is open
+            viewModel.setBuildMenuOpen(true)
+            advanceUntilIdle()
+            assertEquals(true, viewModel.isBuildMenuOpen.value)
+
+            val playersMapNotActive = mapOf(
+                currentPlayerId to PlayerInfo(currentPlayerId, "Me", "#AAAAAA", isActivePlayer = false),
+                otherPlayerId to PlayerInfo(otherPlayerId, "Other", "#BBBBBB", isActivePlayer = true)
+            )
+
+            viewModel.isBuildMenuOpen.test {
+                // Initial `true` from setBuildMenuOpen
+                assertEquals(true, awaitItem())
+
+                // Simulate gameDataHandler.playersState emitting new players data
+                playersMutableStateFlow.value = playersMapNotActive
+                advanceUntilIdle()
+
+                // Expect the build menu to be closed (false)
+                assertEquals(false, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
+        }
+    }
 }

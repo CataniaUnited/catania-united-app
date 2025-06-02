@@ -155,5 +155,39 @@ class LobbyLogicTest {
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
 
+    @Test
+    fun endTurnSendsCorrectMessageWhenConnected() {
+        val expectedMessage = MessageDTO(
+            type = MessageType.END_TURN,
+            player = testPlayerId,
+            lobbyId = testLobbyId,
+            players = null,
+            message = null
+        )
+        val messageSlot = slot<MessageDTO>()
 
+        lobbyLogic.endTurn(testLobbyId)
+
+        verify(exactly = 1) { mockWebSocketClient.sendMessage(capture(messageSlot)) }
+        assertEquals(expectedMessage, messageSlot.captured)
+    }
+
+    @Test
+    fun endTurnDoesNotSendWhenNotConnected() {
+        every { mockWebSocketClient.isConnected() } returns false
+
+        lobbyLogic.endTurn(testLobbyId)
+
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
+    @Test
+    fun endTurnDoesNotSendWhenGetPlayerIdThrows() {
+        val exception = IllegalStateException("Player ID not set for endTurn")
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
+
+        lobbyLogic.endTurn(testLobbyId)
+
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
 }

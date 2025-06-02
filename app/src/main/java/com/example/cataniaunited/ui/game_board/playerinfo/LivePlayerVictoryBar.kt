@@ -10,30 +10,24 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.cataniaunited.logic.game.GameViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.cataniaunited.data.model.PlayerInfo
+import com.example.cataniaunited.logic.game.GameViewModel
 
 @Composable
-fun LivePlayerVictoryBar(viewModel: GameViewModel, modifier: Modifier = Modifier) {
-    val boardState by viewModel.gameBoardState.collectAsState()
-    val vpMap by viewModel.victoryPoints.collectAsState()
+fun LivePlayerVictoryBar(
+    gameViewModel: GameViewModel = hiltViewModel()
+) {
+    val playerState by gameViewModel.players.collectAsState()
+    val vpMap by gameViewModel.victoryPoints.collectAsState()
 
-    val players = remember(boardState, vpMap) {
-        boardState?.players?.map { player ->
-            PlayerInfo(
-                playerId = player.playerId,
-                username = player.username,
-                colorHex = player.colorHex,
-                victoryPoints = vpMap[player.playerId] ?: 0
-            )
-        } ?: emptyList()
+    val players: List<PlayerInfo> = remember(playerState, vpMap) {
+        playerState.values.toList()
     }
 
     LaunchedEffect(players) {
         Log.d("VictoryBar", "Loaded players: $players")
     }
-
-    viewModel.playerId
 
     PlayerVictoryBar(
         players = players,

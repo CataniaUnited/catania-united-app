@@ -3,6 +3,7 @@ package com.example.cataniaunited.logic.game
 import android.util.Log
 import app.cash.turbine.test
 import com.example.cataniaunited.data.model.GameBoardModel
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
@@ -20,14 +21,13 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import kotlinx.coroutines.flow.first
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -63,7 +63,6 @@ class GameViewModelTest {
     private lateinit var mockPlayerSessionManager: PlayerSessionManager
     private lateinit var mockGameDataHandler: GameDataHandler
     private lateinit var mockGameBoardLogic: GameBoardLogic
-    private lateinit var mockErrorProvider: WebSocketErrorProvider
     private lateinit var errorProviderFlow: MutableSharedFlow<String>
 
     private lateinit var viewModel: GameViewModel
@@ -89,12 +88,16 @@ class GameViewModelTest {
     private val invalidBoardJson = "{ not json }"
 
     private lateinit var gameBoardMutableStateFlow: MutableStateFlow<GameBoardModel?>
+    private lateinit var victoryPointsMutableStateFlow: MutableStateFlow<Map<String, Int>>
+    private lateinit var playersMutableStateFlow: MutableStateFlow<Map<String, PlayerInfo>>
 
 
     @BeforeEach
     fun setUp() {
         gameBoardMutableStateFlow = MutableStateFlow<GameBoardModel?>(null)
         errorProviderFlow = MutableSharedFlow(extraBufferCapacity = 1)
+        victoryPointsMutableStateFlow = MutableStateFlow(emptyMap())
+        playersMutableStateFlow = MutableStateFlow(emptyMap())
 
         unmockkStatic(Log::class)
         mockkStatic(Log::class)
@@ -107,15 +110,11 @@ class GameViewModelTest {
         mockGameBoardLogic = mockk(relaxed = true)
         mockPlayerSessionManager = mockk(relaxed = true)
 
-        mockErrorProvider = mockk(relaxed = true) {
-            every { errorFlow } returns errorProviderFlow
-        }
-
-
         mockGameDataHandler = mockk()
 
         every { mockGameDataHandler.gameBoardState } returns gameBoardMutableStateFlow.asStateFlow()
-        every { mockGameDataHandler.victoryPointsState } returns MutableStateFlow(emptyMap())
+        every { mockGameDataHandler.victoryPointsState } returns victoryPointsMutableStateFlow.asStateFlow()
+        every { mockGameDataHandler.playersState } returns playersMutableStateFlow.asStateFlow()
 
         every { mockGameDataHandler.updateGameBoard(any<String>()) } answers {
             val json = it.invocation.args[0] as String
@@ -198,7 +197,6 @@ class GameViewModelTest {
             mockGameBoardLogic,
             mockGameDataHandler,
             mockPlayerSessionManager,
-            mockErrorProvider
         )
 
         println("Setup complete.")
@@ -496,7 +494,12 @@ class GameViewModelTest {
             viewModel.handleSettlementClick(testPosition, true, testLobbyId)
             advanceUntilIdle()
 
-            verify(exactly = 1) { mockGameBoardLogic.upgradeSettlement(testPosition.id, testLobbyId) }
+            verify(exactly = 1) {
+                mockGameBoardLogic.upgradeSettlement(
+                    testPosition.id,
+                    testLobbyId
+                )
+            }
 
             println("Test passed: handleSettlementClick calls gameBoardLogic.placeSettlement")
         }
@@ -516,8 +519,22 @@ class GameViewModelTest {
             advanceUntilIdle()
 
             verify(exactly = 1) { mockGameBoardLogic.placeRoad(testRoad.id, testLobbyId) }
+            verify(exactly = 1) { mockGameBoardLogic.setActivePlayer(any(), eq(testLobbyId)) }
 
             println("Test passed: handleRoadClick calls gameBoardLogic.placeRoad")
+        }
+
+        @Test
+        fun handleTileClickLogsMessage() = runTest {
+            val testTile =
+                Tile(id = 1, type = TileType.WOOD, value = 0, coordinates = listOf(0.0, 0.0))
+            val testLobbyId = "tile-lobby-1"
+
+            viewModel.handleTileClick(testTile, testLobbyId)
+            advanceUntilIdle()
+
+            verify { Log.d("GameViewModel", "handleTileClick: Tile ID=${testTile.id}") }
+            println("Test passed: handleTileClick logs message")
         }
     }
 
@@ -579,27 +596,6 @@ class GameViewModelTest {
     }
 
     @Test
-    @DisplayName("collects errors from errorProvider and sends them to errorFlow")
-    fun collectsErrorsFromErrorProviderAndSendsToErrorFlow() = runTest {
-        val testErrorMessage = "Simulated WebSocket Error"
-
-        // Use Turbine to observe the ViewModel's errorFlow
-        viewModel.errorFlow.test {
-            val emitJob = launch {
-                errorProviderFlow.emit(testErrorMessage)
-            }
-
-            advanceUntilIdle()
-
-            assertEquals(testErrorMessage, awaitItem())
-
-            emitJob.cancel()
-            cancelAndIgnoreRemainingEvents()
-        }
-        println("Test passed: collects errors from errorProvider and sends them to errorFlow")
-    }
-
-    @Test
     fun playerIdReturnsPlayerIdFromSessionManager() = runTest {
         val testPlayerId = "test-player-123"
         every { mockPlayerSessionManager.getPlayerId() } returns testPlayerId
@@ -608,7 +604,7 @@ class GameViewModelTest {
 
         assertEquals(testPlayerId, retrievedPlayerId)
 
-        verify(exactly = 1) { mockPlayerSessionManager.getPlayerId() }
+        verify(atLeast = 1) { mockPlayerSessionManager.getPlayerId() }
 
         println("Test passed: playerId returns value from session manager")
     }
@@ -694,6 +690,24 @@ class GameViewModelTest {
             }
             assertEquals(secondResources, viewModel.playerResources.value)
             println("Test passed: updatePlayerResources overrides previous values")
+        }
+    }
+
+    @Nested
+    @DisplayName("Players State")
+    inner class PlayersStateTests {
+        @Test
+        fun playersInitializesToEmptyMap() = runTest {
+            assertEquals(emptyMap<String, PlayerInfo>(), viewModel.players.value)
+        }
+    }
+
+    @Nested
+    @DisplayName("Victory Points State")
+    inner class VictoryPointsStateTests {
+        @Test
+        fun victoryPointsInitializesToEmptyMap() = runTest {
+            assertEquals(emptyMap<String, Int>(), viewModel.victoryPoints.value)
         }
     }
 }

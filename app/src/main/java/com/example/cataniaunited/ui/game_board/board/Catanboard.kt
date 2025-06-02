@@ -23,6 +23,7 @@ import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.ui.game_board.road.RoadComposable
 import com.example.cataniaunited.ui.game_board.settlementPosition.SettlementComposable
 import com.example.cataniaunited.ui.game_board.tile.HexagonTile
+import com.example.cataniaunited.ui.theme.catanBlue
 import kotlin.math.min
 import kotlin.math.roundToInt
 
@@ -54,7 +55,7 @@ fun CatanBoard(
     settlementPositions: List<SettlementPosition>,
     roads: List<Road>,
     outerMarginDp: Dp = 16.dp,
-    boardBackgroundColor: Color = Color(0xff177fde),
+    boardBackgroundColor: Color = catanBlue,
     isBuildMode: Boolean,
     playerId: String,
     onTileClicked: (Tile) -> Unit = {},

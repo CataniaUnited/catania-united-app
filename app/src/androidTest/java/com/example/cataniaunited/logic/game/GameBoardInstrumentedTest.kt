@@ -3,6 +3,7 @@ package com.example.cataniaunited.logic.game
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
@@ -20,12 +21,14 @@ import okhttp3.WebSocketListener
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
-import org.junit.Assert.*
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.kotlin.spy
-
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
@@ -40,7 +43,6 @@ class GameBoardInstrumentedTest() {
     private lateinit var mockWebServer: MockWebServer
     private lateinit var playerId: String
     private lateinit var playerSessionManagerMock: PlayerSessionManager
-    private lateinit var mockGameViewModel: GameViewModel
     private val gameDataHandlerMock = GameDataHandler()
     private val testJsonParser = Json { encodeDefaults = true }
 
@@ -90,12 +92,20 @@ class GameBoardInstrumentedTest() {
         println("Teardown complete.")
     }
 
-    private val dummyOnConnectionSuccess: (String) -> Unit = { pid -> println("DummyCallback: onConnectionSuccess $pid") }
-    private val dummyOnLobbyCreated: (String) -> Unit = { lid -> println("DummyCallback: onLobbyCreated $lid") }
-    private val dummyOnGameBoardReceived: (String, String) -> Unit = { lid, json -> println("DummyCallback: onGameBoardReceived $lid, json len: ${json.length}") }
-    private val dummyOnClosed: (Int, String) -> Unit = { code, reason -> println("DummyCallback: onClosed $code $reason") }
+    private val dummyOnConnectionSuccess: (String) -> Unit =
+        { pid -> println("DummyCallback: onConnectionSuccess $pid") }
+    private val dummyOnLobbyCreated: (String, Map<String, PlayerInfo>) -> Unit =
+        { lid, map -> println("DummyCallback: onLobbyCreated $lid, $map") }
+    private val dummyOnLobbyUpdated: (String, Map<String, PlayerInfo>) -> Unit =
+        { lid, map -> println("DummyCallback: onLobbyUpdated $lid, $map") }
+    private val dummyOnPlayerJoined: (String, Map<String, PlayerInfo>) -> Unit =
+        { lid, map -> println("DummyCallback: onPlayerJoined $lid, $map") }
+    private val dummyOnGameBoardReceived: (String, String) -> Unit =
+        { lid, json -> println("DummyCallback: onGameBoardReceived $lid, json len: ${json.length}") }
+    private val dummyOnClosed: (Int, String) -> Unit =
+        { code, reason -> println("DummyCallback: onClosed $code $reason") }
     private val dummyOnDiceResult: (Int, Int) -> Unit = { _, _ -> }
-    private val dummyOnPlayerResourcesRecieved: (Map<TileType, Int>) -> Unit = { _ -> }
+    private val dummyOnPlayerResourcesRecieved: (Map<String, PlayerInfo>) -> Unit = { _ -> }
 
     @Test
     fun testPlaceSettlement() {
@@ -103,25 +113,38 @@ class GameBoardInstrumentedTest() {
         val lobbyId = "lobby-settle-${System.currentTimeMillis()}"
         val settlementPositionId = 100
         val messagePayload = buildJsonObject { put("settlementPositionId", settlementPositionId) }
-        val expectedMessageDTO = MessageDTO(MessageType.PLACE_SETTLEMENT, playerId, lobbyId, null, messagePayload)
-        val expectedJson = testJsonParser.encodeToString(MessageDTO.serializer(), expectedMessageDTO)
+        val expectedMessageDTO =
+            MessageDTO(MessageType.PLACE_SETTLEMENT, playerId, lobbyId, null, messagePayload)
+        val expectedJson =
+            testJsonParser.encodeToString(MessageDTO.serializer(), expectedMessageDTO)
 
         val messageLatch = CountDownLatch(1)
         val openLatch = CountDownLatch(1)
         val errorLatch = CountDownLatch(1)
         val receivedMessage = mutableListOf<String>()
 
-        mockWebServer.enqueue(MockResponse()
-            .setResponseCode(101)
-            .withWebSocketUpgrade(object : WebSocketListener() {
-                override fun onOpen(webSocket: WebSocket, response: Response) { println("MockServer: Opened") }
-                override fun onMessage(webSocket: WebSocket, text: String) {
-                    println("MockServer: Received '$text'")
-                    synchronized(receivedMessage) { receivedMessage.add(text) }
-                    messageLatch.countDown()
-                }
-                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) { println("MockServer: onFailure ${t.message}") }
-            })
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(101)
+                .withWebSocketUpgrade(object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: Response) {
+                        println("MockServer: Opened")
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        println("MockServer: Received '$text'")
+                        synchronized(receivedMessage) { receivedMessage.add(text) }
+                        messageLatch.countDown()
+                    }
+
+                    override fun onFailure(
+                        webSocket: WebSocket,
+                        t: Throwable,
+                        response: Response?
+                    ) {
+                        println("MockServer: onFailure ${t.message}")
+                    }
+                })
         )
 
         println("Connecting spyClient...")
@@ -137,7 +160,9 @@ class GameBoardInstrumentedTest() {
                 onClosed = dummyOnClosed,
                 gameDataHandler = gameDataHandlerMock,
                 onDiceResult = dummyOnDiceResult,
-                onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved
+                onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved,
+                onPlayerJoined = dummyOnPlayerJoined,
+                onLobbyUpdated = dummyOnLobbyUpdated
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -177,25 +202,38 @@ class GameBoardInstrumentedTest() {
         val lobbyId = "lobby-road-${System.currentTimeMillis()}"
         val roadId = 100
         val messagePayload = buildJsonObject { put("roadId", roadId) }
-        val expectedMessageDTO = MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, messagePayload)
-        val expectedJson = testJsonParser.encodeToString(MessageDTO.serializer(), expectedMessageDTO)
+        val expectedMessageDTO =
+            MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, messagePayload)
+        val expectedJson =
+            testJsonParser.encodeToString(MessageDTO.serializer(), expectedMessageDTO)
 
         val messageLatch = CountDownLatch(1)
         val openLatch = CountDownLatch(1)
         val errorLatch = CountDownLatch(1)
         val receivedMessage = mutableListOf<String>()
 
-        mockWebServer.enqueue(MockResponse()
-            .setResponseCode(101)
-            .withWebSocketUpgrade(object : WebSocketListener() {
-                override fun onOpen(webSocket: WebSocket, response: Response) { println("MockServer: Opened") }
-                override fun onMessage(webSocket: WebSocket, text: String) {
-                    println("MockServer: Received '$text'")
-                    synchronized(receivedMessage) { receivedMessage.add(text) }
-                    messageLatch.countDown()
-                }
-                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) { println("MockServer: onFailure ${t.message}")}
-            })
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(101)
+                .withWebSocketUpgrade(object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: Response) {
+                        println("MockServer: Opened")
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        println("MockServer: Received '$text'")
+                        synchronized(receivedMessage) { receivedMessage.add(text) }
+                        messageLatch.countDown()
+                    }
+
+                    override fun onFailure(
+                        webSocket: WebSocket,
+                        t: Throwable,
+                        response: Response?
+                    ) {
+                        println("MockServer: onFailure ${t.message}")
+                    }
+                })
         )
 
         println("Connecting spyClient...")
@@ -211,7 +249,9 @@ class GameBoardInstrumentedTest() {
                 onClosed = dummyOnClosed,
                 onDiceResult = dummyOnDiceResult,
                 gameDataHandler = gameDataHandlerMock,
-                onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved
+                onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved,
+                onPlayerJoined = dummyOnPlayerJoined,
+                onLobbyUpdated = dummyOnLobbyUpdated
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -225,6 +265,7 @@ class GameBoardInstrumentedTest() {
                         errorLatch.countDown()
                     }
                 }
+
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                     super.onFailure(webSocket, t, response)
                     println("!!! Client Listener onFailure triggered.")
@@ -250,25 +291,38 @@ class GameBoardInstrumentedTest() {
         val lobbyId = "lobby-dice-${System.currentTimeMillis()}"
 
         val messagePayload = buildJsonObject { put("action", "rollDice") }
-        val expectedMessageDTO = MessageDTO(MessageType.ROLL_DICE, playerId, lobbyId, null, messagePayload)
-        val expectedJson = testJsonParser.encodeToString(MessageDTO.serializer(), expectedMessageDTO)
+        val expectedMessageDTO =
+            MessageDTO(MessageType.ROLL_DICE, playerId, lobbyId, null, messagePayload)
+        val expectedJson =
+            testJsonParser.encodeToString(MessageDTO.serializer(), expectedMessageDTO)
 
         val messageLatch = CountDownLatch(1)
         val openLatch = CountDownLatch(1)
         val errorLatch = CountDownLatch(1)
         val receivedMessage = mutableListOf<String>()
 
-        mockWebServer.enqueue(MockResponse()
-            .setResponseCode(101)
-            .withWebSocketUpgrade(object : WebSocketListener() {
-                override fun onOpen(webSocket: WebSocket, response: Response) { println("MockServer: Opened") }
-                override fun onMessage(webSocket: WebSocket, text: String) {
-                    println("MockServer: Received '$text'")
-                    synchronized(receivedMessage) { receivedMessage.add(text) }
-                    messageLatch.countDown()
-                }
-                override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) { println("MockServer: onFailure ${t.message}") }
-            })
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(101)
+                .withWebSocketUpgrade(object : WebSocketListener() {
+                    override fun onOpen(webSocket: WebSocket, response: Response) {
+                        println("MockServer: Opened")
+                    }
+
+                    override fun onMessage(webSocket: WebSocket, text: String) {
+                        println("MockServer: Received '$text'")
+                        synchronized(receivedMessage) { receivedMessage.add(text) }
+                        messageLatch.countDown()
+                    }
+
+                    override fun onFailure(
+                        webSocket: WebSocket,
+                        t: Throwable,
+                        response: Response?
+                    ) {
+                        println("MockServer: onFailure ${t.message}")
+                    }
+                })
         )
 
         println("Connecting spyClient...")
@@ -284,7 +338,9 @@ class GameBoardInstrumentedTest() {
                 onClosed = dummyOnClosed,
                 onDiceResult = dummyOnDiceResult,
                 gameDataHandler = gameDataHandlerMock,
-                onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved
+                onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved,
+                onPlayerJoined = dummyOnPlayerJoined,
+                onLobbyUpdated = dummyOnLobbyUpdated
             ) {
                 override fun onOpen(webSocket: WebSocket, response: Response) {
                     super.onOpen(webSocket, response)
@@ -298,6 +354,7 @@ class GameBoardInstrumentedTest() {
                         errorLatch.countDown()
                     }
                 }
+
                 override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                     super.onFailure(webSocket, t, response)
                     println("!!! Client Listener onFailure triggered in dice test.")

@@ -30,12 +30,12 @@ fun PlayerVictoryBar(
         modifier = modifier
             .fillMaxWidth()
             .padding(top = 12.dp)
-            .background(Color(0xff177fde)),
+            .background(Color.Transparent),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
         players.forEach { player ->
-            val borderColor = Color(player.colorHex.toColorInt())
+            val borderColor = Color(player.color.toColorInt())
             val vpTextColor = if (borderColor.luminance() > 0.5f) Color.Black else Color.White
 
             Box(
@@ -55,14 +55,16 @@ fun PlayerVictoryBar(
                             .background(catanClayLight),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text(
-                            text = player.username,
-                            style = appTypography.bodyLarge.copy(
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            ),
-                            color = Color.White
-                        )
+                        player.username?.let {
+                            Text(
+                                text = it,
+                                style = appTypography.bodyLarge.copy(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = Color.White
+                            )
+                        }
                     }
 
                     Box(

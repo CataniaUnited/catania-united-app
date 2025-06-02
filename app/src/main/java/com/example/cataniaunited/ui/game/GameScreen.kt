@@ -5,9 +5,22 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,7 +38,7 @@ import com.example.cataniaunited.ui.dice.ShakeDetector
 import com.example.cataniaunited.ui.game_board.board.CatanBoard
 import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import com.example.cataniaunited.ui.game_end.GameWinScreen
-import kotlinx.coroutines.flow.collectLatest
+import com.example.cataniaunited.ui.theme.catanBlue
 
 @Composable
 fun GameScreen(
@@ -39,19 +52,12 @@ fun GameScreen(
     var showDicePopup by remember { mutableStateOf(false) }
     val diceResult by gameViewModel.diceResult.collectAsState()
     val playerResources by gameViewModel.playerResources.collectAsState()
-    val snackbarHostState = remember { SnackbarHostState() }
     val gameWonState by application.gameWonState.collectAsState()
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
         if (gameBoardState == null) {
             gameViewModel.initializeBoardState(application.latestBoardJson)
-        }
-    }
-
-    LaunchedEffect(snackbarHostState) {
-        gameViewModel.errorFlow.collectLatest { message ->
-            snackbarHostState.showSnackbar(message, withDismissAction = true)
         }
     }
 
@@ -65,15 +71,6 @@ fun GameScreen(
     Box(Modifier.fillMaxSize()) {
         Scaffold(
             containerColor = Color(0xff177fde),
-            snackbarHost = {
-                SnackbarHost(snackbarHostState) { data ->
-                    Snackbar(
-                        snackbarData = data,
-                        containerColor = Color.Red,
-                        contentColor = Color.White
-                    )
-                }
-            },
             bottomBar = {
                 if (gameBoardState != null) {
                     PlayerResourcesBar(
@@ -81,21 +78,18 @@ fun GameScreen(
                         resources = playerResources
                     )
                 }
+            },
+            topBar = {
+                LivePlayerVictoryBar(
+                )
             }
         ) { padding ->
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding)
-                    .background(Color(0xff177fde))
+                    .background(catanBlue)
             ) {
-                LivePlayerVictoryBar(
-                    viewModel = gameViewModel,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp)
-                )
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -212,31 +206,31 @@ fun GameScreen(
             }
         }
 
-            AnimatedVisibility(
-                visible = gameWonState != null,
-                enter = fadeIn() + scaleIn(initialScale = 0.9f),
+        AnimatedVisibility(
+            visible = gameWonState != null,
+            enter = fadeIn() + scaleIn(initialScale = 0.9f),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0x99000000)),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0x99000000)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    gameWonState?.let { (winner, leaderboard) ->
-                        GameWinScreen(
-                            winner = winner,
-                            leaderboard = leaderboard,
-                            onReturnToMenu = {
-                                application.clearGameData()
-                                application.clearLobbyData()
-                                navController.navigate("starting") {
-                                    popUpTo("starting") { inclusive = true }
-                                }
+                gameWonState?.let { (winner, leaderboard) ->
+                    GameWinScreen(
+                        winner = winner,
+                        leaderboard = leaderboard,
+                        onReturnToMenu = {
+                            application.clearGameData()
+                            application.clearLobbyData()
+                            navController.navigate("starting") {
+                                popUpTo("starting") { inclusive = true }
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
     }
+}
 

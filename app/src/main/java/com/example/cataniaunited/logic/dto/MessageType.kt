@@ -12,19 +12,19 @@ enum class MessageType {
     DICE_RESULT,
     GAME_WON,
     GAME_STARTED,
+    NEXT_TURN,
 
     //Client Messages
     CREATE_LOBBY,
     JOIN_LOBBY,
     LEAVE_LOBBY,
     SET_USERNAME,
-    SET_ACTIVE_PLAYER, //-> TODO: Remove after implementation of player order
     PLACE_SETTLEMENT,
     UPGRADE_SETTLEMENT,
     PLACE_ROAD,
     START_GAME,
-    CREATE_GAME_BOARD,
     BUY_DEVELOPMENT_CARD,
     ROLL_DICE,
-    SET_READY
+    SET_READY,
+    END_TURN
 }

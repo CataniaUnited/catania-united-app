@@ -9,6 +9,8 @@ data class PlayerInfo(
     val color: String = "#8C4E27",
     val isHost: Boolean = false,
     val isReady: Boolean = false,
+    val isActivePlayer: Boolean = false,
+    val canRollDice: Boolean = false,
     val victoryPoints: Int = 0,
     val resources: Map<TileType, Int> = emptyMap<TileType, Int>()
 )

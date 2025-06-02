@@ -77,6 +77,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.PLACE_SETTLEMENT,
                 MessageType.PLACE_ROAD,
                 MessageType.GAME_STARTED,
+                MessageType.NEXT_TURN,
                 MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
 
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)

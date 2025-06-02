@@ -8,8 +8,8 @@ import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
-import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -63,6 +63,7 @@ class GameViewModelTest {
     private lateinit var mockPlayerSessionManager: PlayerSessionManager
     private lateinit var mockGameDataHandler: GameDataHandler
     private lateinit var mockGameBoardLogic: GameBoardLogic
+    private lateinit var mockLobbyLogic: LobbyLogic
     private lateinit var errorProviderFlow: MutableSharedFlow<String>
 
     private lateinit var viewModel: GameViewModel
@@ -108,6 +109,7 @@ class GameViewModelTest {
         every { Log.w(any(), any<String>()) } returns 0
 
         mockGameBoardLogic = mockk(relaxed = true)
+        mockLobbyLogic = mockk(relaxed = true)
         mockPlayerSessionManager = mockk(relaxed = true)
 
         mockGameDataHandler = mockk()
@@ -195,6 +197,7 @@ class GameViewModelTest {
 
         viewModel = GameViewModel(
             mockGameBoardLogic,
+            mockLobbyLogic,
             mockGameDataHandler,
             mockPlayerSessionManager,
         )
@@ -519,7 +522,6 @@ class GameViewModelTest {
             advanceUntilIdle()
 
             verify(exactly = 1) { mockGameBoardLogic.placeRoad(testRoad.id, testLobbyId) }
-            verify(exactly = 1) { mockGameBoardLogic.setActivePlayer(any(), eq(testLobbyId)) }
 
             println("Test passed: handleRoadClick calls gameBoardLogic.placeRoad")
         }
@@ -708,6 +710,56 @@ class GameViewModelTest {
         @Test
         fun victoryPointsInitializesToEmptyMap() = runTest {
             assertEquals(emptyMap<String, Int>(), viewModel.victoryPoints.value)
+        }
+    }
+
+    @Nested
+    @DisplayName("Turn and Player State Handlers")
+    inner class TurnAndPlayerStateHandlers {
+
+        private val currentPlayerId = "myPlayerId"
+        private val otherPlayerId = "otherPlayerId"
+
+        @BeforeEach
+        fun setupPlayerId() {
+            every { mockPlayerSessionManager.getPlayerId() } returns currentPlayerId
+        }
+
+        @Test
+        fun handleEndTurnClickCallsLobbyLogicEndTurn() = runTest {
+            val testLobbyId = "end-turn-lobby"
+            every { mockLobbyLogic.endTurn(testLobbyId) } just io.mockk.Runs
+
+            viewModel.handleEndTurnClick(testLobbyId)
+            advanceUntilIdle()
+
+            verify(exactly = 1) { mockLobbyLogic.endTurn(testLobbyId) }
+        }
+
+        @Test
+        fun playersStateCollectClosesBuildMenuWhenNotActivePlayer() = runTest {
+            // Initial state: build menu is open
+            viewModel.setBuildMenuOpen(true)
+            advanceUntilIdle()
+            assertEquals(true, viewModel.isBuildMenuOpen.value)
+
+            val playersMapNotActive = mapOf(
+                currentPlayerId to PlayerInfo(currentPlayerId, "Me", "#AAAAAA", isActivePlayer = false),
+                otherPlayerId to PlayerInfo(otherPlayerId, "Other", "#BBBBBB", isActivePlayer = true)
+            )
+
+            viewModel.isBuildMenuOpen.test {
+                // Initial `true` from setBuildMenuOpen
+                assertEquals(true, awaitItem())
+
+                // Simulate gameDataHandler.playersState emitting new players data
+                playersMutableStateFlow.value = playersMapNotActive
+                advanceUntilIdle()
+
+                // Expect the build menu to be closed (false)
+                assertEquals(false, awaitItem())
+                cancelAndIgnoreRemainingEvents()
+            }
         }
     }
 }

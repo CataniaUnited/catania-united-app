@@ -65,12 +65,12 @@ class MainActivity : ComponentActivity() {
 
                 LaunchedEffect(currentLobbyIdState) {
                     Log.d("MainActivity", "Collected Lobby ID State changed: $currentLobbyIdState")
-                    if (currentLobbyIdState != null) {
+                    if (currentLobbyIdState != null && (currentRoute == null || !currentRoute.startsWith("lobby/"))) {
                         navController.navigate("lobby/${currentLobbyIdState}")
                     }
                 }
 
-                LaunchedEffect(currentRoute) { // Der Key ist currentRoute, damit der Effekt bei Routenwechsel neu ausgeführt wird
+                LaunchedEffect(currentRoute) {
                     val previousBackStackEntry = navController.previousBackStackEntry
                     val previousRoute = previousBackStackEntry?.destination?.route
 
@@ -78,18 +78,19 @@ class MainActivity : ComponentActivity() {
                         "NavListener",
                         "Current Route: $currentRoute, Previous Route: $previousRoute"
                     )
-                    if (currentRoute == "starting" && previousRoute != null && previousRoute.startsWith(
-                            "lobby/"
-                        )
+                    if (
+                        currentRoute == "starting"
+                        && previousRoute != null
+                        && (previousRoute.startsWith("lobby/") || previousRoute.startsWith("game/"))
                     ) {
                         val lobbyId = previousBackStackEntry.arguments?.getString("lobbyId");
                         Log.i(
                             "MainActivity",
-                            "Detected navigation from lobby to starting screen. Performing lobby cleanup: $lobbyId."
+                            "Detected navigation from lobby or game to starting screen. Performing lobby cleanup: $lobbyId."
                         )
                         if (lobbyId != null) {
-                            lobbyLogic.leaveLobby(lobbyId)
                             application.clearLobbyData()
+                            lobbyLogic.leaveLobby(lobbyId)
                             Log.i("MainActivity", "Cleaned up data for lobby: $lobbyId")
                         } else {
                             Log.w(

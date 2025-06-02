@@ -111,9 +111,12 @@ open class MainApplication : Application(),
         Log.d("MainApplication", "Cleared game board JSON.")
     }
 
+
     fun clearLobbyData() {
         currentLobbyId = null
-        latestBoardJson = null
+        _gameWonState.value = null
+        this.players.clear()
+        this.clearGameData()
         Log.d("MainApplication", "Cleared lobby data.")
     }
 
@@ -149,16 +152,21 @@ open class MainApplication : Application(),
         players: Map<String, PlayerInfo>
     ) {
         Log.d("MainApplication", "Callback: onPlayerJoined. Players $players")
-
-        if (currentLobbyId == null) {
-            currentLobbyId = lobbyId;
-        }
-        this.players.clear()
-        this.players.addAll(players.values)
+        updateLobby(lobbyId, players)
     }
 
     override fun onLobbyUpdated(lobbyId: String, players: Map<String, PlayerInfo>) {
         Log.d("MainApplication", "Callback: onLobbyUpdated. Players $players")
+        updateLobby(lobbyId, players)
+    }
+
+    private fun updateLobby(lobbyId: String, players: Map<String, PlayerInfo>){
+        if(!players.contains(_playerId)){
+            Log.d("MainApplication", "Player not part of Lobby $lobbyId, dropping update")
+            return
+        }
+
+        Log.d("MainApplication", "Lobby update received: lobby = $lobbyId, players = $players")
         if (currentLobbyId == null) {
             currentLobbyId = lobbyId;
         }
@@ -176,7 +184,7 @@ open class MainApplication : Application(),
                 _navigateToGameChannel.send(lobbyId)
             }
         } else {
-            Log.w("MainApplication", "Received board for wrong lobby.")
+            Log.d("MainApplication", "Already in game channel, abort navigation and update boardJson")
         }
         latestBoardJson = boardJson
     }
@@ -203,7 +211,7 @@ open class MainApplication : Application(),
 
     override fun onClosed(code: Int, reason: String) {
         Log.w("MainApplication", "Callback: onClosed. Code=$code, Reason=$reason")
-        clearGameData()
+        clearLobbyData()
     }
 
     override fun onPlayerResourcesReceived(players: Map<String, PlayerInfo>) {

@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoubleArrow
@@ -152,27 +151,24 @@ fun GameScreen(
                                 }
                             )
 
-                            Box(
+                            Column(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
                                     .padding(top = 32.dp, end = 16.dp)
                                     .zIndex(2f)
                             ) {
-                                BuildButton(
-                                    isOpen = isBuildMenuOpen,
-                                    onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
-                                )
-                            }
-
-                            Box(
-                                modifier = Modifier
-                                    .align(Alignment.TopStart)
-                                    .padding(top = 32.dp, start = 8.dp)
-                                    .zIndex(2f)
-                            ) {
-                                RollDiceButton {
-                                    showDicePopup = true
-                                    gameViewModel.rollDice(lobbyId)
+                                if (player?.isActivePlayer == true) {
+                                    BuildButton(
+                                        enabled = player.canRollDice == false,
+                                        isOpen = isBuildMenuOpen,
+                                        onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
+                                    )
+                                    RollDiceButton(
+                                        canRollDice = player?.canRollDice == true
+                                    ) {
+                                        showDicePopup = true
+                                        gameViewModel.rollDice(lobbyId)
+                                    }
                                 }
                             }
                         }
@@ -188,32 +184,6 @@ fun GameScreen(
                             dice1Result = diceResult?.first,
                             dice2Result = diceResult?.second
                         )
-
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .offset(y = 32.dp)
-                                .zIndex(1f)
-                                .padding(horizontal = 16.dp)
-                        ) {
-                            BuildButton(
-                                isOpen = isBuildMenuOpen,
-                                onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopStart)
-                                .offset(y = 32.dp)
-                                .zIndex(1f)
-                                .padding(horizontal = 4.dp)
-                        ) {
-                            RollDiceButton {
-                                showDicePopup = true
-                                gameViewModel.rollDice(lobbyId)
-                            }
-                        }
                     }
 
                     Text(

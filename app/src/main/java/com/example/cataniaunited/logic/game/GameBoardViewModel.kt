@@ -69,6 +69,12 @@ class GameViewModel @Inject constructor(
             gameDataHandler.playersState.collect {
                 Log.d("GameViewModel_Collect", "RECEIVED playersState in collect: $it")
                 _players.value = it
+
+                val playerInfo: PlayerInfo? = it[playerId];
+                if(playerInfo != null && !playerInfo.isActivePlayer){
+                    //Close build menu when player is not active player
+                    setBuildMenuOpen(false)
+                }
             }
             Log.d("GameViewModel_Collect", "playersState collect FINISHED in ViewModelScope.")
         }

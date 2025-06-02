@@ -4,12 +4,14 @@ import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoubleArrow
 import androidx.compose.material3.CircularProgressIndicator
@@ -29,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +39,7 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.R
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ui.dice.DiceRollerPopup
@@ -91,17 +95,35 @@ fun GameScreen(
             },
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
-                    FloatingActionButton(
-                        onClick = {
-                            gameViewModel.handleEndTurnClick(lobbyId)
-                        },
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.DoubleArrow,
-                            contentDescription = "End turn"
-                        )
+                    if (player?.canRollDice == true) {
+                        //Roll dice action
+                        FloatingActionButton(
+                            onClick = {
+                                showDicePopup = true
+                                gameViewModel.rollDice(lobbyId)
+                            },
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.dice_6),
+                                contentDescription = "Roll dice",
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
+                    } else {
+                        FloatingActionButton(
+                            onClick = {
+                                gameViewModel.handleEndTurnClick(lobbyId)
+                            },
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.DoubleArrow,
+                                contentDescription = "End turn"
+                            )
+                        }
                     }
                 }
             }
@@ -163,12 +185,6 @@ fun GameScreen(
                                         isOpen = isBuildMenuOpen,
                                         onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
                                     )
-                                    RollDiceButton(
-                                        canRollDice = player?.canRollDice == true
-                                    ) {
-                                        showDicePopup = true
-                                        gameViewModel.rollDice(lobbyId)
-                                    }
                                 }
                             }
                         }
@@ -176,7 +192,6 @@ fun GameScreen(
 
                     if (showDicePopup) {
                         DiceRollerPopup(
-                            onDiceRolled = { gameViewModel.rollDice(lobbyId) },
                             onClose = {
                                 showDicePopup = false
                                 gameViewModel.updateDiceResult(null, null)

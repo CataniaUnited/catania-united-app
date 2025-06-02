@@ -72,10 +72,12 @@ fun GameScreen(
         }
     }
 
-    ShakeDetector {
-        if (!showDicePopup && player?.canRollDice == true) {
-            showDicePopup = true
-            gameViewModel.rollDice(lobbyId)
+    if(player?.isActivePlayer == true && player.canRollDice == true){
+        ShakeDetector {
+            if (!showDicePopup) {
+                showDicePopup = true
+                gameViewModel.rollDice(lobbyId)
+            }
         }
     }
 

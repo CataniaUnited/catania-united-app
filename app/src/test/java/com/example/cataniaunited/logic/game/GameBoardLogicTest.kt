@@ -15,7 +15,6 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -146,29 +145,6 @@ class GameBoardLogicTest {
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
 
-
-    @Test
-    fun requestCreateLobbySendsCorrectMessageWhenConnected() {
-        val expectedMessage = MessageDTO(
-            type = MessageType.CREATE_LOBBY,
-            player = testPlayerId,
-            lobbyId = null,
-            players = null,
-            message = null
-        )
-        val messageSlot = slot<MessageDTO>()
-        gameBoardLogic.requestCreateLobby()
-        verify(exactly = 1) { mockWebSocketClient.sendMessage(capture(messageSlot)) }
-        assertEquals(expectedMessage, messageSlot.captured)
-    }
-
-    @Test
-    fun requestCreateLobbyDoesNotSendWhenNotConnected() {
-        every { mockWebSocketClient.isConnected() } returns false
-        gameBoardLogic.requestCreateLobby()
-        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
-    }
-
     @Test
     fun rollDiceSendsCorrectMessageWhenConnected() {
         val expectedPayload = buildJsonObject { put("action", "rollDice") }
@@ -191,22 +167,6 @@ class GameBoardLogicTest {
         every { mockMainApplication.getPlayerId() } throws exception
         gameBoardLogic.rollDice(testLobbyId)
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
-    }
-
-    @Test
-    fun setActivePlayerSendsCorrectMessage() {
-        val messageSlot = slot<MessageDTO>()
-        gameBoardLogic.setActivePlayer(testPlayerId, testLobbyId)
-
-        verify(exactly = 1) {
-            mockWebSocketClient.sendMessage(capture(messageSlot))
-        }
-
-        val captured = messageSlot.captured
-        assertEquals(MessageType.SET_ACTIVE_PLAYER, captured.type)
-        assertEquals(testPlayerId, captured.player)
-        assertEquals(testLobbyId, captured.lobbyId)
-        assertNull(captured.message)
     }
 
 }

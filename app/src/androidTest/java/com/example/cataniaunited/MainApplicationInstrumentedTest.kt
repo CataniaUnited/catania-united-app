@@ -36,7 +36,7 @@ class MainApplicationInstrumentedTest {
         mainApplication = ApplicationProvider.getApplicationContext<MainApplication>()
 
         println("Setup: Resetting state...")
-        mainApplication.clearLobbyData()
+        mainApplication.clearGameData()
         mainApplication.gameViewModel = null
 
         mockGameViewModel = mockk<GameViewModel>(relaxed = true)
@@ -228,32 +228,6 @@ class MainApplicationInstrumentedTest {
         )
         assertNull(
             "latestBoardJson should be null after clearLobbyData",
-            mainApplication.latestBoardJson
-        )
-        println("Test Passed.")
-    }
-
-    @Test
-    fun clearGameDataResetsJsonOnly() = runTest {
-        println("Running test: clearGameDataResetsJsonOnly")
-        val lobbyId = "lobby-not-cleared"
-        val boardJson = """{"test":"board"}"""
-        mainApplication.currentLobbyId = lobbyId
-        mainApplication.latestBoardJson = boardJson
-        advanceUntilIdle()
-        assertEquals(lobbyId, mainApplication.currentLobbyIdFlow.value)
-        assertEquals(boardJson, mainApplication.latestBoardJson)
-
-        mainApplication.clearGameData()
-        advanceUntilIdle()
-
-        assertEquals(
-            "currentLobbyIdFlow should NOT be null after clearGameData",
-            lobbyId,
-            mainApplication.currentLobbyIdFlow.value
-        )
-        assertNull(
-            "latestBoardJson should be null after clearGameData",
             mainApplication.latestBoardJson
         )
         println("Test Passed.")

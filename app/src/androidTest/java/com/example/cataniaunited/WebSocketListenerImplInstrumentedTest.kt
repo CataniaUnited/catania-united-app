@@ -183,7 +183,15 @@ class WebSocketListenerImplInstrumentedTest {
         val expectedFullMessage =
             """{"gameboard":$boardContent}""" // This is how GameDataHandler receives it
 
-        val playerInfo1 = PlayerInfo("p1", "Player1", "#FFF", true, true, 0, emptyMap())
+        val playerInfo1 = PlayerInfo(
+            "p1",
+            "Player1",
+            "#FFF",
+            true,
+            true,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
         val playersMap = mapOf("p1" to playerInfo1)
 
         val messageJson = buildJsonObject {
@@ -214,7 +222,15 @@ class WebSocketListenerImplInstrumentedTest {
         val boardJsonObject = Json.parseToJsonElement(boardContent).jsonObject
         val expectedFullMessage = """{"gameboard":$boardContent}"""
 
-        val playerInfo1 = PlayerInfo("p1", "Player1", "#FFF", true, true, 0, emptyMap())
+        val playerInfo1 = PlayerInfo(
+            "p1",
+            "Player1",
+            "#FFF",
+            true,
+            true,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
         val playersMap = mapOf("p1" to playerInfo1)
 
         val exception = Exception("Test exception")
@@ -259,7 +275,15 @@ class WebSocketListenerImplInstrumentedTest {
         val boardJsonObject = Json.parseToJsonElement(boardContent).jsonObject
         val expectedFullMessage = """{"gameboard":$boardContent}"""
 
-        val playerInfo1 = PlayerInfo("p1", "Player1", "#FFF", true, true, 0, emptyMap())
+        val playerInfo1 = PlayerInfo(
+            "p1",
+            "Player1",
+            "#FFF",
+            true,
+            true,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
         val playersMap = mapOf("p1" to playerInfo1)
 
         val messageJson = buildJsonObject {
@@ -287,7 +311,15 @@ class WebSocketListenerImplInstrumentedTest {
         val boardJsonObject = Json.parseToJsonElement(boardContent).jsonObject
         val expectedFullMessage = """{"gameboard":$boardContent}"""
 
-        val playerInfo1 = PlayerInfo("p1", "Player1", "#FFF", true, true, 0, emptyMap())
+        val playerInfo1 = PlayerInfo(
+            "p1",
+            "Player1",
+            "#FFF",
+            true,
+            true,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
         val playersMap = mapOf("p1" to playerInfo1)
 
         val messageJson = buildJsonObject {
@@ -317,7 +349,15 @@ class WebSocketListenerImplInstrumentedTest {
             """{"tiles":[],"settlementPositions":[],"roads":[],"ringsOfBoard":0,"sizeOfHex":0}"""
         val boardJsonObject = Json.parseToJsonElement(boardContent).jsonObject
 
-        val playerInfo1 = PlayerInfo("p1", "Player1", "#FFF", true, true, 0, emptyMap())
+        val playerInfo1 = PlayerInfo(
+            "p1",
+            "Player1",
+            "#FFF",
+            true,
+            true,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
         val playersMap = mapOf("p1" to playerInfo1)
 
         val messageJson = buildJsonObject {
@@ -341,7 +381,15 @@ class WebSocketListenerImplInstrumentedTest {
     @Test
     fun onMessage_handlesGameBoardJson_missingMessageObject() {
         val lobbyId = "gameLobby"
-        val playerInfo1 = PlayerInfo("p1", "Player1", "#FFF", true, true, 0, emptyMap())
+        val playerInfo1 = PlayerInfo(
+            "p1",
+            "Player1",
+            "#FFF",
+            true,
+            true,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
         val playersMap = mapOf("p1" to playerInfo1)
 
         val messageJson = buildJsonObject {
@@ -486,7 +534,17 @@ class WebSocketListenerImplInstrumentedTest {
     fun handleDiceResult_callsOnDiceResultAndUpdatesPlayersWhenPlayersArePresent() {
         val receivedDice1 = 3
         val receivedDice2 = 4
-        val playersMap = mapOf("player1" to PlayerInfo("player1", "UserA", "#000", false, false, 0, emptyMap()))
+        val playersMap = mapOf(
+            "player1" to PlayerInfo(
+                "player1",
+                "UserA",
+                "#000",
+                false,
+                false,
+                victoryPoints = 0,
+                resources = emptyMap()
+            )
+        )
 
         val message = buildJsonObject {
             put("dice1", receivedDice1)
@@ -536,8 +594,24 @@ class WebSocketListenerImplInstrumentedTest {
     @Test
     fun onMessage_handlesPlayerJoined_withValidData() {
         val lobbyId = "lobby123"
-        val playerInfo1 = PlayerInfo("p1", "Player1", "#FFF", true, true, 0, emptyMap())
-        val playerInfo2 = PlayerInfo("p2", "Player2", "#000", false, false, 0, emptyMap())
+        val playerInfo1 = PlayerInfo(
+            "p1",
+            "Player1",
+            "#FFF",
+            true,
+            true,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
+        val playerInfo2 = PlayerInfo(
+            "p2",
+            "Player2",
+            "#000",
+            false,
+            false,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
         val playersMap = mapOf("p1" to playerInfo1, "p2" to playerInfo2)
 
         val messageJson = buildJsonObject {
@@ -554,7 +628,15 @@ class WebSocketListenerImplInstrumentedTest {
 
     @Test
     fun onMessage_handlesPlayerJoined_missingLobbyId() {
-        val playerInfo1 = PlayerInfo("p1", "Player1", "#FFF", true, true, 0, emptyMap())
+        val playerInfo1 = PlayerInfo(
+            "p1",
+            "Player1",
+            "#FFF",
+            true,
+            true,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
         val playersMap = mapOf("p1" to playerInfo1)
 
         val messageJson = buildJsonObject {
@@ -667,8 +749,17 @@ class WebSocketListenerImplInstrumentedTest {
     @Test
     fun onMessage_handlesLobbyUpdated_withValidData() {
         val lobbyId = "updatedLobby"
-        val playerInfo1 = PlayerInfo("p1", "UserA", "#111", true, true, 1, emptyMap())
-        val playerInfo2 = PlayerInfo("p2", "UserB", "#222", false, false, 0, emptyMap())
+        val playerInfo1 =
+            PlayerInfo("p1", "UserA", "#111", true, true, victoryPoints = 1, resources = emptyMap())
+        val playerInfo2 = PlayerInfo(
+            "p2",
+            "UserB",
+            "#222",
+            false,
+            false,
+            victoryPoints = 0,
+            resources = emptyMap()
+        )
         val updatedPlayersMap = mapOf("p1" to playerInfo1, "p2" to playerInfo2)
 
         val messageJson = buildJsonObject {

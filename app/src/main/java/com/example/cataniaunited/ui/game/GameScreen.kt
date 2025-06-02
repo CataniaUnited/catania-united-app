@@ -95,7 +95,7 @@ fun GameScreen(
             },
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
-                    if (player?.canRollDice == true) {
+                    if (player.canRollDice == true) {
                         //Roll dice action
                         FloatingActionButton(
                             onClick = {

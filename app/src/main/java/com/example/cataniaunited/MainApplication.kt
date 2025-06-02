@@ -176,7 +176,7 @@ open class MainApplication : Application(),
                 _navigateToGameChannel.send(lobbyId)
             }
         } else {
-            Log.w("MainApplication", "Received board for wrong lobby.")
+            Log.d("MainApplication", "Already in game channel, abort navigation and update boardJson")
         }
         latestBoardJson = boardJson
     }

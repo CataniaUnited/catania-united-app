@@ -9,6 +9,7 @@ import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import javax.inject.Inject
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val gameBoardLogic: GameBoardLogic,
+    private val lobbyLogic: LobbyLogic,
     private val gameDataHandler: GameDataHandler,
     private val sessionManager: PlayerSessionManager
 ) : ViewModel() {
@@ -57,17 +59,18 @@ class GameViewModel @Inject constructor(
         Log.d("GameViewModel", "Victory points initialized: ${victoryPoints.value}")
 
         viewModelScope.launch {
-            Log.d("GameViewModel", "View model scoped launched")
-
             gameDataHandler.victoryPointsState.collect {
-                Log.d("GameViewModel", "Updating victory points value: $it")
+                Log.d("GameViewModel_Collect", "Updating victory points value: $it")
                 _victoryPoints.value = it
             }
+        }
 
+        viewModelScope.launch {
             gameDataHandler.playersState.collect {
-                Log.d("GameViewModel", "RECEIVED playersState in collect: $it")
+                Log.d("GameViewModel_Collect", "RECEIVED playersState in collect: $it")
                 _players.value = it
             }
+            Log.d("GameViewModel_Collect", "playersState collect FINISHED in ViewModelScope.")
         }
     }
 
@@ -117,11 +120,12 @@ class GameViewModel @Inject constructor(
 
     fun handleRoadClick(road: Road, lobbyId: String) {
         Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
-
-        val pid = playerId
-        gameBoardLogic.setActivePlayer(pid, lobbyId)
-
         gameBoardLogic.placeRoad(road.id, lobbyId)
+    }
+
+    fun handleEndTurnClick(lobbyId: String){
+        Log.d("GameViewModel", "handleEndTurnClick: Player ended turn")
+        lobbyLogic.endTurn(lobbyId)
     }
 
     fun setBuildMenuOpen(isOpen: Boolean) {

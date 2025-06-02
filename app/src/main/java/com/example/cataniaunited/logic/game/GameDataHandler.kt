@@ -54,10 +54,9 @@ class GameDataHandler @Inject constructor() {
     }
 
     fun updatePlayers(players: Map<String, PlayerInfo>) {
-        val newPlayersMap = players.toMap()
-        if (_playersState.value != newPlayersMap) {
-            _playersState.value = newPlayersMap
-            Log.d("GameDataHandler", "Updated players: $newPlayersMap (Value changed)")
+        if (_playersState.value != players) {
+            _playersState.value = players
+            Log.d("GameDataHandler", "Updated players: $players (Value changed)")
         } else {
             Log.d("GameDataHandler", "PlayersState value unchanged. Not emitting new value.")
         }

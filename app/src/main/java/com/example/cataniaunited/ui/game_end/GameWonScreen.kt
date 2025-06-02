@@ -168,11 +168,11 @@ fun GameWinScreen(
 @Composable
 fun PreviewGameWinScreen() {
     GameWinScreen(
-        winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, 10),
+        winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, victoryPoints = 10),
         leaderboard = listOf(
-            PlayerInfo("2", "Nassir", "#0000FF",false, false, 10),
-            PlayerInfo("1", "Mia", "#FF0000",false, false, 9),
-            PlayerInfo("3", "Jean", "#D4AF37",false, false, 7)
+            PlayerInfo("2", "Nassir", "#0000FF",false, false, victoryPoints = 10),
+            PlayerInfo("1", "Mia", "#FF0000",false, false, victoryPoints = 9),
+            PlayerInfo("3", "Jean", "#D4AF37",false, false, victoryPoints =  7)
         ),
         onReturnToMenu = {},
     )

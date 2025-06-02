@@ -63,23 +63,6 @@ class GameBoardLogic @Inject constructor(
         }
     }
 
-    fun requestCreateLobby() {
-        val playerId = try {
-            playerSessionManager.getPlayerId()
-        } catch (ise: IllegalStateException) {
-            return
-        }
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        if (webSocketClient.isConnected()) {
-            val messageToSend = MessageDTO(MessageType.CREATE_LOBBY, playerId, null, null, null)
-            webSocketClient.sendMessage(messageToSend)
-            Log.i("GameBoardLogic", "Sent CREATE_LOBBY request.")
-
-        } else {
-            Log.e("GameBoardLogic", "WebSocket not connected when trying to create lobby.")
-        }
-    }
-
     fun rollDice(lobbyId: String) {
         try {
             Log.d("GameBoard", "Rolling dice for lobby: $lobbyId")
@@ -101,16 +84,4 @@ class GameBoardLogic @Inject constructor(
             Log.e("GameBoard", "Error rolling dice", e)
         }
     }
-
-    fun setActivePlayer(playerId: String, lobbyId: String) {
-        val message = MessageDTO(
-            type = MessageType.SET_ACTIVE_PLAYER,
-            player = playerId,
-            lobbyId = lobbyId,
-            message = null
-        )
-        MainApplication.getInstance().getWebSocketClient().sendMessage(message)
-    }
-
-
 }

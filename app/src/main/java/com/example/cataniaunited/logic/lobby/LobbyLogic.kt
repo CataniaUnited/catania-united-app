@@ -75,7 +75,27 @@ class LobbyLogic @Inject constructor(
         } else {
             Log.e("LobbyLogic", "WS not connected for leaveLobby")
         }
+    }
 
+    fun endTurn(lobbyId: String){
+        val playerId = try {
+            playerSessionManager.getPlayerId()
+        } catch (ise: IllegalStateException) {
+            Log.e("LobbyLogic", playerIdErrorMessage, ise)
+            return
+        }
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        if (webSocketClient.isConnected()) {
+            webSocketClient.sendMessage(
+                MessageDTO(
+                    type = MessageType.END_TURN,
+                    player = playerId,
+                    lobbyId = lobbyId
+                )
+            )
+        } else {
+            Log.e("LobbyLogic", "WS not connected for endTurn")
+        }
     }
 
 }

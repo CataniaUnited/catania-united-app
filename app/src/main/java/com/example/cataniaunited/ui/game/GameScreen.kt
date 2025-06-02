@@ -11,7 +11,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DoubleArrow
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,6 +37,7 @@ import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ui.dice.DiceRollerPopup
 import com.example.cataniaunited.ui.dice.ShakeDetector
@@ -53,6 +59,8 @@ fun GameScreen(
     val diceResult by gameViewModel.diceResult.collectAsState()
     val playerResources by gameViewModel.playerResources.collectAsState()
     val gameWonState by application.gameWonState.collectAsState()
+    val players by gameViewModel.players.collectAsState()
+    val player: PlayerInfo? = players[gameViewModel.playerId]
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
@@ -62,7 +70,7 @@ fun GameScreen(
     }
 
     ShakeDetector {
-        if (!showDicePopup) {
+        if (!showDicePopup && player?.canRollDice == true) {
             showDicePopup = true
             gameViewModel.rollDice(lobbyId)
         }
@@ -80,8 +88,23 @@ fun GameScreen(
                 }
             },
             topBar = {
-                LivePlayerVictoryBar(
-                )
+                LivePlayerVictoryBar()
+            },
+            floatingActionButton = {
+                if (player?.isActivePlayer == true) {
+                    FloatingActionButton(
+                        onClick = {
+                            gameViewModel.handleEndTurnClick(lobbyId)
+                        },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.DoubleArrow,
+                            contentDescription = "End turn"
+                        )
+                    }
+                }
             }
         ) { padding ->
             Column(
@@ -197,9 +220,9 @@ fun GameScreen(
                         text = "Lobby ID: $lobbyId",
                         fontSize = 12.sp,
                         color = Color.DarkGray,
-                        textAlign = TextAlign.End,
+                        textAlign = TextAlign.Start,
                         modifier = Modifier
-                            .align(Alignment.BottomEnd)
+                            .align(Alignment.BottomStart)
                             .padding(8.dp)
                     )
                 }

@@ -250,18 +250,19 @@ class MainApplicationInstrumentedTest {
             PlayerInfo("player3", "Third Place", "#0000FF", victoryPoints = 6)
         )
 
-        mainApplication.onGameWon(winner, leaderboard)
-        advanceUntilIdle()
+        mainApplication.gameWonState.test {
+            assertEquals(null, awaitItem())
 
-        var attempts = 0
-        while (mainApplication.gameWonState.value == null && attempts < 10) {
-            delay(100)
-            attempts++
+            mainApplication.onGameWon(winner, leaderboard)
+
+            val emittedValue = awaitItem()
+            assertNotNull("gameWonState should not be null after onGameWon", emittedValue)
+            val (receivedWinner, receivedLeaderboard) = emittedValue!!
+
+            assertEquals(winner, receivedWinner)
+            assertEquals(leaderboard, receivedLeaderboard)
+            cancelAndIgnoreRemainingEvents()
         }
-
-        assertNotNull(mainApplication.gameWonState.value)
-        assertEquals(winner, mainApplication.gameWonState.value?.first)
-        assertEquals(leaderboard, mainApplication.gameWonState.value?.second)
     }
 
     @Test

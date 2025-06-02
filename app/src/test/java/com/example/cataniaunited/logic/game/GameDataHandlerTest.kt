@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+// fixme  extract jsons into getter methods, eg., getUpdateGameBoardMessage
 class GameDataHandlerTest {
 
     private lateinit var gameDataHandler: GameDataHandler

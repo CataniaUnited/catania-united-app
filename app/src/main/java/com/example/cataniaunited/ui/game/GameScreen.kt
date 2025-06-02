@@ -229,7 +229,6 @@ fun GameScreen(
                         winner = winner,
                         leaderboard = leaderboard,
                         onReturnToMenu = {
-                            application.clearGameData()
                             application.clearLobbyData()
                             navController.navigate("starting") {
                                 popUpTo("starting") { inclusive = true }

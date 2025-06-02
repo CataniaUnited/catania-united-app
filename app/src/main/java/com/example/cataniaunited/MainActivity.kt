@@ -78,16 +78,19 @@ class MainActivity : ComponentActivity() {
                         "NavListener",
                         "Current Route: $currentRoute, Previous Route: $previousRoute"
                     )
-                    if (currentRoute == "starting" && previousRoute != null && previousRoute.startsWith("lobby/")
+                    if (
+                        currentRoute == "starting"
+                        && previousRoute != null
+                        && (previousRoute.startsWith("lobby/") || previousRoute.startsWith("game/"))
                     ) {
                         val lobbyId = previousBackStackEntry.arguments?.getString("lobbyId");
                         Log.i(
                             "MainActivity",
-                            "Detected navigation from lobby to starting screen. Performing lobby cleanup: $lobbyId."
+                            "Detected navigation from lobby or game to starting screen. Performing lobby cleanup: $lobbyId."
                         )
                         if (lobbyId != null) {
-                            lobbyLogic.leaveLobby(lobbyId)
                             application.clearLobbyData()
+                            lobbyLogic.leaveLobby(lobbyId)
                             Log.i("MainActivity", "Cleaned up data for lobby: $lobbyId")
                         } else {
                             Log.w(

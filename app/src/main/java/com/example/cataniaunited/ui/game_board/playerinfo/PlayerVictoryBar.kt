@@ -2,8 +2,21 @@ package com.example.cataniaunited.ui.game_board.playerinfo
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -14,9 +27,9 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.graphics.toColorInt
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.ui.theme.appTypography
-import androidx.core.graphics.toColorInt
 
 
 private val catanClayLight = Color(0xFFB76B3C)
@@ -55,15 +68,32 @@ fun PlayerVictoryBar(
                             .background(catanClayLight),
                         contentAlignment = Alignment.Center
                     ) {
-                        player.username?.let {
-                            Text(
-                                text = it,
-                                style = appTypography.bodyLarge.copy(
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.Bold
-                                ),
-                                color = Color.White
-                            )
+
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxHeight()
+                        ) {
+                            if (player.isActivePlayer) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = "Is active player",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(16.dp)
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+                            }
+
+                            player.username?.let {
+                                Text(
+                                    text = it,
+                                    style = appTypography.bodyLarge.copy(
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
+                                    color = Color.White
+                                )
+                            }
                         }
                     }
 
@@ -73,7 +103,7 @@ fun PlayerVictoryBar(
                             .fillMaxHeight()
                             .background(borderColor)
                     )
-                    
+
                     Box(
                         modifier = Modifier
                             .width(60.dp)

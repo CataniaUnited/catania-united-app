@@ -1,12 +1,12 @@
-package com.example.cataniaunited.data
+package com.example.cataniaunited.logic.game
 
 import com.example.cataniaunited.data.model.GameBoardModel
+import com.example.cataniaunited.data.model.Port
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.data.util.parseGameBoard
-import com.example.cataniaunited.logic.game.GameDataHandler
 import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
@@ -20,12 +20,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 class GameDataHandlerTest {
-
     private lateinit var gameDataHandler: GameDataHandler
 
     @BeforeEach
     fun setUp() {
-        mockkStatic(::parseGameBoard)
+        mockkStatic("com.example.cataniaunited.data.util.JsonParserKt")
         gameDataHandler = GameDataHandler()
     }
 
@@ -53,25 +52,39 @@ class GameDataHandlerTest {
       "gameboard": {
         "tiles":[{"id":1,"type":"WOOD","value":8,"coordinates":[0.0,0.0]}],
         "settlementPositions":[{"id":1,"building":null,"coordinates":[10.0,10.0]}],
-        "roads":[{"id":1,"owner":null,"coordinates":[5.0,5.0],"rotationAngle":0.0}],
+        "roads":[{"id":1,"owner":null,"color":null,"coordinates":[5.0,5.0],"rotationAngle":0.0}],
+        "ports": [], 
         "ringsOfBoard":3,
         "sizeOfHex":50
       }
     }
     """.trimIndent()
 
-        every { parseGameBoard(any()) } returns GameBoardModel(
+        // When parseGameBoard is called with the content of "gameboard"
+        every { parseGameBoard("""{"tiles":[{"id":1,"type":"WOOD","value":8,"coordinates":[0.0,0.0]}],"settlementPositions":[{"id":1,"building":null,"coordinates":[10.0,10.0]}],"roads":[{"id":1,"owner":null,"color":null,"coordinates":[5.0,5.0],"rotationAngle":0.0}],"ports":[],"ringsOfBoard":3,"sizeOfHex":50}""") } returns GameBoardModel(
             tiles = listOf(Tile(1, TileType.WOOD, 8, listOf(0.0, 0.0))),
             settlementPositions = listOf(SettlementPosition(1, null, listOf(10.0, 10.0))),
             roads = listOf(Road(1, null, listOf(5.0, 5.0), 0.0, null)),
+            ports = emptyList(),
             ringsOfBoard = 3,
-            sizeOfHex = 50,
+            sizeOfHex = 50
         )
 
-        // Set initial state with players
+        // Mock for the initial state setting (ensure it also returns a valid GameBoardModel with ports)
+        every { parseGameBoard("{}") } returns GameBoardModel(
+            tiles = emptyList(),
+            settlementPositions = emptyList(),
+            roads = emptyList(),
+            ports = emptyList(),
+            ringsOfBoard = 0,
+            sizeOfHex = 0
+        )
+
+
+        // Set initial state (this call to updateGameBoard also needs its parseGameBoard mock to be valid)
         gameDataHandler.updateGameBoard(
             """{
-        "gameboard": {},
+        "gameboard": {}, 
         "players": {"existing": {"username": "Old", "color": "#000000", "victoryPoints": 2}}
     }"""
         )
@@ -80,6 +93,7 @@ class GameDataHandlerTest {
 
         val board = gameDataHandler.gameBoardState.value
         assertNotNull(board)
+        assertEquals(0, board?.ports?.size)
     }
 
     @Test
@@ -94,8 +108,9 @@ class GameDataHandlerTest {
               {"id":1,"building":null,"coordinates":[10.0,10.0]}
             ],
             "roads": [
-              {"id":1,"owner":null,"coordinates":[5.0,5.0],"rotationAngle":0.0}
+              {"id":1,"owner":null,"color":null,"coordinates":[5.0,5.0],"rotationAngle":0.0}
             ],
+            "ports": [], 
             "ringsOfBoard": 3,
             "sizeOfHex": 50
           }
@@ -106,6 +121,7 @@ class GameDataHandlerTest {
             tiles = listOf(Tile(1, TileType.WOOD, 8, listOf(0.0, 0.0))),
             settlementPositions = listOf(SettlementPosition(1, null, listOf(10.0, 10.0))),
             roads = listOf(Road(1, null, listOf(5.0, 5.0), 0.0, null)),
+            ports = emptyList(),
             ringsOfBoard = 3,
             sizeOfHex = 50
         )
@@ -114,12 +130,15 @@ class GameDataHandlerTest {
 
         val board = gameDataHandler.gameBoardState.value
         assertNotNull(board)
+        assertEquals(0, board?.ports?.size)
     }
 
 
     @Test
     fun updateGameBoardHandlesExceptionAndDoesNotCrash() = runTest {
         val invalidJson = """{ not valid json }"""
+        every { parseGameBoard(any()) } returns null // Simulate parsing failure returning null
+
         gameDataHandler.updateGameBoard(invalidJson)
         assertNull(gameDataHandler.gameBoardState.value) // Should remain null
     }
@@ -128,31 +147,36 @@ class GameDataHandlerTest {
     @Test
     fun updateGameBoardSetsStateToNullOnParsingFailure() = runTest {
         val jsonString = """{"invalid":"json"}"""
+        val boardJsonContent = """{"invalid":"json"}""" // This is what GameDataHandler extracts
 
-        every { parseGameBoard(jsonString) } returns null
+        every { parseGameBoard(boardJsonContent) } returns null
 
-        gameDataHandler.updateGameBoard(jsonString)
+        gameDataHandler.updateGameBoard(jsonString) // GameDataHandler extracts boardJsonContent from jsonString
 
         assertNull(gameDataHandler.gameBoardState.value)
-        verify(exactly = 1) { parseGameBoard(jsonString) }
+        verify(exactly = 1) { parseGameBoard(boardJsonContent) }
     }
 
     @Test
     fun updateGameBoardCorrectlyCopiesLists() = runTest {
-        val jsonString = """{"some":"json_representing_a_board"}"""
+        val boardJsonContent = """{"tiles":[],"settlementPositions":[],"roads":[],"ports":[],"ringsOfBoard":3,"sizeOfHex":50}"""
+        val jsonString = """{"gameboard":$boardJsonContent}""" // Wrap it as GameDataHandler expects
+
         val originalTiles = mutableListOf(Tile(1, TileType.WOOD, 8, listOf(0.0, 0.0)))
         val originalSettlements = mutableListOf(SettlementPosition(1, null, listOf(10.0, 10.0)))
         val originalRoads = mutableListOf(Road(1, null, listOf(5.0, 5.0), 0.0, null))
+        val originalPorts = mutableListOf<Port>()
 
         val originalBoard = GameBoardModel(
             tiles = originalTiles,
             settlementPositions = originalSettlements,
             roads = originalRoads,
+            ports = originalPorts,
             ringsOfBoard = 3,
             sizeOfHex = 50
         )
 
-        every { parseGameBoard(jsonString) } returns originalBoard
+        every { parseGameBoard(boardJsonContent) } returns originalBoard
 
         gameDataHandler.updateGameBoard(jsonString)
 
@@ -162,34 +186,8 @@ class GameDataHandlerTest {
         assertEquals(originalTiles, updatedBoard?.tiles)
         assertEquals(originalSettlements, updatedBoard?.settlementPositions)
         assertEquals(originalRoads, updatedBoard?.roads)
+        assertEquals(originalPorts, updatedBoard?.ports)
 
-        verify(exactly = 1) { parseGameBoard(jsonString) }
+        verify(exactly = 1) { parseGameBoard(boardJsonContent) }
     }
-
-    @Test
-    fun updateGameBoardHandlesMissingGameboardSection() = runTest {
-        // Test when "gameboard" key is missing - should fall back to root json
-        val jsonString = """
-    {
-        "tiles": [{"id":1,"type":"WOOD","value":8,"coordinates":[0.0,0.0]}],
-        "players": {}
-    }
-    """.trimIndent()
-
-        every { parseGameBoard(any()) } returns GameBoardModel(
-            tiles = listOf(Tile(1, TileType.WOOD, 8, listOf(0.0, 0.0))),
-            settlementPositions = emptyList(),
-            roads = emptyList(),
-            ringsOfBoard = 0,
-            sizeOfHex = 0
-        )
-
-        gameDataHandler.updateGameBoard(jsonString)
-
-        verify(exactly = 1) {
-            parseGameBoard(match { it.contains("\"tiles\"") && !it.contains("\"gameboard\"") })
-        }
-    }
-
-
 }

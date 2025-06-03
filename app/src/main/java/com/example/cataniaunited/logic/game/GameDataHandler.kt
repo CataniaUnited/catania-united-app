@@ -35,6 +35,7 @@ class GameDataHandler @Inject constructor() {
                 tiles = board.tiles.toList(),
                 settlementPositions = board.settlementPositions.toList(),
                 roads = board.roads.toList(),
+                ports = board.ports.toList()
             )
 
             if (updatedBoard != null) {

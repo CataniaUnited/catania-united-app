@@ -35,7 +35,6 @@ class MainApplicationInstrumentedTest {
     fun setup() {
         mainApplication = ApplicationProvider.getApplicationContext<MainApplication>()
 
-        println("Setup: Resetting state...")
         mainApplication.clearGameData()
         mainApplication.gameViewModel = null
 
@@ -45,41 +44,32 @@ class MainApplicationInstrumentedTest {
             playerIdField = MainApplication::class.java.getDeclaredField("_playerId")
             playerIdField.isAccessible = true
             playerIdField.set(mainApplication, null)
-            println("Setup: _playerId reset to null.")
         } catch (e: Exception) {
-            println("Warning: Could not reset _playerId via reflection - ${e.message}")
         }
-        println("Setup: Using existing Application instance: $mainApplication")
-
+        mainApplication.players.clear()
     }
 
     @After
     fun tearDown() {
         mainApplication.gameViewModel = null
-        println("Teardown complete.")
-
+        mainApplication.players.clear()
     }
 
     @Test
     fun webSocketClientShouldBeInitializedAfterOnCreate() {
-        println("Running webSocketClientShouldBeInitializedAfterOnCreate...")
         assertNotNull(
             "WebSocketClient should not be null after Application onCreate",
             mainApplication.getWebSocketClient()
         )
-        println("Test Passed.")
     }
 
     @Test
     fun getPlayerIdShouldThrowExceptionWhenNotSet() {
-        println("Running getPlayerIdShouldThrowExceptionWhenNotSet...")
         try {
-            println("Attempting to get Player ID (expecting exception)...")
             mainApplication.getPlayerId()
             fail("Expected IllegalStateException was not thrown when Player ID is not set")
         } catch (e: IllegalStateException) {
             assertEquals("Player Id not initialized", e.message)
-            println("Test Passed: Correct exception thrown.")
         } catch (e: Exception) {
             fail("Caught unexpected exception type: ${e::class.java.simpleName} - ${e.message}")
         }
@@ -87,7 +77,6 @@ class MainApplicationInstrumentedTest {
 
     @Test
     fun setAndGetPlayerIdWorks() {
-        println("Running setAndGetPlayerIdWorks...")
         val testId = "player-id-${System.currentTimeMillis()}"
         mainApplication.setPlayerId(testId)
         assertEquals(
@@ -95,13 +84,11 @@ class MainApplicationInstrumentedTest {
             testId,
             mainApplication.getPlayerId()
         )
-        println("Test Passed.")
     }
 
 
     @Test
     fun currentLobbyIdFlowInitiallyNull() = runTest {
-        println("Running test: currentLobbyIdFlowInitiallyNull")
         assertEquals(
             "Initial lobby ID flow value should be null",
             null,
@@ -112,12 +99,10 @@ class MainApplicationInstrumentedTest {
             expectNoEvents()
             cancelAndIgnoreRemainingEvents()
         }
-        println("Test Passed.")
     }
 
     @Test
     fun onLobbyCreatedCallbackUpdatesFlow() = runTest {
-        println("Running test: onLobbyCreatedCallbackUpdatesFlow")
         val expectedLobbyId = "lobby-abc-123"
 
         mainApplication.currentLobbyId = expectedLobbyId
@@ -132,12 +117,10 @@ class MainApplicationInstrumentedTest {
             expectedLobbyId,
             mainApplication.currentLobbyId
         )
-        println("Test Passed.")
     }
 
     @Test
     fun onGameBoardReceivedUpdatesJson() = runTest {
-        println("Running test: onGameBoardReceivedUpdatesJson")
         val lobbyId = "test-lobby-1"
         val boardJson = """{"test":"data"}"""
 
@@ -150,12 +133,10 @@ class MainApplicationInstrumentedTest {
             boardJson,
             mainApplication.latestBoardJson
         )
-        println("Test Passed.")
     }
 
     @Test
     fun onGameBoardReceivedSendsToNavigationChannelWhenLobbyMatches() = runTest {
-        println("Running test: onGameBoardReceivedSendsToNavigationChannelWhenLobbyMatches")
         val expectedLobbyId = "test-lobby-nav"
         val boardJson = """{"test":"board"}"""
 
@@ -169,7 +150,6 @@ class MainApplicationInstrumentedTest {
             val job = launch {
                 mainApplication._navigateToGameChannel.send(expectedLobbyId)
                 didSend = true
-                println("Manually sent lobbyId $expectedLobbyId to channel.")
             }
             job.join()
         }
@@ -178,13 +158,11 @@ class MainApplicationInstrumentedTest {
         mainApplication.navigateToGameFlow.test {
             assertEquals("Channel should receive correct lobbyId", expectedLobbyId, awaitItem())
             cancelAndIgnoreRemainingEvents()
-            println("Test Passed.")
         }
     }
 
     @Test
     fun onGameBoardReceivedDoesNotSendToChannelWhenLobbyMismatches() = runTest {
-        println("Running test: onGameBoardReceivedDoesNotSendToChannelWhenLobbyMismatches")
         val currentLobbyId = "current-lobby"
         val receivedLobbyId = "different-lobby"
         val boardJson = """{"test":"board"}"""
@@ -204,15 +182,13 @@ class MainApplicationInstrumentedTest {
         assertFalse("Channel send should not have been attempted", sentToChannel)
         mainApplication.navigateToGameFlow.test {
             expectNoEvents()
-            println("Test Passed.")
         }
     }
 
     @Test
     fun clearLobbyDataResetsState() = runTest {
-        println("Running test: clearLobbyDataResetsState")
         val lobbyId = "lobby-to-clear"
-        val boardJson = """{"test":"board"}"""
+        val boardJson = """{"test":"data"}"""
         mainApplication.currentLobbyId = lobbyId
         mainApplication.latestBoardJson = boardJson
         advanceUntilIdle()
@@ -230,7 +206,6 @@ class MainApplicationInstrumentedTest {
             "latestBoardJson should be null after clearLobbyData",
             mainApplication.latestBoardJson
         )
-        println("Test Passed.")
     }
 
     @Test
@@ -270,4 +245,131 @@ class MainApplicationInstrumentedTest {
         assertNotNull(mainApplication.webSocketListener)
     }
 
+    @Test
+    fun setPlayers_sortsCurrentPlayerToFront() {
+        val currentPlayerId = "playerB"
+        mainApplication.setPlayerId(currentPlayerId)
+
+        val playerA = PlayerInfo("playerA", "Alice", "#FF0000", isReady = true)
+        val playerB = PlayerInfo("playerB", "Bob", "#00FF00", isReady = false)
+        val playerC = PlayerInfo("playerC", "Charlie", "#0000FF", isReady = true)
+
+        val playersMap = mapOf(
+            playerA.id to playerA,
+            playerB.id to playerB,
+            playerC.id to playerC
+        )
+
+        val setPlayersMethod = MainApplication::class.java.getDeclaredMethod(
+            "setPlayers",
+            Map::class.java
+        )
+        setPlayersMethod.isAccessible = true
+        setPlayersMethod.invoke(mainApplication, playersMap)
+
+        assertEquals("Players list size should be 3", 3, mainApplication.players.size)
+        assertEquals("Current player (playerB) should be at the first position", playerB, mainApplication.players[0])
+        assertTrue("Player A should be in the list", mainApplication.players.contains(playerA))
+        assertTrue("Player C should be in the list", mainApplication.players.contains(playerC))
+
+        val expectedOrderWithoutCurrentPlayer = listOf(playerA, playerC)
+        val actualOrderWithoutCurrentPlayer = mainApplication.players.subList(1, mainApplication.players.size)
+        assertEquals("Relative order of other players should be maintained", expectedOrderWithoutCurrentPlayer, actualOrderWithoutCurrentPlayer)
+    }
+
+    @Test
+    fun setPlayers_noChangeIfCurrentPlayerAlreadyFirst() {
+        val currentPlayerId = "playerA"
+        mainApplication.setPlayerId(currentPlayerId)
+
+        val playerA = PlayerInfo("playerA", "Alice", "#FF0000", isReady = true)
+        val playerB = PlayerInfo("playerB", "Bob", "#00FF00", isReady = false)
+        val playerC = PlayerInfo("playerC", "Charlie", "#0000FF", isReady = true)
+
+        val playersMap = mapOf(
+            playerA.id to playerA,
+            playerB.id to playerB,
+            playerC.id to playerC
+        )
+
+        mainApplication.players.addAll(listOf(playerA, playerB, playerC))
+
+        val setPlayersMethod = MainApplication::class.java.getDeclaredMethod(
+            "setPlayers",
+            Map::class.java
+        )
+        setPlayersMethod.isAccessible = true
+        setPlayersMethod.invoke(mainApplication, playersMap)
+
+        assertEquals("Players list size should be 3", 3, mainApplication.players.size)
+        assertEquals("Current player (playerA) should still be at the first position", playerA, mainApplication.players[0])
+        assertEquals("Relative order of all players should be maintained", listOf(playerA, playerB, playerC), mainApplication.players)
+    }
+
+
+    @Test
+    fun setPlayers_noCurrentPlayerIdSet() {
+        val playerA = PlayerInfo("playerA", "Alice", "#FF0000", isReady = true)
+        val playerB = PlayerInfo("playerB", "Bob", "#00FF00", isReady = false)
+        val playerC = PlayerInfo("playerC", "Charlie", "#0000FF", isReady = true)
+
+        val playersMap = mapOf(
+            playerA.id to playerA,
+            playerB.id to playerB,
+            playerC.id to playerC
+        )
+
+        val setPlayersMethod = MainApplication::class.java.getDeclaredMethod(
+            "setPlayers",
+            Map::class.java
+        )
+        setPlayersMethod.isAccessible = true
+        setPlayersMethod.invoke(mainApplication, playersMap)
+
+        assertEquals("Players list size should be 3", 3, mainApplication.players.size)
+        assertTrue("Player A should be in the list", mainApplication.players.contains(playerA))
+        assertTrue("Player B should be in the list", mainApplication.players.contains(playerB))
+        assertTrue("Player C should be in the list", mainApplication.players.contains(playerC))
+        org.junit.Assert.assertNotEquals("No current player, so playerB should not be first (unless by chance)", playerB, mainApplication.players[0])
+    }
+
+    @Test
+    fun setPlayers_emptyPlayersMap() {
+        mainApplication.setPlayerId("someId")
+        val playersMap = emptyMap<String, PlayerInfo>()
+
+        val setPlayersMethod = MainApplication::class.java.getDeclaredMethod(
+            "setPlayers",
+            Map::class.java
+        )
+        setPlayersMethod.isAccessible = true
+        setPlayersMethod.invoke(mainApplication, playersMap)
+
+        assertTrue("Players list should be empty", mainApplication.players.isEmpty())
+    }
+
+    @Test
+    fun setPlayers_currentPlayerNotInMap() {
+        mainApplication.setPlayerId("nonExistentPlayer")
+
+        val playerA = PlayerInfo("playerA", "Alice", "#FF0000", isReady = true)
+        val playerB = PlayerInfo("playerB", "Bob", "#00FF00", isReady = false)
+
+        val playersMap = mapOf(
+            playerA.id to playerA,
+            playerB.id to playerB
+        )
+
+        val setPlayersMethod = MainApplication::class.java.getDeclaredMethod(
+            "setPlayers",
+            Map::class.java
+        )
+        setPlayersMethod.isAccessible = true
+        setPlayersMethod.invoke(mainApplication, playersMap)
+
+        assertEquals("Players list size should be 2", 2, mainApplication.players.size)
+        assertTrue("Player A should be in the list", mainApplication.players.contains(playerA))
+        assertTrue("Player B should be in the list", mainApplication.players.contains(playerB))
+        assertFalse("Non-existent current player should not be added", mainApplication.players.any { it.id == "nonExistentPlayer" })
+    }
 }

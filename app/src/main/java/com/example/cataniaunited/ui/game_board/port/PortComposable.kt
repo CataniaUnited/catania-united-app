@@ -8,18 +8,15 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
 import com.example.cataniaunited.data.model.Port
 import com.example.cataniaunited.data.model.TileType
-import com.example.cataniaunited.ui.game_board.tile.getTileImageResId
 import kotlin.math.PI
 
 private fun Double.toDegrees(): Float = (this * 180.0 / PI).toFloat()

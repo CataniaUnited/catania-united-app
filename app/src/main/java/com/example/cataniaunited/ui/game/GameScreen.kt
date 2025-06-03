@@ -149,6 +149,7 @@ fun GameScreen(
                                 tiles = board.tiles,
                                 settlementPositions = board.settlementPositions,
                                 roads = board.roads,
+                                ports = board.ports,
                                 isBuildMode = isBuildMenuOpen,
                                 playerId = gameViewModel.playerId,
                                 onTileClicked = { tile ->

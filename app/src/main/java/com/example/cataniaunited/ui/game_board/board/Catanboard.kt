@@ -159,7 +159,7 @@ fun CatanBoard(
                         val initialCenterToCenterRoadLengthPx = LOGICAL_HEX_RADIUS * initialFitScale
                         val initialDrawableRoadLengthPx = (initialCenterToCenterRoadLengthPx - initialSettlementDiameterPx).coerceAtLeast(1f)
                         val initialDrawableRoadLengthDp = initialDrawableRoadLengthPx.toDp(density)
-                        val initialPortIconSizeDp = initialHexSizeDp * 0.6f // Port icon size relative to hex
+                        val initialPortIconSizeDp = initialHexSizeDp * 0.4f // Port icon size relative to hex
 
                         val visualMinX = (minX * initialFitScale) - initialScaledHexRadiusPx - (with(density){initialPortIconSizeDp.toPx()}/2)
                         val visualMinY = (minY * initialFitScale) - initialScaledHexRadiusPx - (with(density){initialPortIconSizeDp.toPx()}/2)

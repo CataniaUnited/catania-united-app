@@ -65,8 +65,12 @@ fun LobbyScreen(
                 color = catanGold
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            val title: String = if(actualPlayers.size > 1) "Players Ready: ${actualPlayers.filter { it.isReady }.size} / ${actualPlayers.size}"
+            else "Need at least 2 players to start"
             Text(
-                text = "Players Ready: ${actualPlayers.filter { it.isReady }.size} / ${actualPlayers.size}",
+                text = title,
                 color = MaterialTheme.colorScheme.onBackground,
                 style = MaterialTheme.typography.titleLarge.copy(fontSize = 20.sp)
             )
@@ -76,15 +80,15 @@ fun LobbyScreen(
             if (playerInfo?.isHost == true) {
                 Button(
                     onClick = onStartGameClick,
-                    enabled = actualPlayers.all { it.isReady },
+                    enabled = actualPlayers.size > 1 && actualPlayers.all { it.isReady },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = Color(0xFF008000),
                         contentColor = Color.White,
                     ),
                     modifier = Modifier
+                        .border(BorderStroke(1.dp, Color.Black), CircleShape)
                         .width(150.dp)
                         .height(40.dp)
-
                 ) {
                     Text(text = "Start Game")
                 }

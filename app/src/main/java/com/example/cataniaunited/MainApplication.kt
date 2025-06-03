@@ -138,8 +138,7 @@ open class MainApplication : Application(),
                 _navigateToLobbyChannel.send(lobbyId)
                 Log.d("MainApplication", "Navigating to lobby: $lobbyId")
             }
-            this.players.clear()
-            this.players.addAll(players.values)
+            setPlayers(players)
 
         } else {
             Log.w("MainApplication", "Received lobby creation for wrong lobby.")
@@ -170,8 +169,18 @@ open class MainApplication : Application(),
         if (currentLobbyId == null) {
             currentLobbyId = lobbyId;
         }
+        setPlayers(players)
+    }
+
+    private fun setPlayers(players: Map<String, PlayerInfo>){
+        val mutablePlayers = players.values.toMutableList()
+        val currentPlayer = mutablePlayers.find { it.id == _playerId }
+        if (currentPlayer != null) {
+            mutablePlayers.remove(currentPlayer)
+            mutablePlayers.add(0, currentPlayer)
+        }
         this.players.clear()
-        this.players.addAll(players.values)
+        this.players.addAll(mutablePlayers.toList())
     }
 
     override fun onGameBoardReceived(lobbyId: String, boardJson: String) {

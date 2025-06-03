@@ -2,8 +2,8 @@
    "tiles":[
       {
          "id":1,
-         "type":"ORE",
-         "value":8,
+         "type":"SHEEP",
+         "value":4,
          "coordinates":[
             0.0,
             0.0
@@ -11,8 +11,8 @@
       },
       {
          "id":2,
-         "type":"ORE",
-         "value":4,
+         "type":"SHEEP",
+         "value":8,
          "coordinates":[
             8.660254037844387,
             14.999999999999996
@@ -20,8 +20,8 @@
       },
       {
          "id":3,
-         "type":"SHEEP",
-         "value":9,
+         "type":"WHEAT",
+         "value":5,
          "coordinates":[
             17.32050807568877,
             0.0
@@ -29,8 +29,8 @@
       },
       {
          "id":4,
-         "type":"WHEAT",
-         "value":11,
+         "type":"ORE",
+         "value":6,
          "coordinates":[
             8.660254037844382,
             -14.999999999999996
@@ -38,8 +38,8 @@
       },
       {
          "id":5,
-         "type":"WOOD",
-         "value":6,
+         "type":"WHEAT",
+         "value":4,
          "coordinates":[
             -8.660254037844389,
             -14.999999999999996
@@ -47,8 +47,8 @@
       },
       {
          "id":6,
-         "type":"SHEEP",
-         "value":3,
+         "type":"WOOD",
+         "value":9,
          "coordinates":[
             -17.32050807568877,
             0.0
@@ -56,8 +56,8 @@
       },
       {
          "id":7,
-         "type":"CLAY",
-         "value":6,
+         "type":"WOOD",
+         "value":3,
          "coordinates":[
             -8.660254037844384,
             14.999999999999996
@@ -65,8 +65,8 @@
       },
       {
          "id":8,
-         "type":"WHEAT",
-         "value":12,
+         "type":"ORE",
+         "value":11,
          "coordinates":[
             17.320508075688775,
             29.999999999999993
@@ -74,7 +74,7 @@
       },
       {
          "id":9,
-         "type":"WHEAT",
+         "type":"WOOD",
          "value":2,
          "coordinates":[
             25.98076211353316,
@@ -83,8 +83,8 @@
       },
       {
          "id":10,
-         "type":"CLAY",
-         "value":9,
+         "type":"WHEAT",
+         "value":12,
          "coordinates":[
             34.64101615137754,
             0.0
@@ -92,8 +92,8 @@
       },
       {
          "id":11,
-         "type":"WOOD",
-         "value":11,
+         "type":"CLAY",
+         "value":10,
          "coordinates":[
             25.980762113533153,
             -14.999999999999996
@@ -102,7 +102,7 @@
       {
          "id":12,
          "type":"WOOD",
-         "value":8,
+         "value":11,
          "coordinates":[
             17.320508075688764,
             -29.999999999999993
@@ -110,8 +110,8 @@
       },
       {
          "id":13,
-         "type":"SHEEP",
-         "value":4,
+         "type":"CLAY",
+         "value":10,
          "coordinates":[
             -7.105427357601002E-15,
             -29.999999999999993
@@ -119,7 +119,7 @@
       },
       {
          "id":14,
-         "type":"CLAY",
+         "type":"SHEEP",
          "value":5,
          "coordinates":[
             -17.320508075688778,
@@ -128,8 +128,8 @@
       },
       {
          "id":15,
-         "type":"SHEEP",
-         "value":5,
+         "type":"ORE",
+         "value":8,
          "coordinates":[
             -25.98076211353316,
             -14.999999999999996
@@ -137,7 +137,7 @@
       },
       {
          "id":16,
-         "type":"WOOD",
+         "type":"SHEEP",
          "value":12,
          "coordinates":[
             -34.64101615137754,
@@ -155,8 +155,8 @@
       },
       {
          "id":18,
-         "type":"WHEAT",
-         "value":10,
+         "type":"CLAY",
+         "value":6,
          "coordinates":[
             -17.320508075688767,
             29.999999999999993
@@ -164,8 +164,8 @@
       },
       {
          "id":19,
-         "type":"ORE",
-         "value":2,
+         "type":"WHEAT",
+         "value":3,
          "coordinates":[
             3.552713678800501E-15,
             29.999999999999993
@@ -175,7 +175,7 @@
    "settlementPositions":[
       {
          "id":1,
-         "building":"null",
+         "building":null,
          "coordinates":[
             1.1842378929335002E-15,
             9.999999999999998
@@ -183,7 +183,7 @@
       },
       {
          "id":2,
-         "building":"null",
+         "building":null,
          "coordinates":[
             8.660254037844387,
             4.999999999999999
@@ -191,7 +191,7 @@
       },
       {
          "id":3,
-         "building":"null",
+         "building":null,
          "coordinates":[
             8.660254037844384,
             -4.999999999999999
@@ -199,7 +199,7 @@
       },
       {
          "id":4,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -2.3684757858670005E-15,
             -9.999999999999998
@@ -207,7 +207,7 @@
       },
       {
          "id":5,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -8.660254037844387,
             -4.999999999999999
@@ -215,7 +215,7 @@
       },
       {
          "id":6,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -8.660254037844384,
             4.999999999999999
@@ -223,7 +223,7 @@
       },
       {
          "id":7,
-         "building":"null",
+         "building":null,
          "coordinates":[
             2.3684757858670005E-15,
             19.999999999999996
@@ -231,7 +231,7 @@
       },
       {
          "id":8,
-         "building":"null",
+         "building":null,
          "coordinates":[
             8.660254037844387,
             24.99999999999999
@@ -239,7 +239,7 @@
       },
       {
          "id":9,
-         "building":"null",
+         "building":null,
          "coordinates":[
             17.320508075688775,
             19.999999999999996
@@ -247,7 +247,7 @@
       },
       {
          "id":10,
-         "building":"null",
+         "building":null,
          "coordinates":[
             17.320508075688775,
             9.999999999999998
@@ -255,7 +255,7 @@
       },
       {
          "id":11,
-         "building":"null",
+         "building":null,
          "coordinates":[
             25.98076211353316,
             4.999999999999999
@@ -263,7 +263,7 @@
       },
       {
          "id":12,
-         "building":"null",
+         "building":null,
          "coordinates":[
             25.980762113533157,
             -4.999999999999999
@@ -271,7 +271,7 @@
       },
       {
          "id":13,
-         "building":"null",
+         "building":null,
          "coordinates":[
             17.320508075688767,
             -9.999999999999998
@@ -279,7 +279,7 @@
       },
       {
          "id":14,
-         "building":"null",
+         "building":null,
          "coordinates":[
             17.320508075688767,
             -19.999999999999996
@@ -287,7 +287,7 @@
       },
       {
          "id":15,
-         "building":"null",
+         "building":null,
          "coordinates":[
             8.66025403784438,
             -24.99999999999999
@@ -295,7 +295,7 @@
       },
       {
          "id":16,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -4.736951571734001E-15,
             -19.999999999999996
@@ -303,7 +303,7 @@
       },
       {
          "id":17,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -8.66025403784439,
             -24.99999999999999
@@ -311,7 +311,7 @@
       },
       {
          "id":18,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -17.320508075688775,
             -19.999999999999996
@@ -319,7 +319,7 @@
       },
       {
          "id":19,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -17.320508075688775,
             -9.999999999999998
@@ -327,7 +327,7 @@
       },
       {
          "id":20,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -25.98076211353316,
             -4.999999999999999
@@ -335,7 +335,7 @@
       },
       {
          "id":21,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -25.980762113533157,
             4.999999999999999
@@ -343,7 +343,7 @@
       },
       {
          "id":22,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -17.320508075688767,
             9.999999999999998
@@ -351,7 +351,7 @@
       },
       {
          "id":23,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -17.320508075688767,
             19.999999999999996
@@ -359,7 +359,7 @@
       },
       {
          "id":24,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -8.660254037844384,
             24.99999999999999
@@ -367,7 +367,7 @@
       },
       {
          "id":25,
-         "building":"null",
+         "building":null,
          "coordinates":[
             8.66025403784439,
             35.0
@@ -375,7 +375,7 @@
       },
       {
          "id":26,
-         "building":"null",
+         "building":null,
          "coordinates":[
             17.320508075688778,
             40.000000000000014
@@ -383,7 +383,7 @@
       },
       {
          "id":27,
-         "building":"null",
+         "building":null,
          "coordinates":[
             25.980762113533164,
             35.00000000000001
@@ -391,7 +391,7 @@
       },
       {
          "id":28,
-         "building":"null",
+         "building":null,
          "coordinates":[
             25.980762113533164,
             24.99999999999999
@@ -399,7 +399,7 @@
       },
       {
          "id":29,
-         "building":"null",
+         "building":null,
          "coordinates":[
             34.64101615137754,
             19.99999999999999
@@ -407,7 +407,7 @@
       },
       {
          "id":30,
-         "building":"null",
+         "building":null,
          "coordinates":[
             34.64101615137754,
             9.999999999999996
@@ -415,7 +415,7 @@
       },
       {
          "id":31,
-         "building":"null",
+         "building":null,
          "coordinates":[
             43.301270189221924,
             4.999999999999997
@@ -423,7 +423,7 @@
       },
       {
          "id":32,
-         "building":"null",
+         "building":null,
          "coordinates":[
             43.301270189221924,
             -4.999999999999999
@@ -431,7 +431,7 @@
       },
       {
          "id":33,
-         "building":"null",
+         "building":null,
          "coordinates":[
             34.64101615137754,
             -9.999999999999996
@@ -439,7 +439,7 @@
       },
       {
          "id":34,
-         "building":"null",
+         "building":null,
          "coordinates":[
             34.641016151377535,
             -19.99999999999999
@@ -447,7 +447,7 @@
       },
       {
          "id":35,
-         "building":"null",
+         "building":null,
          "coordinates":[
             25.98076211353315,
             -24.99999999999999
@@ -455,7 +455,7 @@
       },
       {
          "id":36,
-         "building":"null",
+         "building":null,
          "coordinates":[
             25.980762113533142,
             -34.999999999999986
@@ -463,7 +463,7 @@
       },
       {
          "id":37,
-         "building":"null",
+         "building":null,
          "coordinates":[
             17.320508075688757,
             -39.99999999999999
@@ -471,7 +471,7 @@
       },
       {
          "id":38,
-         "building":"null",
+         "building":null,
          "coordinates":[
             8.660254037844377,
             -35.0
@@ -479,7 +479,7 @@
       },
       {
          "id":39,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -1.0658141036401503E-14,
             -40.00000000000001
@@ -487,7 +487,7 @@
       },
       {
          "id":40,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -8.660254037844394,
             -35.0
@@ -495,7 +495,7 @@
       },
       {
          "id":41,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -17.320508075688785,
             -40.000000000000014
@@ -503,7 +503,7 @@
       },
       {
          "id":42,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -25.980762113533174,
             -35.00000000000001
@@ -511,7 +511,7 @@
       },
       {
          "id":43,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -25.980762113533164,
             -24.99999999999999
@@ -519,7 +519,7 @@
       },
       {
          "id":44,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -34.64101615137754,
             -19.99999999999999
@@ -527,7 +527,7 @@
       },
       {
          "id":45,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -34.64101615137754,
             -9.999999999999996
@@ -535,7 +535,7 @@
       },
       {
          "id":46,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -43.301270189221924,
             -4.999999999999997
@@ -543,7 +543,7 @@
       },
       {
          "id":47,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -43.301270189221924,
             4.999999999999999
@@ -551,7 +551,7 @@
       },
       {
          "id":48,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -34.64101615137754,
             9.999999999999996
@@ -559,7 +559,7 @@
       },
       {
          "id":49,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -34.64101615137755,
             19.99999999999999
@@ -567,7 +567,7 @@
       },
       {
          "id":50,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -25.980762113533157,
             24.99999999999999
@@ -575,7 +575,7 @@
       },
       {
          "id":51,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -25.980762113533157,
             34.999999999999986
@@ -583,7 +583,7 @@
       },
       {
          "id":52,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -17.320508075688767,
             39.99999999999999
@@ -591,7 +591,7 @@
       },
       {
          "id":53,
-         "building":"null",
+         "building":null,
          "coordinates":[
             -8.66025403784438,
             35.0
@@ -599,7 +599,7 @@
       },
       {
          "id":54,
-         "building":"null",
+         "building":null,
          "coordinates":[
             7.105427357601002E-15,
             40.00000000000001
@@ -610,6 +610,7 @@
       {
          "id":1,
          "owner":null,
+         "color":null,
          "coordinates":[
             4.3301270189221945,
             7.499999999999998
@@ -619,6 +620,7 @@
       {
          "id":2,
          "owner":null,
+         "color":null,
          "coordinates":[
             8.660254037844386,
             0.0
@@ -628,6 +630,7 @@
       {
          "id":3,
          "owner":null,
+         "color":null,
          "coordinates":[
             4.330127018922191,
             -7.499999999999998
@@ -637,6 +640,7 @@
       {
          "id":4,
          "owner":null,
+         "color":null,
          "coordinates":[
             -4.3301270189221945,
             -7.499999999999998
@@ -646,6 +650,7 @@
       {
          "id":5,
          "owner":null,
+         "color":null,
          "coordinates":[
             -8.660254037844386,
             0.0
@@ -655,6 +660,7 @@
       {
          "id":6,
          "owner":null,
+         "color":null,
          "coordinates":[
             -4.330127018922191,
             7.499999999999998
@@ -664,6 +670,7 @@
       {
          "id":7,
          "owner":null,
+         "color":null,
          "coordinates":[
             1.7763568394002505E-15,
             14.999999999999996
@@ -673,6 +680,7 @@
       {
          "id":8,
          "owner":null,
+         "color":null,
          "coordinates":[
             4.3301270189221945,
             22.499999999999993
@@ -682,6 +690,7 @@
       {
          "id":9,
          "owner":null,
+         "color":null,
          "coordinates":[
             12.99038105676658,
             22.499999999999993
@@ -691,6 +700,7 @@
       {
          "id":10,
          "owner":null,
+         "color":null,
          "coordinates":[
             17.320508075688775,
             14.999999999999996
@@ -700,6 +710,7 @@
       {
          "id":11,
          "owner":null,
+         "color":null,
          "coordinates":[
             12.99038105676658,
             7.499999999999998
@@ -709,6 +720,7 @@
       {
          "id":12,
          "owner":null,
+         "color":null,
          "coordinates":[
             21.65063509461097,
             7.499999999999998
@@ -718,6 +730,7 @@
       {
          "id":13,
          "owner":null,
+         "color":null,
          "coordinates":[
             25.98076211353316,
             0.0
@@ -727,6 +740,7 @@
       {
          "id":14,
          "owner":null,
+         "color":null,
          "coordinates":[
             21.650635094610962,
             -7.499999999999998
@@ -736,6 +750,7 @@
       {
          "id":15,
          "owner":null,
+         "color":null,
          "coordinates":[
             12.990381056766577,
             -7.499999999999998
@@ -745,6 +760,7 @@
       {
          "id":16,
          "owner":null,
+         "color":null,
          "coordinates":[
             17.320508075688767,
             -14.999999999999996
@@ -754,6 +770,7 @@
       {
          "id":17,
          "owner":null,
+         "color":null,
          "coordinates":[
             12.990381056766573,
             -22.499999999999993
@@ -763,6 +780,7 @@
       {
          "id":18,
          "owner":null,
+         "color":null,
          "coordinates":[
             4.330127018922187,
             -22.499999999999993
@@ -772,6 +790,7 @@
       {
          "id":19,
          "owner":null,
+         "color":null,
          "coordinates":[
             -3.552713678800501E-15,
             -14.999999999999996
@@ -781,6 +800,7 @@
       {
          "id":20,
          "owner":null,
+         "color":null,
          "coordinates":[
             -4.330127018922198,
             -22.499999999999993
@@ -790,6 +810,7 @@
       {
          "id":21,
          "owner":null,
+         "color":null,
          "coordinates":[
             -12.990381056766584,
             -22.499999999999993
@@ -799,6 +820,7 @@
       {
          "id":22,
          "owner":null,
+         "color":null,
          "coordinates":[
             -17.320508075688775,
             -14.999999999999996
@@ -808,6 +830,7 @@
       {
          "id":23,
          "owner":null,
+         "color":null,
          "coordinates":[
             -12.99038105676658,
             -7.499999999999998
@@ -817,6 +840,7 @@
       {
          "id":24,
          "owner":null,
+         "color":null,
          "coordinates":[
             -21.65063509461097,
             -7.499999999999998
@@ -826,6 +850,7 @@
       {
          "id":25,
          "owner":null,
+         "color":null,
          "coordinates":[
             -25.98076211353316,
             0.0
@@ -835,6 +860,7 @@
       {
          "id":26,
          "owner":null,
+         "color":null,
          "coordinates":[
             -21.650635094610962,
             7.499999999999998
@@ -844,6 +870,7 @@
       {
          "id":27,
          "owner":null,
+         "color":null,
          "coordinates":[
             -12.990381056766577,
             7.499999999999998
@@ -853,6 +880,7 @@
       {
          "id":28,
          "owner":null,
+         "color":null,
          "coordinates":[
             -17.320508075688767,
             14.999999999999996
@@ -862,6 +890,7 @@
       {
          "id":29,
          "owner":null,
+         "color":null,
          "coordinates":[
             -12.990381056766577,
             22.499999999999993
@@ -871,6 +900,7 @@
       {
          "id":30,
          "owner":null,
+         "color":null,
          "coordinates":[
             -4.330127018922191,
             22.499999999999993
@@ -880,6 +910,7 @@
       {
          "id":31,
          "owner":null,
+         "color":null,
          "coordinates":[
             8.660254037844389,
             29.999999999999993
@@ -889,6 +920,7 @@
       {
          "id":32,
          "owner":null,
+         "color":null,
          "coordinates":[
             12.990381056766584,
             37.50000000000001
@@ -898,6 +930,7 @@
       {
          "id":33,
          "owner":null,
+         "color":null,
          "coordinates":[
             21.65063509461097,
             37.500000000000014
@@ -907,6 +940,7 @@
       {
          "id":34,
          "owner":null,
+         "color":null,
          "coordinates":[
             25.980762113533164,
             30.0
@@ -916,6 +950,7 @@
       {
          "id":35,
          "owner":null,
+         "color":null,
          "coordinates":[
             21.65063509461097,
             22.499999999999993
@@ -925,6 +960,7 @@
       {
          "id":36,
          "owner":null,
+         "color":null,
          "coordinates":[
             30.31088913245535,
             22.49999999999999
@@ -934,6 +970,7 @@
       {
          "id":37,
          "owner":null,
+         "color":null,
          "coordinates":[
             34.64101615137754,
             14.999999999999993
@@ -943,6 +980,7 @@
       {
          "id":38,
          "owner":null,
+         "color":null,
          "coordinates":[
             30.31088913245535,
             7.499999999999998
@@ -952,6 +990,7 @@
       {
          "id":39,
          "owner":null,
+         "color":null,
          "coordinates":[
             38.97114317029973,
             7.4999999999999964
@@ -961,6 +1000,7 @@
       {
          "id":40,
          "owner":null,
+         "color":null,
          "coordinates":[
             43.301270189221924,
             -8.881784197001252E-16
@@ -970,6 +1010,7 @@
       {
          "id":41,
          "owner":null,
+         "color":null,
          "coordinates":[
             38.97114317029973,
             -7.499999999999998
@@ -979,6 +1020,7 @@
       {
          "id":42,
          "owner":null,
+         "color":null,
          "coordinates":[
             30.31088913245535,
             -7.499999999999998
@@ -988,6 +1030,7 @@
       {
          "id":43,
          "owner":null,
+         "color":null,
          "coordinates":[
             34.64101615137754,
             -14.999999999999993
@@ -997,6 +1040,7 @@
       {
          "id":44,
          "owner":null,
+         "color":null,
          "coordinates":[
             30.310889132455344,
             -22.49999999999999
@@ -1006,6 +1050,7 @@
       {
          "id":45,
          "owner":null,
+         "color":null,
          "coordinates":[
             21.65063509461096,
             -22.499999999999993
@@ -1015,6 +1060,7 @@
       {
          "id":46,
          "owner":null,
+         "color":null,
          "coordinates":[
             25.980762113533146,
             -29.999999999999986
@@ -1024,6 +1070,7 @@
       {
          "id":47,
          "owner":null,
+         "color":null,
          "coordinates":[
             21.650635094610948,
             -37.499999999999986
@@ -1033,6 +1080,7 @@
       {
          "id":48,
          "owner":null,
+         "color":null,
          "coordinates":[
             12.990381056766566,
             -37.5
@@ -1042,6 +1090,7 @@
       {
          "id":49,
          "owner":null,
+         "color":null,
          "coordinates":[
             8.660254037844378,
             -29.999999999999993
@@ -1051,6 +1100,7 @@
       {
          "id":50,
          "owner":null,
+         "color":null,
          "coordinates":[
             4.330127018922183,
             -37.5
@@ -1060,6 +1110,7 @@
       {
          "id":51,
          "owner":null,
+         "color":null,
          "coordinates":[
             -4.3301270189222025,
             -37.5
@@ -1069,6 +1120,7 @@
       {
          "id":52,
          "owner":null,
+         "color":null,
          "coordinates":[
             -8.660254037844393,
             -29.999999999999993
@@ -1078,6 +1130,7 @@
       {
          "id":53,
          "owner":null,
+         "color":null,
          "coordinates":[
             -12.99038105676659,
             -37.50000000000001
@@ -1087,6 +1140,7 @@
       {
          "id":54,
          "owner":null,
+         "color":null,
          "coordinates":[
             -21.65063509461098,
             -37.500000000000014
@@ -1096,6 +1150,7 @@
       {
          "id":55,
          "owner":null,
+         "color":null,
          "coordinates":[
             -25.980762113533167,
             -30.0
@@ -1105,6 +1160,7 @@
       {
          "id":56,
          "owner":null,
+         "color":null,
          "coordinates":[
             -21.65063509461097,
             -22.499999999999993
@@ -1114,6 +1170,7 @@
       {
          "id":57,
          "owner":null,
+         "color":null,
          "coordinates":[
             -30.31088913245535,
             -22.49999999999999
@@ -1123,6 +1180,7 @@
       {
          "id":58,
          "owner":null,
+         "color":null,
          "coordinates":[
             -34.64101615137754,
             -14.999999999999993
@@ -1132,6 +1190,7 @@
       {
          "id":59,
          "owner":null,
+         "color":null,
          "coordinates":[
             -30.31088913245535,
             -7.499999999999998
@@ -1141,6 +1200,7 @@
       {
          "id":60,
          "owner":null,
+         "color":null,
          "coordinates":[
             -38.97114317029973,
             -7.4999999999999964
@@ -1150,6 +1210,7 @@
       {
          "id":61,
          "owner":null,
+         "color":null,
          "coordinates":[
             -43.301270189221924,
             8.881784197001252E-16
@@ -1159,6 +1220,7 @@
       {
          "id":62,
          "owner":null,
+         "color":null,
          "coordinates":[
             -38.97114317029973,
             7.499999999999998
@@ -1168,6 +1230,7 @@
       {
          "id":63,
          "owner":null,
+         "color":null,
          "coordinates":[
             -30.31088913245535,
             7.499999999999998
@@ -1177,6 +1240,7 @@
       {
          "id":64,
          "owner":null,
+         "color":null,
          "coordinates":[
             -34.64101615137754,
             14.999999999999993
@@ -1186,6 +1250,7 @@
       {
          "id":65,
          "owner":null,
+         "color":null,
          "coordinates":[
             -30.31088913245535,
             22.49999999999999
@@ -1195,6 +1260,7 @@
       {
          "id":66,
          "owner":null,
+         "color":null,
          "coordinates":[
             -21.650635094610962,
             22.499999999999993
@@ -1204,6 +1270,7 @@
       {
          "id":67,
          "owner":null,
+         "color":null,
          "coordinates":[
             -25.980762113533157,
             29.999999999999986
@@ -1213,6 +1280,7 @@
       {
          "id":68,
          "owner":null,
+         "color":null,
          "coordinates":[
             -21.650635094610962,
             37.499999999999986
@@ -1222,6 +1290,7 @@
       {
          "id":69,
          "owner":null,
+         "color":null,
          "coordinates":[
             -12.990381056766573,
             37.5
@@ -1231,6 +1300,7 @@
       {
          "id":70,
          "owner":null,
+         "color":null,
          "coordinates":[
             -8.660254037844382,
             29.999999999999993
@@ -1240,6 +1310,7 @@
       {
          "id":71,
          "owner":null,
+         "color":null,
          "coordinates":[
             -4.3301270189221865,
             37.5
@@ -1249,11 +1320,208 @@
       {
          "id":72,
          "owner":null,
+         "color":null,
          "coordinates":[
             4.330127018922199,
             37.5
          ],
          "rotationAngle":-0.5235987755982996
+      }
+   ],
+   "ports":[
+      {
+         "inputResourceAmount":3,
+         "portVisuals":{
+            "portTransform":{
+               "x":7.990381056766573,
+               "y":46.16025403784439,
+               "rotation":0.5235987755983001
+            },
+            "settlementPosition1Id":25,
+            "settlementPosition2Id":26,
+            "buildingSite1Position":[
+               8.66025403784439,
+               35.0
+            ],
+            "buildingSite2Position":[
+               17.320508075688778,
+               40.000000000000014
+            ]
+         },
+         "portType":"GeneralPort"
+      },
+      {
+         "inputResourceAmount":2,
+         "portVisuals":{
+            "portTransform":{
+               "x":35.31088913245536,
+               "y":31.160254037844375,
+               "rotation":-0.5235987755982993
+            },
+            "settlementPosition1Id":28,
+            "settlementPosition2Id":29,
+            "buildingSite1Position":[
+               25.980762113533164,
+               24.99999999999999
+            ],
+            "buildingSite2Position":[
+               34.64101615137754,
+               19.99999999999999
+            ]
+         },
+         "portType":"SpecificResourcePort",
+         "resource":"WHEAT"
+      },
+      {
+         "inputResourceAmount":3,
+         "portVisuals":{
+            "portTransform":{
+               "x":53.301270189221924,
+               "y":-8.881784197001252E-16,
+               "rotation":-1.5707963267948966
+            },
+            "settlementPosition1Id":31,
+            "settlementPosition2Id":32,
+            "buildingSite1Position":[
+               43.301270189221924,
+               4.999999999999997
+            ],
+            "buildingSite2Position":[
+               43.301270189221924,
+               -4.999999999999999
+            ]
+         },
+         "portType":"GeneralPort"
+      },
+      {
+         "inputResourceAmount":2,
+         "portVisuals":{
+            "portTransform":{
+               "x":35.310889132455344,
+               "y":-31.160254037844375,
+               "rotation":-2.6179938779914944
+            },
+            "settlementPosition1Id":34,
+            "settlementPosition2Id":35,
+            "buildingSite1Position":[
+               34.641016151377535,
+               -19.99999999999999
+            ],
+            "buildingSite2Position":[
+               25.98076211353315,
+               -24.99999999999999
+            ]
+         },
+         "portType":"SpecificResourcePort",
+         "resource":"WOOD"
+      },
+      {
+         "inputResourceAmount":3,
+         "portVisuals":{
+            "portTransform":{
+               "x":7.9903810567665685,
+               "y":-46.16025403784439,
+               "rotation":2.617993877991495
+            },
+            "settlementPosition1Id":37,
+            "settlementPosition2Id":38,
+            "buildingSite1Position":[
+               17.320508075688757,
+               -39.99999999999999
+            ],
+            "buildingSite2Position":[
+               8.660254037844377,
+               -35.0
+            ]
+         },
+         "portType":"GeneralPort"
+      },
+      {
+         "inputResourceAmount":3,
+         "portVisuals":{
+            "portTransform":{
+               "x":-7.990381056766582,
+               "y":-46.16025403784439,
+               "rotation":-2.6179938779914935
+            },
+            "settlementPosition1Id":40,
+            "settlementPosition2Id":41,
+            "buildingSite1Position":[
+               -8.660254037844394,
+               -35.0
+            ],
+            "buildingSite2Position":[
+               -17.320508075688785,
+               -40.000000000000014
+            ]
+         },
+         "portType":"GeneralPort"
+      },
+      {
+         "inputResourceAmount":2,
+         "portVisuals":{
+            "portTransform":{
+               "x":-35.31088913245536,
+               "y":-31.160254037844375,
+               "rotation":2.617993877991494
+            },
+            "settlementPosition1Id":43,
+            "settlementPosition2Id":44,
+            "buildingSite1Position":[
+               -25.980762113533164,
+               -24.99999999999999
+            ],
+            "buildingSite2Position":[
+               -34.64101615137754,
+               -19.99999999999999
+            ]
+         },
+         "portType":"SpecificResourcePort",
+         "resource":"CLAY"
+      },
+      {
+         "inputResourceAmount":2,
+         "portVisuals":{
+            "portTransform":{
+               "x":-53.301270189221924,
+               "y":8.881784197001252E-16,
+               "rotation":1.5707963267948966
+            },
+            "settlementPosition1Id":46,
+            "settlementPosition2Id":47,
+            "buildingSite1Position":[
+               -43.301270189221924,
+               -4.999999999999997
+            ],
+            "buildingSite2Position":[
+               -43.301270189221924,
+               4.999999999999999
+            ]
+         },
+         "portType":"SpecificResourcePort",
+         "resource":"SHEEP"
+      },
+      {
+         "inputResourceAmount":2,
+         "portVisuals":{
+            "portTransform":{
+               "x":-35.31088913245535,
+               "y":31.16025403784438,
+               "rotation":0.5235987755982986
+            },
+            "settlementPosition1Id":49,
+            "settlementPosition2Id":50,
+            "buildingSite1Position":[
+               -34.64101615137755,
+               19.99999999999999
+            ],
+            "buildingSite2Position":[
+               -25.980762113533157,
+               24.99999999999999
+            ]
+         },
+         "portType":"SpecificResourcePort",
+         "resource":"ORE"
       }
    ],
    "ringsOfBoard":3,

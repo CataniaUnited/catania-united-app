@@ -4,34 +4,31 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cataniaunited.data.model.GameBoardModel
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
-import com.example.cataniaunited.ws.provider.WebSocketErrorProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
     private val gameBoardLogic: GameBoardLogic,
+    private val lobbyLogic: LobbyLogic,
     private val gameDataHandler: GameDataHandler,
-    private val sessionManager: PlayerSessionManager,
-    private val errorProvider: WebSocketErrorProvider
+    private val sessionManager: PlayerSessionManager
 ) : ViewModel() {
 
     val playerId get() = sessionManager.getPlayerId()
     val gameBoardState: StateFlow<GameBoardModel?> = gameDataHandler.gameBoardState
-
-    private val _errorChannel = Channel<String>(Channel.BUFFERED)
-    val errorFlow = _errorChannel.receiveAsFlow()
 
     private val _isBuildMenuOpen = MutableStateFlow(false)
     val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
@@ -50,25 +47,42 @@ class GameViewModel @Inject constructor(
     private val _playerResources = MutableStateFlow<Map<TileType, Int>>(emptyMap())
     val playerResources: StateFlow<Map<TileType, Int>> = _playerResources.asStateFlow()
 
+    private val _players = MutableStateFlow<Map<String, PlayerInfo>>(emptyMap())
+    val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
+
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
 
-        val initialResources = TileType.entries
+        _players.value = gameDataHandler.playersState.value
+        val resources: Map<TileType, Int>? = _players.value[playerId]?.resources
+        _playerResources.value = resources ?: TileType.entries
             .filter { it != TileType.WASTE }
             .associateWith { 0 }
-        _playerResources.value = initialResources
+        _victoryPoints.value = gameDataHandler.victoryPointsState.value
+
+        Log.d("GameViewModel", "Players initialized: ${players.value}")
+        Log.d("GameViewModel", "Resources initialized: ${playerResources.value}")
+        Log.d("GameViewModel", "Victory points initialized: ${victoryPoints.value}")
 
         viewModelScope.launch {
-            errorProvider.errorFlow.collect { errorMessage ->
-                Log.e("GameBoardViewModel", "Error Message received")
-                _errorChannel.send(errorMessage)
+            gameDataHandler.victoryPointsState.collect {
+                Log.d("GameViewModel_Collect", "Updating victory points value: $it")
+                _victoryPoints.value = it
             }
         }
 
         viewModelScope.launch {
-            gameDataHandler.victoryPointsState.collect {
-                _victoryPoints.value = it
+            gameDataHandler.playersState.collect {
+                Log.d("GameViewModel_Collect", "RECEIVED playersState in collect: $it")
+                _players.value = it
+
+                val playerInfo: PlayerInfo? = it[playerId];
+                if(playerInfo != null && !playerInfo.isActivePlayer){
+                    //Close build menu when player is not active player
+                    setBuildMenuOpen(false)
+                }
             }
+            Log.d("GameViewModel_Collect", "playersState collect FINISHED in ViewModelScope.")
         }
     }
 
@@ -99,14 +113,18 @@ class GameViewModel @Inject constructor(
         // TODO: Implement logic for tile click (e.g., move robber phase)
     }
 
-    fun handleSettlementClick(settlementPosition: SettlementPosition, isUpgrade: Boolean, lobbyId: String) {
+    fun handleSettlementClick(
+        settlementPosition: SettlementPosition,
+        isUpgrade: Boolean,
+        lobbyId: String
+    ) {
         Log.d(
             "GameViewModel",
             "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}"
         )
-        if(isUpgrade){
+        if (isUpgrade) {
             gameBoardLogic.upgradeSettlement(settlementPosition.id, lobbyId)
-        }else{
+        } else {
             gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
         }
 
@@ -114,11 +132,12 @@ class GameViewModel @Inject constructor(
 
     fun handleRoadClick(road: Road, lobbyId: String) {
         Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
-
-        val pid = playerId
-        gameBoardLogic.setActivePlayer(pid, lobbyId)
-
         gameBoardLogic.placeRoad(road.id, lobbyId)
+    }
+
+    fun handleEndTurnClick(lobbyId: String){
+        Log.d("GameViewModel", "handleEndTurnClick: Player ended turn")
+        lobbyLogic.endTurn(lobbyId)
     }
 
     fun setBuildMenuOpen(isOpen: Boolean) {
@@ -133,12 +152,19 @@ class GameViewModel @Inject constructor(
         isProcessingRoll = true
         Log.d("GameViewModel", "Initiating dice roll for lobby: $lobbyId")
 
-        startRolling(playerId)
+        // Get both player ID and username
+        val player = players.value[playerId]
+        startRolling(player?.username)
 
         gameBoardLogic.rollDice(lobbyId)
 
         viewModelScope.launch {
+            // Increase delay to match server-side delay
+            delay(2500)  // 2.5 seconds to account for server delay and animation
+
+            // Only reset if still in rolling state (no result received)
             if (diceState.value?.isRolling == true) {
+                Log.w("GameViewModel", "Dice roll timeout - no result received")
                 resetDiceState()
             }
             isProcessingRoll = false
@@ -152,7 +178,7 @@ class GameViewModel @Inject constructor(
     }
 
     data class DiceState(
-        val rollingPlayer: String?,
+        val rollingPlayerUsername: String?,
         val isRolling: Boolean,
         val dice1: Int = 1,
         val dice2: Int = 1,
@@ -166,7 +192,7 @@ class GameViewModel @Inject constructor(
 
         if (currentState == null || (!currentState.isRolling && !currentState.showResult)) {
             _diceState.value = DiceState(
-                rollingPlayer = playerName,
+                rollingPlayerUsername = playerName,
                 isRolling = true,
                 showResult = false
             )
@@ -179,33 +205,25 @@ class GameViewModel @Inject constructor(
 
     fun showResult(playerName: String?, dice1: Int, dice2: Int) {
         Log.d("GameViewModel", "Showing dice result for $playerName: $dice1, $dice2")
-        val currentState = _diceState.value
-
-        if (currentState?.isRolling == true) {
-            _diceState.value = DiceState(
-                rollingPlayer = currentState.rollingPlayer ?: playerName,
+        _diceState.value?.let { currentState ->
+            _diceState.value = currentState.copy(
                 isRolling = false,
                 dice1 = dice1,
                 dice2 = dice2,
                 showResult = true
             )
-            updateDiceResult(dice1, dice2)
-            Log.d("GameViewModel", "Updated dice state to show result")
-        } else if (currentState == null) {
-            Log.w("GameViewModel", "Received dice result without rolling state, creating result state")
+        } ?: run {
             _diceState.value = DiceState(
-                rollingPlayer = playerName,
+                rollingPlayerUsername = playerName,
                 isRolling = false,
                 dice1 = dice1,
                 dice2 = dice2,
                 showResult = true
             )
-            _showDicePopup.value = true
-            updateDiceResult(dice1, dice2)
-        } else {
-            Log.w("GameViewModel", "Received dice result but current state is not rolling: $currentState")
         }
+        updateDiceResult(dice1, dice2)
     }
+
 
     fun resetDiceState() {
         Log.d("GameViewModel", "Resetting dice state")

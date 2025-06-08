@@ -21,80 +21,57 @@ class GameBoardLogic @Inject constructor(
         sendSettlementMessage(MessageType.UPGRADE_SETTLEMENT, settlementPositionId, lobbyId)
     }
 
-    private fun sendSettlementMessage(messageType: MessageType, settlementPositionId: Int, lobbyId: String){
-        val playerId = try{
+    private fun sendSettlementMessage(
+        messageType: MessageType,
+        settlementPositionId: Int,
+        lobbyId: String
+    ) {
+        val playerId = try {
             playerSessionManager.getPlayerId()
-        }catch (ise: IllegalStateException){
+        } catch (ise: IllegalStateException) {
             return
         }
         val message = buildJsonObject { put("settlementPositionId", settlementPositionId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
             webSocketClient.sendMessage(MessageDTO(messageType, playerId, lobbyId, null, message))
-        } else { Log.e("GameBoardLogic", "WS not connected for upgradeSettlement") }
+        } else {
+            Log.e("GameBoardLogic", "WS not connected for upgradeSettlement")
+        }
     }
 
     fun placeRoad(roadId: Int, lobbyId: String) {
-        val playerId = try{
+        val playerId = try {
             playerSessionManager.getPlayerId()
-        }catch (ise: IllegalStateException){
+        } catch (ise: IllegalStateException) {
             return
         }
         val message = buildJsonObject { put("roadId", roadId) }
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
-            webSocketClient.sendMessage(MessageDTO(MessageType.PLACE_ROAD, playerId, lobbyId, null, message))
-        } else { Log.e("GameBoardLogic", "WS not connected for placeRoad") }
-    }
-
-    fun requestCreateLobby() {
-        val playerId = try{
-            playerSessionManager.getPlayerId()
-        }catch (ise: IllegalStateException){
-            return
-        }
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        if (webSocketClient.isConnected()) {
-            val messageToSend = MessageDTO( MessageType.CREATE_LOBBY, playerId, null, null, null)
-            webSocketClient.sendMessage(messageToSend)
-            Log.i("GameBoardLogic", "Sent CREATE_LOBBY request.")
-
+            webSocketClient.sendMessage(
+                MessageDTO(
+                    MessageType.PLACE_ROAD,
+                    playerId,
+                    lobbyId,
+                    null,
+                    message
+                )
+            )
         } else {
-            Log.e("GameBoardLogic", "WebSocket not connected when trying to create lobby.")
+            Log.e("GameBoardLogic", "WS not connected for placeRoad")
         }
     }
-
-    fun requestBoardForLobby(lobbyId: String, playerCount: Int = 4, isCreate: Boolean = true) {
-
-        val playerId = try{
-            playerSessionManager.getPlayerId()
-        }catch (ise: IllegalStateException){
-            return
-        }
-        val messagePayload = buildJsonObject { put("playerCount", playerCount) }
-        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
-        if (webSocketClient.isConnected()) {
-            val type: MessageType = if(isCreate) MessageType.CREATE_GAME_BOARD else MessageType.GET_GAME_BOARD
-            val messageToSend = MessageDTO(type, playerId, lobbyId, null, messagePayload )
-            webSocketClient.sendMessage(messageToSend)
-
-            val setPlayerActiveMessage = MessageDTO( MessageType.SET_ACTIVE_PLAYER, playerId, lobbyId )
-            webSocketClient.sendMessage(setPlayerActiveMessage)
-            Log.i("GameBoardLogic", "Sent CREATE_GAME_BOARD request for $playerCount players in lobby $lobbyId.")
-        } else {
-            Log.e("GameBoardLogic", "WebSocket not connected when trying to create game board.")
-        }
-    }
-
-
-
 
     fun rollDice(lobbyId: String) {
         try {
             val playerId = playerSessionManager.getPlayerId()
+            val playerName = MainApplication.getInstance().players
+                .firstOrNull { it.id == playerId }?.username ?: playerId
             val message = buildJsonObject {
                 put("action", "rollDice")
                 put("player", playerId)
+                put("playerName", playerName)  // Add username to message
             }
             val webSocketClient = MainApplication.getInstance().getWebSocketClient()
             webSocketClient.sendMessage(
@@ -110,16 +87,4 @@ class GameBoardLogic @Inject constructor(
             Log.e("GameBoard", "Error rolling dice", e)
         }
     }
-
-    fun setActivePlayer(playerId: String, lobbyId: String) {
-        val message = MessageDTO(
-            type = MessageType.SET_ACTIVE_PLAYER,
-            player = playerId,
-            lobbyId = lobbyId,
-            message = null
-        )
-        MainApplication.getInstance().getWebSocketClient().sendMessage(message)
-    }
-
-
 }

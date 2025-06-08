@@ -50,35 +50,26 @@ fun SettlementComposable(
         Color.White //Dark background -> light icon
     }
 
-    val isOccupied: Boolean = building != null && building.owner != playerId
-    val canBuild: Boolean = isClickable && (building == null || (building.owner == playerId && building.type == "Settlement"))
-    val isUpgrade: Boolean = building != null && building.owner == playerId && building.type == "Settlement"
+    val canBuild: Boolean =
+        isClickable && (building == null || (building.owner == playerId && building.type == "Settlement"))
+    val isUpgrade: Boolean =
+        building != null && building.owner == playerId && building.type == "Settlement"
 
-    val actualBorderColor: Color
-    val borderWidth: Dp
-
-    if (isUpgrade && canBuild) {
-        actualBorderColor = Color(0xFF00C853)
-        borderWidth = 2.dp
-    } else {
-        actualBorderColor = if (isClickable || (building != null)) Color.DarkGray else Color.Transparent
-        borderWidth = 1.dp
-    }
-
-    if (canBuild && building == null) {
-        Box(
-            modifier = Modifier
-                .size(size)
-                .clip(CircleShape)
-                .background(Color(0x3390EE90))
-        ) {
-        }
-    }
+    val actualBorderColor =
+        if (isClickable || (building != null)) Color.DarkGray else Color.Transparent
+    val borderWidth = 1.dp
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .then(if (canBuild) Modifier.clickable { onSettlementClick(Pair(settlementPosition, isUpgrade)) } else Modifier)
+            .then(if (canBuild) Modifier.clickable {
+                onSettlementClick(
+                    Pair(
+                        settlementPosition,
+                        isUpgrade
+                    )
+                )
+            } else Modifier)
             .size(size)
             .clip(CircleShape)
             .background(buildingColor)

@@ -53,7 +53,7 @@ fun GameWinScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "${winner.username.uppercase()} WON!",
+                text = "${winner.username?.uppercase()} WON!",
                 style = appTypography.titleLarge,
                 fontSize = 35.sp,
                 fontWeight = FontWeight.Bold,
@@ -112,7 +112,7 @@ fun GameWinScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = player.username,
+                            text = player.username!!,
                             style = appTypography.bodyLarge.copy(fontSize = 17.sp),
                             color = catanGoldLight
                         )
@@ -168,11 +168,11 @@ fun GameWinScreen(
 @Composable
 fun PreviewGameWinScreen() {
     GameWinScreen(
-        winner = PlayerInfo("2", "Nassir", "#0000FF", 10),
+        winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, victoryPoints = 10),
         leaderboard = listOf(
-            PlayerInfo("2", "Nassir", "#0000FF", 10),
-            PlayerInfo("1", "Mia", "#FF0000", 9),
-            PlayerInfo("3", "Jean", "#D4AF37", 7)
+            PlayerInfo("2", "Nassir", "#0000FF",false, false, victoryPoints = 10),
+            PlayerInfo("1", "Mia", "#FF0000",false, false, victoryPoints = 9),
+            PlayerInfo("3", "Jean", "#D4AF37",false, false, victoryPoints =  7)
         ),
         onReturnToMenu = {},
     )

@@ -11,18 +11,20 @@ enum class MessageType {
     GAME_BOARD_JSON,
     DICE_RESULT,
     GAME_WON,
-    PLAYER_RESOURCES,
+    GAME_STARTED,
+    NEXT_TURN,
 
     //Client Messages
     CREATE_LOBBY,
     JOIN_LOBBY,
+    LEAVE_LOBBY,
     SET_USERNAME,
-    SET_ACTIVE_PLAYER, //-> TODO: Remove after implementation of player order
     PLACE_SETTLEMENT,
     UPGRADE_SETTLEMENT,
     PLACE_ROAD,
-    CREATE_GAME_BOARD,
-    GET_GAME_BOARD,
+    START_GAME,
     BUY_DEVELOPMENT_CARD,
-    ROLL_DICE
+    ROLL_DICE,
+    SET_READY,
+    END_TURN
 }

@@ -2,6 +2,7 @@ package com.example.cataniaunited
 
 import android.app.Application
 import android.util.Log
+import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.game.GameViewModel
@@ -12,6 +13,8 @@ import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnLobbyUpdated
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
 import com.example.cataniaunited.ws.callback.OnWebSocketClosed
 import com.example.cataniaunited.ws.callback.OnWebSocketError
@@ -28,11 +31,12 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-
 @HiltAndroidApp
 open class MainApplication : Application(),
     OnConnectionSuccess,
     OnLobbyCreated,
+    OnPlayerJoined,
+    OnLobbyUpdated,
     OnGameBoardReceived,
     OnWebSocketError,
     OnWebSocketClosed,
@@ -48,13 +52,13 @@ open class MainApplication : Application(),
 
     internal lateinit var webSocketClient: WebSocketClient
     private var _playerId: String? = null
-
+    val players = mutableStateListOf<PlayerInfo>()
+    val _navigateToLobbyChannel = Channel<String>(Channel.BUFFERED)
+    val navigateToLobbyFlow = _navigateToLobbyChannel.receiveAsFlow()
     val _navigateToGameChannel = Channel<String>(Channel.BUFFERED)
     val navigateToGameFlow = _navigateToGameChannel.receiveAsFlow()
 
     private val _errorChannel = Channel<String>(Channel.BUFFERED)
-
-    //override errorFlow of WebSocketErrorProvider
     override val errorFlow = _errorChannel.receiveAsFlow()
 
     var latestBoardJson: String? = null
@@ -109,9 +113,12 @@ open class MainApplication : Application(),
         Log.d("MainApplication", "Cleared game board JSON.")
     }
 
+
     fun clearLobbyData() {
         currentLobbyId = null
-        latestBoardJson = null
+        _gameWonState.value = null
+        this.players.clear()
+        this.clearGameData()
         Log.d("MainApplication", "Cleared lobby data.")
     }
 
@@ -120,19 +127,75 @@ open class MainApplication : Application(),
         setPlayerId(playerId)
     }
 
-    override fun onLobbyCreated(lobbyId: String) {
-        Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId")
-        currentLobbyId = lobbyId
+    override fun onLobbyCreated(
+        lobbyId: String,
+        players: Map<String, PlayerInfo>
+    ) {
+        Log.i(
+            "MainApplication",
+            "Callback: onLobbyCreated. Lobby ID: $lobbyId with players: $players"
+        )
+        if (lobbyId == _currentLobbyIdFlow.value || _currentLobbyIdFlow.value == null) {
+            applicationScope.launch {
+                _navigateToLobbyChannel.send(lobbyId)
+                Log.d("MainApplication", "Navigating to lobby: $lobbyId")
+            }
+            setPlayers(players)
+
+        } else {
+            Log.w("MainApplication", "Received lobby creation for wrong lobby.")
+        }
+
+    }
+
+    override fun onPlayerJoined(
+        lobbyId: String,
+        players: Map<String, PlayerInfo>
+    ) {
+        Log.d("MainApplication", "Callback: onPlayerJoined. Players $players")
+        updateLobby(lobbyId, players)
+    }
+
+    override fun onLobbyUpdated(lobbyId: String, players: Map<String, PlayerInfo>) {
+        Log.d("MainApplication", "Callback: onLobbyUpdated. Players $players")
+        updateLobby(lobbyId, players)
+    }
+
+    private fun updateLobby(lobbyId: String, players: Map<String, PlayerInfo>){
+        if(!players.contains(_playerId)){
+            Log.d("MainApplication", "Player not part of Lobby $lobbyId, dropping update")
+            return
+        }
+
+        Log.d("MainApplication", "Lobby update received: lobby = $lobbyId, players = $players")
+        if (currentLobbyId == null) {
+            currentLobbyId = lobbyId;
+        }
+        setPlayers(players)
+    }
+
+    private fun setPlayers(players: Map<String, PlayerInfo>){
+        val mutablePlayers = players.values.toMutableList()
+        val currentPlayer = mutablePlayers.find { it.id == _playerId }
+        if (currentPlayer != null) {
+            mutablePlayers.remove(currentPlayer)
+            mutablePlayers.add(0, currentPlayer)
+        }
+        this.players.clear()
+        this.players.addAll(mutablePlayers.toList())
     }
 
     override fun onGameBoardReceived(lobbyId: String, boardJson: String) {
-        Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId.")
-        if (latestBoardJson == null && lobbyId == _currentLobbyIdFlow.value) {
+        Log.d(
+            "MainApplication",
+            "Callback: onGameBoardReceived for Lobby $lobbyId. Current lobby id: $currentLobbyId"
+        )
+        if (latestBoardJson == null && lobbyId == currentLobbyId) {
             applicationScope.launch {
                 _navigateToGameChannel.send(lobbyId)
             }
         } else {
-            Log.w("MainApplication", "Received board for wrong lobby.")
+            Log.d("MainApplication", "Already in game channel, abort navigation and update boardJson")
         }
         latestBoardJson = boardJson
     }
@@ -146,33 +209,27 @@ open class MainApplication : Application(),
 
 
     override fun onDiceRolling(playerName: String) {
-        Log.d("MainApplication", "Player $playerName is rolling dice")
+        Log.d("MainApplication", "Dice rolling started for $playerName")
         applicationScope.launch {
-            val currentState = gameViewModel?.diceState?.value
-            if (currentState == null) {
-                gameViewModel?.startRolling(playerName)
-            } else if (!currentState.isRolling && !currentState.showResult) {
-                gameViewModel?.resetDiceState()
-                gameViewModel?.startRolling(playerName)
-            } else {
-                Log.d("MainApplication", "Dice already active - rolling: ${currentState.isRolling}, showing result: ${currentState.showResult}")
+            gameViewModel?.let { vm ->
+                vm.resetDiceState()
+                kotlinx.coroutines.delay(50)
+                vm.startRolling(playerName)
             }
         }
     }
 
     override fun onDiceResult(dice1: Int, dice2: Int) {
-        Log.d("MainApplication", "Processing dice result from server: $dice1, $dice2")
+        Log.d("MainApplication", "Processing dice result: $dice1, $dice2")
         applicationScope.launch {
             val currentState = gameViewModel?.diceState?.value
             if (currentState?.isRolling == true) {
-                gameViewModel?.showResult(currentState.rollingPlayer, dice1, dice2)
-            } else if (currentState == null) {
-                Log.w("MainApplication", "Received dice result without rolling state, showing result immediately")
+                gameViewModel?.showResult(currentState.rollingPlayerUsername, dice1, dice2)
+            } else {
+                Log.w("MainApplication", "Received dice result without rolling state")
                 gameViewModel?.startRolling("Unknown Player")
                 kotlinx.coroutines.delay(50)
                 gameViewModel?.showResult("Unknown Player", dice1, dice2)
-            } else {
-                Log.w("MainApplication", "Received dice result but not currently rolling - current state: $currentState")
             }
         }
     }
@@ -186,19 +243,26 @@ open class MainApplication : Application(),
 
     override fun onClosed(code: Int, reason: String) {
         Log.w("MainApplication", "Callback: onClosed. Code=$code, Reason=$reason")
-        clearGameData()
+        clearLobbyData()
     }
 
-    override fun onPlayerResourcesReceived(resources: Map<TileType, Int>) {
-        Log.d("MainApplication", "Callback: onPlayerResourcesReceived. Resources: $resources")
+    override fun onPlayerResourcesReceived(players: Map<String, PlayerInfo>) {
+        Log.d("MainApplication", "Callback: onPlayerResourcesReceived. Players: $players")
         applicationScope.launch {
             gameViewModel?.let {
-                it.updatePlayerResources(resources)
-                Log.d("MainApplication", "Successfully called updatePlayerResources on ViewModel.")
+                val resources: Map<TileType, Int>? = players[_playerId]?.resources;
+                if (resources != null) {
+                    it.updatePlayerResources(resources)
+                    Log.d(
+                        "MainApplication",
+                        "Successfully called updatePlayerResources on ViewModel."
+                    )
+                } else {
+                    Log.w("MainApplication", "Resources were null — skipping update.")
+                }
+
             } ?: Log.w("MainApplication", "gameViewModel was null — skipping update.")
         }
     }
-
-
 
 }

@@ -17,9 +17,10 @@ class JsonParserTest {
        "tiles":[ { "id":1, "type":"ORE", "value":8, "coordinates":[ 0.0, 0.0 ] } ],
        "settlementPositions":[],
        "roads":[],
+       "ports": [],
        "ringsOfBoard":3,
        "sizeOfHex":6,
-       "anExtraUnknownField": "some value" 
+       "anExtraUnknownField": "some value"
     }
     """
 
@@ -29,10 +30,12 @@ class JsonParserTest {
         val result = parseGameBoard(validFullBoardJson)
 
         assertNotNull(result, "Result should not be null for valid JSON")
-        assertEquals(4, result?.ringsOfBoard)
+        assertEquals(3, result?.ringsOfBoard)
         assertEquals(6, result?.sizeOfHex)
         assertTrue(result?.tiles?.isNotEmpty() ?: false)
-        assertEquals(TileType.ORE, result?.tiles?.get(0)?.type)
+        assertEquals(TileType.SHEEP, result?.tiles?.get(0)?.type)
+        assertNotNull(result?.ports)
+        assertEquals(9, result?.ports?.size)
     }
 
     @Test
@@ -46,7 +49,6 @@ class JsonParserTest {
         val result = parseGameBoard(invalidJson_WrongType)
         assertNull(result, "Result should be null for wrong data type JSON")
     }
-
 
 
     @Test

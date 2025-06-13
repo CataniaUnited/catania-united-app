@@ -14,6 +14,9 @@ import androidx.compose.ui.unit.dp
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.R
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.cataniaunited.ui.theme.catanAmber
+import com.example.cataniaunited.ui.theme.catanBlue
+import com.example.cataniaunited.ui.theme.catanClayLight
 import com.example.cataniaunited.ui.theme.catanGold
 
 @Composable
@@ -24,13 +27,14 @@ fun PlayerResourcePopup(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.Black.copy(alpha = 0.6f))
+            .background(catanBlue)
             .clickable { onDismiss() },
         contentAlignment = Alignment.Center
     ) {
         Card(
-            colors = CardDefaults.cardColors(containerColor = catanGold),
+            colors = CardDefaults.cardColors(containerColor = catanAmber),
             shape = MaterialTheme.shapes.medium,
+            elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
             modifier = Modifier
                 .wrapContentSize()
                 .padding(16.dp)
@@ -40,9 +44,34 @@ fun PlayerResourcePopup(
                 modifier = Modifier.padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Your Resources", style = MaterialTheme.typography.titleMedium)
-                Spacer(modifier = Modifier.height(12.dp))
 
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TileType.entries
+                        .filter { it != TileType.WASTE }
+                        .forEach { type ->
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Image(
+                                    painter = painterResource(
+                                        id = when (type) {
+                                            TileType.WOOD -> R.drawable.ressource_card_wood
+                                            TileType.CLAY -> R.drawable.ressource_card_clay
+                                            TileType.WHEAT -> R.drawable.ressource_card_wheat
+                                            TileType.ORE -> R.drawable.ressource_card_ore
+                                            TileType.SHEEP -> R.drawable.ressource_card_wool
+                                            else -> R.drawable.ic_launcher_foreground
+                                        }
+                                    ),
+                                    contentDescription = type.name,
+                                    modifier = Modifier.size(64.dp)
+                                )
+                                Text(text = resources[type]?.toString() ?: "0")
+                            }
+                        }
+
+                }
             }
         }
     }

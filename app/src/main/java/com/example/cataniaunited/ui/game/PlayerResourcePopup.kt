@@ -28,7 +28,9 @@ fun PlayerResourcePopup(
 
     Card(
         colors = CardDefaults.cardColors(containerColor = catanClayLight),
-        modifier = modifier.padding(top = 4.dp)
+        modifier = modifier
+            .padding(top = 4.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Row(
             modifier = Modifier.padding(12.dp),

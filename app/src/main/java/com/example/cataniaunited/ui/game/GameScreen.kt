@@ -213,7 +213,7 @@ fun GameScreen(
                                         .zIndex(10f)
                                         .offset(
                                             x = with(LocalDensity.current) { selectedPlayerOffsetX.value.toDp() },
-                                            y = 10.dp
+                                            y = 3.dp
                                         )
                                         .align(Alignment.TopStart)
                                 ) {

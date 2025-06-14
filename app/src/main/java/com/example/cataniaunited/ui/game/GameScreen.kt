@@ -10,8 +10,10 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoubleArrow
 import androidx.compose.material3.CircularProgressIndicator
@@ -31,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -65,7 +68,8 @@ fun GameScreen(
     val players by gameViewModel.players.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
     val selectedPlayer = remember { mutableStateOf<PlayerInfo?>(null) }
-
+    val selectedPlayerIndex = remember { mutableStateOf<Int?>(null) }
+    val selectedPlayerOffsetX = remember { mutableStateOf(0f) }
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
@@ -74,7 +78,7 @@ fun GameScreen(
         }
     }
 
-    if(player?.isActivePlayer == true && player.canRollDice == true){
+    if (player?.isActivePlayer == true && player.canRollDice == true) {
         ShakeDetector {
             if (!showDicePopup) {
                 showDicePopup = true
@@ -97,11 +101,14 @@ fun GameScreen(
             topBar = {
                 LivePlayerVictoryBar(
                     selectedPlayerId = selectedPlayer.value?.id,
-                    onPlayerClicked = { playerInfo ->
+                    onPlayerClicked = { playerInfo, index ->
                         selectedPlayer.value = if (selectedPlayer.value?.id == playerInfo.id) null else playerInfo
+                        selectedPlayerIndex.value = if (selectedPlayer.value?.id == playerInfo.id) index else null
+                    },
+                    onPlayerOffsetChanged = { offsetX ->
+                        selectedPlayerOffsetX.value = offsetX
                     }
                 )
-
             },
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
@@ -198,6 +205,21 @@ fun GameScreen(
                                     )
                                 }
                             }
+
+                            if (selectedPlayer.value != null && selectedPlayerIndex.value != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .wrapContentSize()
+                                        .zIndex(10f)
+                                        .offset(
+                                            x = with(LocalDensity.current) { selectedPlayerOffsetX.value.toDp() },
+                                            y = 10.dp
+                                        )
+                                        .align(Alignment.TopStart)
+                                ) {
+                                    PlayerResourcePopup(resources = selectedPlayer.value!!.resources)
+                                }
+                            }
                         }
                     }
 
@@ -249,22 +271,5 @@ fun GameScreen(
                 }
             }
         }
-
-        if (selectedPlayer.value != null) {
-            val selected = selectedPlayer.value!!
-            val playerResourcesMap = selected.resources
-
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(top = 60.dp),
-                contentAlignment = Alignment.TopCenter
-            ) {
-                PlayerResourcePopup(
-                    resources = playerResourcesMap
-                )
-            }
-        }
     }
 }
-

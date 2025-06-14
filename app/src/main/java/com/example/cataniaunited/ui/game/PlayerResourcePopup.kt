@@ -15,6 +15,7 @@ import com.example.cataniaunited.R
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.cataniaunited.ui.theme.catanAmber
 import com.example.cataniaunited.ui.theme.catanBlue
+import com.example.cataniaunited.ui.theme.catanClayLight
 
 
 @Composable
@@ -23,7 +24,7 @@ fun PlayerResourcePopup(
     modifier: Modifier = Modifier
 ) {
     Card(
-        colors = CardDefaults.cardColors(containerColor = catanAmber),
+        colors = CardDefaults.cardColors(containerColor = catanClayLight),
         modifier = modifier
             .padding(top = 4.dp)
     ) {

@@ -15,31 +15,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
 import com.example.cataniaunited.data.model.PlayerInfo
-import com.example.cataniaunited.ui.game.PlayerResourcePopup
 import com.example.cataniaunited.ui.theme.appTypography
-
-private val catanClayLight = Color(0xFFB76B3C)
+import com.example.cataniaunited.ui.theme.catanClayLight
 
 @Composable
 fun PlayerVictoryBar(
     players: List<PlayerInfo>,
     selectedPlayerId: String?,
     modifier: Modifier = Modifier,
-    onPlayerClicked: (PlayerInfo) -> Unit
+    onPlayerClicked: (PlayerInfo, Int) -> Unit,
+    onPlayerOffsetChanged: (Float) -> Unit
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(top = 12.dp)
-            .background(Color.Transparent),
+            .padding(top = 12.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.Top
     ) {
-        players.forEach { player ->
+        players.forEachIndexed { index, player ->
             val borderColor = Color(player.color.toColorInt())
             val vpTextColor = if (borderColor.luminance() > 0.5f) Color.Black else Color.White
 
@@ -51,7 +51,14 @@ fun PlayerVictoryBar(
                         .border(2.dp, borderColor, RoundedCornerShape(12.dp))
                         .clip(RoundedCornerShape(12.dp))
                         .background(Color.Transparent)
-                        .clickable { onPlayerClicked(player) }
+                        .clickable {
+                            onPlayerClicked(player, index)
+                        }
+                        .onGloballyPositioned { coords ->
+                            if (selectedPlayerId == player.id) {
+                                onPlayerOffsetChanged(coords.positionInRoot().x)
+                            }
+                        }
                 ) {
                     Row(modifier = Modifier.fillMaxSize()) {
                         Box(
@@ -68,13 +75,12 @@ fun PlayerVictoryBar(
                                 if (player.isActivePlayer) {
                                     Icon(
                                         imageVector = Icons.Default.Star,
-                                        contentDescription = "Is active player",
+                                        contentDescription = null,
                                         tint = Color.White,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                 }
-
                                 player.username?.let {
                                     Text(
                                         text = it,
@@ -86,14 +92,12 @@ fun PlayerVictoryBar(
                                 }
                             }
                         }
-
                         Box(
                             modifier = Modifier
                                 .width(2.dp)
                                 .fillMaxHeight()
                                 .background(borderColor)
                         )
-
                         Box(
                             modifier = Modifier
                                 .width(60.dp)
@@ -103,9 +107,7 @@ fun PlayerVictoryBar(
                         ) {
                             Text(
                                 text = "${player.victoryPoints} VP",
-                                style = appTypography.bodyLarge.copy(
-                                    fontSize = 16.sp
-                                ),
+                                style = appTypography.bodyLarge.copy(fontSize = 16.sp),
                                 color = vpTextColor
                             )
                         }

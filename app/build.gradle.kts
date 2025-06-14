@@ -60,6 +60,17 @@ android {
                 it.finalizedBy(tasks.named("jacocoUnitTestReport"))
             }
         }
+
+    }
+
+    packaging {
+        resources {
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE-notice.md"
+            excludes += "META-INF/AL2.0"
+            excludes += "META-INF/LGPL2.1"
+            excludes += "META-INF/*.kotlin_module"
+        }
     }
 }
 
@@ -153,6 +164,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.runtime.compose)
+    implementation(libs.androidx.material.icons.extended.android)
 
     // Test implementations
     androidTestImplementation(libs.androidx.junit)
@@ -162,6 +174,7 @@ dependencies {
     androidTestImplementation(libs.mockwebserver)
     androidTestImplementation(libs.mockito.android)
     androidTestImplementation(libs.mockito.kotlin)
+    androidTestImplementation(libs.mockk.android)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     testImplementation(libs.junit)
@@ -181,6 +194,7 @@ dependencies {
     kaptTest(libs.hilt.compiler)
     testImplementation(libs.robolectric)
     androidTestImplementation(libs.turbine)
+    testImplementation(kotlin("test"))
 }
 
 kapt {

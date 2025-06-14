@@ -3,11 +3,14 @@ package com.example.cataniaunited.logic.game
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cataniaunited.data.model.GameBoardModel
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
-import com.example.cataniaunited.data.model.GameBoardModel
-import com.example.cataniaunited.data.util.parseGameBoard
+import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.lobby.LobbyLogic
+import com.example.cataniaunited.logic.player.PlayerSessionManager
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,86 +20,159 @@ import javax.inject.Inject
 import androidx.compose.runtime.mutableStateListOf
 
 
-
 @HiltViewModel
 class GameViewModel @Inject constructor(
-    private val gameBoardLogic: GameBoardLogic
+    private val gameBoardLogic: GameBoardLogic,
+    private val lobbyLogic: LobbyLogic,
+    private val gameDataHandler: GameDataHandler,
+    private val sessionManager: PlayerSessionManager
 ) : ViewModel() {
 
-    private val _gameBoardState = MutableStateFlow<GameBoardModel?>(null)
-    val gameBoardState: StateFlow<GameBoardModel?> = _gameBoardState.asStateFlow()
+    val playerId get() = sessionManager.getPlayerId()
+    val gameBoardState: StateFlow<GameBoardModel?> = gameDataHandler.gameBoardState
+
+    private val _isBuildMenuOpen = MutableStateFlow(false)
+    val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
+
+    private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
+    val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
+
+    private val _victoryPoints = MutableStateFlow<Map<String, Int>>(emptyMap())
+    val victoryPoints: StateFlow<Map<String, Int>> = _victoryPoints
+
+    private val _playerResources = MutableStateFlow<Map<TileType, Int>>(emptyMap())
+    val playerResources: StateFlow<Map<TileType, Int>> = _playerResources.asStateFlow()
+
+    private val _players = MutableStateFlow<Map<String, PlayerInfo>>(emptyMap())
+    val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
 
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
 
         // Listen for development cards sent from the server
-        viewModelScope.launch {
+       /* viewModelScope.launch {
             com.example.cataniaunited.logic.CardReceiver.cardFlow.collect { cardType ->
                 Log.d("GameViewModel", "Received card from flow: $cardType")
                 addDevelopmentCard(cardType)
             }
         }
-    }
+    }*/
 
 
     // New function to be called externally (e.g., from the Composable's LaunchedEffect)
+        _players.value = gameDataHandler.playersState.value
+        val resources: Map<TileType, Int>? = _players.value[playerId]?.resources
+        _playerResources.value = resources ?: TileType.entries
+            .filter { it != TileType.WASTE }
+            .associateWith { 0 }
+        _victoryPoints.value = gameDataHandler.victoryPointsState.value
+
+        Log.d("GameViewModel", "Players initialized: ${players.value}")
+        Log.d("GameViewModel", "Resources initialized: ${playerResources.value}")
+        Log.d("GameViewModel", "Victory points initialized: ${victoryPoints.value}")
+
+        viewModelScope.launch {
+            gameDataHandler.victoryPointsState.collect {
+                Log.d("GameViewModel_Collect", "Updating victory points value: $it")
+                _victoryPoints.value = it
+            }
+        }
+
+        viewModelScope.launch {
+            gameDataHandler.playersState.collect {
+                Log.d("GameViewModel_Collect", "RECEIVED playersState in collect: $it")
+                _players.value = it
+
+                val playerInfo: PlayerInfo? = it[playerId];
+                if(playerInfo != null && !playerInfo.isActivePlayer){
+                    //Close build menu when player is not active player
+                    setBuildMenuOpen(false)
+                }
+            }
+            Log.d("GameViewModel_Collect", "playersState collect FINISHED in ViewModelScope.")
+        }
+    }
+
     fun initializeBoardState(initialJson: String?) {
-        if (_gameBoardState.value == null) { // Only load if not already loaded
+        if (gameBoardState.value == null) {
             Log.i("GameViewModel", "Initializing board state.")
             if (initialJson != null) {
                 loadGameBoardFromJson(initialJson)
-                // Maybe clear application state here if needed via injected dependency?
             } else {
                 Log.e("GameViewModel", "Initial board JSON was null during initialization!")
-                _gameBoardState.value = null
             }
         }
     }
-
-
 
     fun loadGameBoardFromJson(jsonString: String) {
         viewModelScope.launch {
-            val board = parseGameBoard(jsonString)
-            if (board != null) {
-                _gameBoardState.value = board
-                Log.i("GameViewModel", "Game board loaded/updated successfully from JSON.")
-            } else {
-                Log.e("GameViewModel", "Failed to parse game board from JSON string.")
-                _gameBoardState.value = null
-            }
+            gameDataHandler.updateGameBoard(jsonString)
         }
     }
 
-
-    // --- Placeholder Click Handlers ---
+    fun updatePlayerResources(newResources: Map<TileType, Int>) {
+        Log.d("GameViewModel", "Updating player resources: $newResources")
+        _playerResources.value = newResources
+    }
 
     fun handleTileClick(tile: Tile, lobbyId: String) {
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
         // TODO: Implement logic for tile click (e.g., move robber phase)
-        // 1) Check game state (is it robber phase?)
-        // 2) Validate if the tile is a valid target
-        // 3) call gameBoardLogic....
     }
 
-    fun handleSettlementClick(settlementPosition: SettlementPosition, lobbyId: String) {
-        Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}")
-        // TODO: Implement logic for placing/upgrading settlement DON'T FORGET UPGRADE XD
-        // 1) Check game state (setup or not? your turn?)
-        // 2) Check resources
-        // 3) Validate placement rules (distance, road connection)
-        // 4) Get lobbyId and PlayerId
-        // 5) Call gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
+    fun handleSettlementClick(
+        settlementPosition: SettlementPosition,
+        isUpgrade: Boolean,
+        lobbyId: String
+    ) {
+        Log.d(
+            "GameViewModel",
+            "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}"
+        )
+        if (isUpgrade) {
+            gameBoardLogic.upgradeSettlement(settlementPosition.id, lobbyId)
+        } else {
+            gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
+        }
+
     }
 
     fun handleRoadClick(road: Road, lobbyId: String) {
         Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
-        // TODO: Implement logic for placing road
-        // 1) Check game state (setup or not? your turn?)
-        // 2) Check resources
-        // 3) Validate placement rules (road connection, empty)
-        // 4) Get lobbyId and PlayerId
-        // 5) Call gameBoardLogic.placeRoad(road.id, lobbyId)
+        gameBoardLogic.placeRoad(road.id, lobbyId)
+    }
+
+    fun handleEndTurnClick(lobbyId: String){
+        Log.d("GameViewModel", "handleEndTurnClick: Player ended turn")
+        lobbyLogic.endTurn(lobbyId)
+    }
+
+    fun setBuildMenuOpen(isOpen: Boolean) {
+        Log.d("GameViewModel", "handleBuildMenuClick: isOpen=$isOpen")
+        _isBuildMenuOpen.value = isOpen
+    }
+
+    var isProcessingRoll = false
+    fun rollDice(lobbyId: String) {
+        if (isProcessingRoll) return
+
+        isProcessingRoll = true
+        Log.d("GameViewModel", "Initiating dice roll for lobby: $lobbyId")
+        gameBoardLogic.rollDice(lobbyId)
+
+        viewModelScope.launch {
+            isProcessingRoll = false
+        }
+    }
+
+    fun updateDiceResult(dice1: Int?, dice2: Int?) {
+        viewModelScope.launch {
+            if (dice1 != null && dice2 != null) {
+                _diceResult.value = Pair(dice1, dice2)
+            } else {
+                _diceResult.value = null
+            }
+        }
     }
     fun handleBuyDevCardClick(lobbyId: String) {
         gameBoardLogic.buyDevelopmentCard(lobbyId)
@@ -117,4 +193,3 @@ class GameViewModel @Inject constructor(
 
 
 }
-

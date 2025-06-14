@@ -1,0 +1,107 @@
+package com.example.cataniaunited.di
+
+import android.app.Application
+import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.logic.game.GameDataHandler
+import com.example.cataniaunited.ws.WebSocketListenerImpl
+import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDiceResult
+import com.example.cataniaunited.ws.callback.OnGameBoardReceived
+import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnPlayerJoined
+import com.example.cataniaunited.ws.callback.OnLobbyUpdated
+import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
+import com.example.cataniaunited.ws.callback.OnWebSocketClosed
+import com.example.cataniaunited.ws.callback.OnWebSocketError
+import dagger.Module
+import dagger.Provides
+import dagger.hilt.InstallIn
+import dagger.hilt.components.SingletonComponent
+import javax.inject.Singleton
+
+@Module
+@InstallIn(SingletonComponent::class)
+object WebSocketModule {
+
+    @Provides
+    @Singleton
+    fun provideOnConnectionSuccess(application: Application): OnConnectionSuccess {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnLobbyCreated(application: Application): OnLobbyCreated {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnPlayerJoined(application: Application): OnPlayerJoined {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnLobbyUpdated(application: Application): OnLobbyUpdated {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnGameBoardReceived(application: Application): OnGameBoardReceived {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnDiceResult(application: Application): OnDiceResult {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnWebSocketError(application: Application): OnWebSocketError {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnWebSocketClosed(application: Application): OnWebSocketClosed {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideOnPlayerResourcesReceived(application: Application): OnPlayerResourcesReceived {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
+    fun provideWebSocketListener(
+        onConnectionSuccess: OnConnectionSuccess,
+        onLobbyCreated: OnLobbyCreated,
+        onPlayerJoined: OnPlayerJoined,
+        onLobbyUpdated: OnLobbyUpdated,
+        onGameBoardReceived: OnGameBoardReceived,
+        onError: OnWebSocketError,
+        onClosed: OnWebSocketClosed,
+        onDiceResult: OnDiceResult,
+        onPlayerResourcesReceived: OnPlayerResourcesReceived,
+        gameDataHandler: GameDataHandler
+    ): WebSocketListenerImpl {
+        return WebSocketListenerImpl(
+            onConnectionSuccess = onConnectionSuccess,
+            onLobbyCreated = onLobbyCreated,
+            onPlayerJoined = onPlayerJoined,
+            onLobbyUpdated = onLobbyUpdated,
+            onGameBoardReceived = onGameBoardReceived,
+            onError = onError,
+            onClosed = onClosed,
+            onDiceResult = onDiceResult,
+            gameDataHandler = gameDataHandler,
+            onPlayerResourcesReceived = onPlayerResourcesReceived
+        )
+    }
+}

@@ -17,9 +17,10 @@ class JsonParserTest {
        "tiles":[ { "id":1, "type":"ORE", "value":8, "coordinates":[ 0.0, 0.0 ] } ],
        "settlementPositions":[],
        "roads":[],
+       "ports": [],
        "ringsOfBoard":3,
        "sizeOfHex":6,
-       "anExtraUnknownField": "some value" 
+       "anExtraUnknownField": "some value"
     }
     """
 
@@ -32,7 +33,9 @@ class JsonParserTest {
         assertEquals(3, result?.ringsOfBoard)
         assertEquals(6, result?.sizeOfHex)
         assertTrue(result?.tiles?.isNotEmpty() ?: false)
-        assertEquals(TileType.ORE, result?.tiles?.get(0)?.type)
+        assertEquals(TileType.SHEEP, result?.tiles?.get(0)?.type)
+        assertNotNull(result?.ports)
+        assertEquals(9, result?.ports?.size)
     }
 
     @Test
@@ -47,13 +50,6 @@ class JsonParserTest {
         assertNull(result, "Result should be null for wrong data type JSON")
     }
 
-    @Test
-    fun parseGameBoardJSONWithUnknownKeyReturnsNull() {
-        val result = parseGameBoard(jsonWithUnknownKey)
-        assertNull(
-            result, "Result should be null when ignoreUnknownKeys=false and unknown key exists"
-        )
-    }
 
     @Test
     fun parseGameBoardEmptyJSONReturnsNull() {

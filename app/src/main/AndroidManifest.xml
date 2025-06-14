@@ -18,16 +18,12 @@
         android:theme="@style/Theme.CataniaUnited"
         tools:targetApi="31">
         <activity
-            android:name=".ui.HostAndJoin"
-            android:exported="false" />
-        <activity
-            android:name=".ui.JoinGame"
-            android:exported="false" />
-        <activity
             android:name=".MainActivity"
+            android:screenOrientation="landscape"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.CataniaUnited">
+            android:theme="@style/Theme.CataniaUnited"
+            tools:ignore="DiscouragedApi">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

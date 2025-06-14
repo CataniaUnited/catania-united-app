@@ -1,6 +1,7 @@
 package com.example.cataniaunited.logic.dto
 
 import android.annotation.SuppressLint
+import com.example.cataniaunited.data.model.PlayerInfo
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -12,7 +13,7 @@ data class MessageDTO(
     val type: MessageType,
     val player: String? = null,
     val lobbyId: String? = null,
-    val players: List<String>? = null,
+    val players: Map<String, PlayerInfo>? = null,
     val message: JsonObject? = null
 ) {
 

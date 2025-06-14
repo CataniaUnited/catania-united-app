@@ -22,13 +22,9 @@ class StartingScreenTest {
                 StartingScreen(
                     onLearnClick = {},
                     onStartClick = {},
-                    onTestClick = {},
-                    onCreateLobbyClick = {},
-                    currentLobbyId = "testLobby123",
                 )
             }
         }
-        composeRule.onNodeWithText("CATAN UNIVERSE").assertIsDisplayed()
         composeRule.onNodeWithText("LEARN").assertIsDisplayed()
         composeRule.onNodeWithText("OR").assertIsDisplayed()
         composeRule.onNodeWithText("START GAME").assertIsDisplayed()
@@ -44,9 +40,6 @@ class StartingScreenTest {
                 StartingScreen(
                     onLearnClick = { learnClicked = true },
                     onStartClick = { startClicked = true },
-                    onTestClick = { },
-                    onCreateLobbyClick = {},
-                    currentLobbyId = "testLobby123"
                 )
             }
         }

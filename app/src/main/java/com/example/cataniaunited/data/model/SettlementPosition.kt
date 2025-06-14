@@ -7,6 +7,6 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class SettlementPosition(
     val id: Int,
-    val building: String?,
+    val building: Building?,
     val coordinates: List<Double>
 )

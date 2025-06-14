@@ -64,6 +64,8 @@ fun GameScreen(
     val gameWonState by application.gameWonState.collectAsState()
     val players by gameViewModel.players.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
+    val selectedPlayer = remember { mutableStateOf<PlayerInfo?>(null) }
+
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
@@ -93,7 +95,13 @@ fun GameScreen(
                 }
             },
             topBar = {
-                LivePlayerVictoryBar()
+                LivePlayerVictoryBar(
+                    selectedPlayerId = selectedPlayer.value?.id,
+                    onPlayerClicked = { playerInfo ->
+                        selectedPlayer.value = if (selectedPlayer.value?.id == playerInfo.id) null else playerInfo
+                    }
+                )
+
             },
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
@@ -239,6 +247,22 @@ fun GameScreen(
                         }
                     )
                 }
+            }
+        }
+
+        if (selectedPlayer.value != null) {
+            val selected = selectedPlayer.value!!
+            val playerResourcesMap = selected.resources
+
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 60.dp),
+                contentAlignment = Alignment.TopCenter
+            ) {
+                PlayerResourcePopup(
+                    resources = playerResourcesMap
+                )
             }
         }
     }

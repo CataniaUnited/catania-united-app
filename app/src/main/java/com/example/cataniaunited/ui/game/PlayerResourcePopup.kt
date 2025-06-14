@@ -8,7 +8,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.cataniaunited.data.model.TileType
@@ -16,80 +15,46 @@ import com.example.cataniaunited.R
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.cataniaunited.ui.theme.catanAmber
 import com.example.cataniaunited.ui.theme.catanBlue
-import com.example.cataniaunited.ui.theme.catanClayLight
-import com.example.cataniaunited.ui.theme.catanGold
+
 
 @Composable
 fun PlayerResourcePopup(
     resources: Map<TileType, Int>,
-    onDismiss: () -> Unit
+    modifier: Modifier = Modifier
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(catanBlue)
-            .clickable { onDismiss() },
-        contentAlignment = Alignment.Center
+    Card(
+        colors = CardDefaults.cardColors(containerColor = catanAmber),
+        modifier = modifier
+            .padding(top = 4.dp)
     ) {
-        Card(
-            colors = CardDefaults.cardColors(containerColor = catanAmber),
-            shape = MaterialTheme.shapes.medium,
-            elevation = CardDefaults.cardElevation(defaultElevation = 20.dp),
-            modifier = Modifier
-                .wrapContentSize()
-                .padding(16.dp)
-                .clickable(enabled = false) {}
+        Row(
+            modifier = Modifier.padding(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(
-                modifier = Modifier.padding(16.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    TileType.entries
-                        .filter { it != TileType.WASTE }
-                        .forEach { type ->
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Image(
-                                    painter = painterResource(
-                                        id = when (type) {
-                                            TileType.WOOD -> R.drawable.ressource_card_wood
-                                            TileType.CLAY -> R.drawable.ressource_card_clay
-                                            TileType.WHEAT -> R.drawable.ressource_card_wheat
-                                            TileType.ORE -> R.drawable.ressource_card_ore
-                                            TileType.SHEEP -> R.drawable.ressource_card_wool
-                                            else -> R.drawable.ic_launcher_foreground
-                                        }
-                                    ),
-                                    contentDescription = type.name,
-                                    modifier = Modifier.size(64.dp)
-                                )
-                                Text(text = resources[type]?.toString() ?: "0")
-                            }
-                        }
-
+            TileType.entries
+                .filter { it != TileType.WASTE }
+                .forEach { type ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Image(
+                            painter = painterResource(
+                                id = when (type) {
+                                    TileType.WOOD -> R.drawable.ressource_card_wood
+                                    TileType.CLAY -> R.drawable.ressource_card_clay
+                                    TileType.WHEAT -> R.drawable.ressource_card_wheat
+                                    TileType.ORE -> R.drawable.ressource_card_ore
+                                    TileType.SHEEP -> R.drawable.ressource_card_wool
+                                    else -> R.drawable.ic_launcher_foreground
+                                }
+                            ),
+                            contentDescription = type.name,
+                            modifier = Modifier.size(48.dp)
+                        )
+                        Text(text = resources[type]?.toString() ?: "0")
+                    }
                 }
-            }
         }
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun PlayerResourcePopupPreview() {
-    val sampleResources = mapOf(
-        TileType.WOOD to 3,
-        TileType.CLAY to 2,
-        TileType.WHEAT to 1,
-        TileType.ORE to 0,
-        TileType.SHEEP to 4
-    )
 
-    PlayerResourcePopup(
-        resources = sampleResources,
-        onDismiss = {}
-    )
-}

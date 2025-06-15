@@ -163,7 +163,7 @@ class GameViewModel @Inject constructor(
         gameBoardLogic.rollDice(lobbyId)
 
         viewModelScope.launch {
-            delay(3000) // Extended timeout
+            delay(3000) // timeout
 
             if (diceState.value?.isRolling == true) {
                 Log.e("GameViewModel", "Dice roll timeout")
@@ -198,7 +198,7 @@ class GameViewModel @Inject constructor(
                     showResult = false
                 )
             )
-            delay(2000) // Extended timeout
+            delay(2000) // timeout
         }
     }
 
@@ -213,7 +213,7 @@ class GameViewModel @Inject constructor(
                     showResult = true
                 )
             )
-            delay(3000) // Show result for 2 seconds
+            delay(3000) // Show result for 3 seconds
             resetDiceState()
         }
     }

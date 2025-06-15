@@ -21,6 +21,10 @@ class GameDataHandler @Inject constructor() {
     private val _victoryPointsState = MutableStateFlow<Map<String, Int>>(emptyMap())
     val victoryPointsState: StateFlow<Map<String, Int>> = _victoryPointsState.asStateFlow()
 
+    private val _diceState = MutableStateFlow<GameViewModel.DiceState?>(null)
+    val diceState: StateFlow<GameViewModel.DiceState?> = _diceState.asStateFlow()
+
+
     private val jsonParser = Json { ignoreUnknownKeys = true }
 
     fun updateGameBoard(jsonString: String) {
@@ -61,5 +65,9 @@ class GameDataHandler @Inject constructor() {
         } else {
             Log.d("GameDataHandler", "PlayersState value unchanged. Not emitting new value.")
         }
+    }
+
+    fun updateDiceState(state: GameViewModel.DiceState?) {
+        _diceState.value = state
     }
 }

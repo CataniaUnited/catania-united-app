@@ -24,9 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -58,8 +55,8 @@ fun GameScreen(
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
     val isBuildMenuOpen by gameViewModel.isBuildMenuOpen.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication
-    var showDicePopup by remember { mutableStateOf(false) }
-    val diceResult by gameViewModel.diceResult.collectAsState()
+    val showDicePopup by gameViewModel.showDicePopup.collectAsState()
+    val diceState by gameViewModel.diceState.collectAsState()
     val playerResources by gameViewModel.playerResources.collectAsState()
     val gameWonState by application.gameWonState.collectAsState()
     val players by gameViewModel.players.collectAsState()
@@ -72,10 +69,9 @@ fun GameScreen(
         }
     }
 
-    if(player?.isActivePlayer == true && player.canRollDice == true){
+    if (player?.isActivePlayer == true && player.canRollDice == true) {
         ShakeDetector {
             if (!showDicePopup) {
-                showDicePopup = true
                 gameViewModel.rollDice(lobbyId)
             }
         }
@@ -101,7 +97,6 @@ fun GameScreen(
                         //Roll dice action
                         FloatingActionButton(
                             onClick = {
-                                showDicePopup = true
                                 gameViewModel.rollDice(lobbyId)
                             },
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -193,16 +188,13 @@ fun GameScreen(
                         }
                     }
 
-                    if (showDicePopup) {
+                    if (diceState != null) {
                         DiceRollerPopup(
-                            onClose = {
-                                showDicePopup = false
-                                gameViewModel.updateDiceResult(null, null)
-                            },
-                            dice1Result = diceResult?.first,
-                            dice2Result = diceResult?.second
+                            viewModel = gameViewModel,
+                            onClose = { gameViewModel.resetDiceState() }
                         )
                     }
+
 
                     Text(
                         text = "Lobby ID: $lobbyId",

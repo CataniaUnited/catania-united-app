@@ -4,7 +4,6 @@ import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.model.PlayerInfo
-import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -104,7 +103,8 @@ class GameBoardInstrumentedTest() {
         { lid, json -> println("DummyCallback: onGameBoardReceived $lid, json len: ${json.length}") }
     private val dummyOnClosed: (Int, String) -> Unit =
         { code, reason -> println("DummyCallback: onClosed $code $reason") }
-    private val dummyOnDiceResult: (Int, Int) -> Unit = { _, _ -> }
+    private val dummyOnDiceResult: (Int, Int, String) -> Unit = { _, _, _ -> }
+    private val dummyOnDiceRolling: (String) -> Unit = { _ -> }
     private val dummyOnPlayerResourcesRecieved: (Map<String, PlayerInfo>) -> Unit = { _ -> }
 
     @Test
@@ -160,6 +160,7 @@ class GameBoardInstrumentedTest() {
                 onClosed = dummyOnClosed,
                 gameDataHandler = gameDataHandlerMock,
                 onDiceResult = dummyOnDiceResult,
+                onDiceRolling = dummyOnDiceRolling,
                 onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved,
                 onPlayerJoined = dummyOnPlayerJoined,
                 onLobbyUpdated = dummyOnLobbyUpdated
@@ -248,6 +249,7 @@ class GameBoardInstrumentedTest() {
                 },
                 onClosed = dummyOnClosed,
                 onDiceResult = dummyOnDiceResult,
+                onDiceRolling = dummyOnDiceRolling,
                 gameDataHandler = gameDataHandlerMock,
                 onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved,
                 onPlayerJoined = dummyOnPlayerJoined,
@@ -290,7 +292,12 @@ class GameBoardInstrumentedTest() {
         println("Running testRollDice...")
         val lobbyId = "lobby-dice-${System.currentTimeMillis()}"
 
-        val messagePayload = buildJsonObject { put("action", "rollDice") }
+        val messagePayload = buildJsonObject {
+            put("action", "rollDice")
+            put("player", playerId)
+            put("playerName", playerId)
+        }
+
         val expectedMessageDTO =
             MessageDTO(MessageType.ROLL_DICE, playerId, lobbyId, null, messagePayload)
         val expectedJson =
@@ -337,6 +344,7 @@ class GameBoardInstrumentedTest() {
                 },
                 onClosed = dummyOnClosed,
                 onDiceResult = dummyOnDiceResult,
+                onDiceRolling = dummyOnDiceRolling,
                 gameDataHandler = gameDataHandlerMock,
                 onPlayerResourcesReceived = dummyOnPlayerResourcesRecieved,
                 onPlayerJoined = dummyOnPlayerJoined,

@@ -188,10 +188,10 @@ fun GameScreen(
                         }
                     }
 
-                    if (showDicePopup && diceState != null) {
+                    if (diceState != null) {
                         DiceRollerPopup(
                             viewModel = gameViewModel,
-                            onClose = { gameViewModel.closeDicePopup() }
+                            onClose = { gameViewModel.resetDiceState() }
                         )
                     }
 

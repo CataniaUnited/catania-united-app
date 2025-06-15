@@ -1,6 +1,8 @@
 package com.example.cataniaunited.logic.game
 
+import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -147,7 +149,16 @@ class GameBoardLogicTest {
 
     @Test
     fun rollDiceSendsCorrectMessageWhenConnected() {
-        val expectedPayload = buildJsonObject { put("action", "rollDice") }
+        val testPlayer = PlayerInfo(id = testPlayerId, username = "TestPlayer")
+        val playersStateList = mutableStateListOf<PlayerInfo>()
+        playersStateList.add(testPlayer)
+        every { mockMainApplication.players } returns playersStateList
+
+        val expectedPayload = buildJsonObject {
+            put("action", "rollDice")
+            put("player", testPlayerId)
+            put("playerName", "TestPlayer")
+        }
         val expectedMessage = MessageDTO(
             type = MessageType.ROLL_DICE,
             player = testPlayerId,
@@ -164,7 +175,7 @@ class GameBoardLogicTest {
     @Test
     fun rollDiceDoesNotSendWhenGetPlayerIdThrows() {
         val exception = IllegalStateException("Player ID not set")
-        every { mockMainApplication.getPlayerId() } throws exception
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
         gameBoardLogic.rollDice(testLobbyId)
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }

@@ -225,11 +225,12 @@ open class WebSocketListenerImpl @Inject constructor(
     }
 
     internal fun handleDiceRolling(messageDTO: MessageDTO) {
-        val playerName = messageDTO.message?.get("playerName")?.jsonPrimitive?.contentOrNull
+        val playerName = messageDTO.message?.get("rollingUsername")?.jsonPrimitive?.contentOrNull
             ?: messageDTO.players?.get(messageDTO.player)?.username
-            ?: messageDTO.player.toString()
+            ?: "Player"
+        val playerId = messageDTO.player ?: ""
 
-        Log.d("WebSocketListener", "Dice rolling for player: $playerName")
+        Log.d("WebSocketListener", "Dice rolling for: $playerName (ID: $playerId)")
         onDiceRolling.onDiceRolling(playerName)
     }
 
@@ -241,6 +242,12 @@ open class WebSocketListenerImpl @Inject constructor(
             ?: "Unknown Player"
 
         Log.d("WebSocketListener", "Dice result for $playerName: $dice1, $dice2")
-        onDiceResult.onDiceResult(dice1, dice2)
+
+        messageDTO.players?.let { players ->
+            MainApplication.getInstance().applicationScope.launch {
+                gameDataHandler.updatePlayers(players)
+            }
+        }
+        onDiceResult.onDiceResult(dice1, dice2, playerName)
     }
 }

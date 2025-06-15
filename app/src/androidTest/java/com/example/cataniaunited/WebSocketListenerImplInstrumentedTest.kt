@@ -3,6 +3,7 @@ package com.example.cataniaunited
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.exception.GameException
+import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.WebSocketListenerImpl
@@ -397,74 +398,152 @@ class WebSocketListenerImplInstrumentedTest {
         verify(exactly = 1) { mockClosed.onClosed(code, reason) }
     }
 
-//    @Test
-//    fun handleDiceResult_callsOnDiceResultWithParsedValues() {
-//        val receivedDice1 = 3
-//        val receivedDice2 = 4
-//
-//        val messagePayload = buildJsonObject {
-//            put("dice1", receivedDice1)
-//            put("dice2", receivedDice2)
-//        }
-//        val playersMap = mapOf("p1" to PlayerInfo("p1", "Player1"))
-//
-//        val dto = MessageDTO(
-//            type = MessageType.DICE_RESULT,
-//            message = messagePayload,
-//            players = playersMap
-//        )
-//
-//        webSocketListener.handleDiceResult(dto)
-//
-//        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2) }
-//        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(playersMap) }
-//    }
+    @Test
+    fun handleDiceResult_callsOnDiceResultWithParsedValues() {
+        val receivedDice1 = 3
+        val receivedDice2 = 4
+        val playerName = "Player1"
+
+        val messagePayload = buildJsonObject {
+            put("dice1", receivedDice1)
+            put("dice2", receivedDice2)
+            put("rollingUsername", "Player1")
+        }
+        val playersMap = mapOf("p1" to PlayerInfo("p1", "Player1"))
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            message = messagePayload,
+            players = playersMap
+        )
+
+        webSocketListener.handleDiceResult(dto)
+
+        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2, playerName) }
+        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(playersMap) }
+    }
 
 
-//    @Test
-//    fun handleDiceResult_callsOnDiceResultAndUpdatesPlayersWhenPlayersArePresent() {
-//        val receivedDice1 = 3
-//        val receivedDice2 = 4
-//        val playersMap = mapOf("player1" to PlayerInfo("player1", "UserA"))
-//
-//        val messagePayload = buildJsonObject {
-//            put("dice1", receivedDice1)
-//            put("dice2", receivedDice2)
-//        }
-//
-//        val dto = MessageDTO(
-//            type = MessageType.DICE_RESULT,
-//            message = messagePayload,
-//            players = playersMap
-//        )
-//
-//        webSocketListener.handleDiceResult(dto)
-//
-//        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2) }
-//        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(playersMap) }
-//    }
+    @Test
+    fun handleDiceResult_callsOnDiceResultAndUpdatesPlayersWhenPlayersArePresent() {
+        val receivedDice1 = 3
+        val receivedDice2 = 4
+        val playerName = "Player1"
 
-//    @Test
-//    fun handleDiceResult_doesNotUpdatePlayersWhenPlayersAreNull() {
-//        val receivedDice1 = 1
-//        val receivedDice2 = 2
-//
-//        val messagePayload = buildJsonObject {
-//            put("dice1", receivedDice1)
-//            put("dice2", receivedDice2)
-//        }
-//
-//        val dto = MessageDTO(
-//            type = MessageType.DICE_RESULT,
-//            message = messagePayload,
-//            players = null
-//        )
-//
-//        webSocketListener.handleDiceResult(dto)
-//
-//        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2) }
-//        verify(exactly = 0) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(any()) }
-//    }
+        val playersMap = mapOf("player1" to PlayerInfo("player1", "UserA"))
+
+        val messagePayload = buildJsonObject {
+            put("dice1", receivedDice1)
+            put("dice2", receivedDice2)
+            put("rollingUsername", playerName)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            message = messagePayload,
+            players = playersMap
+        )
+
+        webSocketListener.handleDiceResult(dto)
+
+        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2, playerName) }
+        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(playersMap) }
+    }
+
+    @Test
+    fun handleDiceResult_doesNotUpdatePlayersWhenPlayersAreNull() {
+        val receivedDice1 = 1
+        val receivedDice2 = 2
+        val playerName = "Player1"
+
+        val messagePayload = buildJsonObject {
+            put("dice1", receivedDice1)
+            put("dice2", receivedDice2)
+            put("rollingUsername", playerName)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            message = messagePayload,
+            players = null
+        )
+
+        webSocketListener.handleDiceResult(dto)
+
+        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2, playerName) }
+        verify(exactly = 0) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(any()) }
+    }
+
+    @Test
+    fun handleDiceRolling_callsOnDiceRollingWithUsernameFromMessage() {
+        val expectedUsername = "DiceRoller"
+
+        val messagePayload = buildJsonObject {
+            put("rollingUsername", expectedUsername)
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.ROLL_DICE,
+            message = messagePayload
+        )
+
+        webSocketListener.handleDiceRolling(dto)
+
+        verify(exactly = 1) { mockDiceRolling.onDiceRolling(expectedUsername) }
+    }
+
+    @Test
+    fun handleDiceRolling_callsOnDiceRollingWithPlayerNameWhenUsernameMissing() {
+        val playerId = "player123"
+        val expectedUsername = "PlayerFromMap"
+
+        val playersMap = mapOf(playerId to PlayerInfo(playerId, expectedUsername))
+
+        val dto = MessageDTO(
+            type = MessageType.ROLL_DICE,
+            player = playerId,
+            players = playersMap
+        )
+
+        webSocketListener.handleDiceRolling(dto)
+
+        verify(exactly = 1) { mockDiceRolling.onDiceRolling(expectedUsername) }
+    }
+
+    @Test
+    fun handleDiceRolling_callsOnDiceRollingWithDefaultWhenNoNamesAvailable() {
+        val dto = MessageDTO(
+            type = MessageType.ROLL_DICE
+        )
+
+        webSocketListener.handleDiceRolling(dto)
+
+        verify(exactly = 1) { mockDiceRolling.onDiceRolling("Player") }
+    }
+
+    @Test
+    fun handleDiceRolling_prefersMessageUsernameOverPlayerMap() {
+        val messageUsername = "MessageUsername"
+        val playerId = "player456"
+        val mapUsername = "MapUsername"
+
+        val messagePayload = buildJsonObject {
+            put("rollingUsername", messageUsername)
+        }
+
+        val playersMap = mapOf(playerId to PlayerInfo(playerId, mapUsername))
+
+        val dto = MessageDTO(
+            type = MessageType.ROLL_DICE,
+            message = messagePayload,
+            player = playerId,
+            players = playersMap
+        )
+
+        webSocketListener.handleDiceRolling(dto)
+
+        verify(exactly = 1) { mockDiceRolling.onDiceRolling(messageUsername) }
+    }
 
     @Test
     fun onMessage_handlesPlayerJoined_withValidData() {

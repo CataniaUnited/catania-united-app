@@ -175,6 +175,7 @@ class WebSocketModuleTest {
             onError = mockMainApplication,
             onClosed = mockMainApplication,
             onDiceResult = mockMainApplication,
+            onDiceRolling = mockMainApplication,
             gameDataHandler = mockGameDataHandler,
             onPlayerResourcesReceived = mockMainApplication,
             onLobbyUpdated = mockMainApplication,

@@ -71,7 +71,7 @@ class GameBoardLogic @Inject constructor(
             val message = buildJsonObject {
                 put("action", "rollDice")
                 put("player", playerId)
-                put("playerName", playerName)  // Add username to message
+                put("playerName", playerName)
             }
             val webSocketClient = MainApplication.getInstance().getWebSocketClient()
             webSocketClient.sendMessage(

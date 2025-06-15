@@ -36,8 +36,7 @@ class GameViewModel @Inject constructor(
     private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
     val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
 
-    private val _diceState = MutableStateFlow<DiceState?>(null)
-    val diceState: StateFlow<DiceState?> = _diceState
+    val diceState: StateFlow<DiceState?> = gameDataHandler.diceState
 
     private val _showDicePopup = MutableStateFlow(false)
     val showDicePopup: StateFlow<Boolean> = _showDicePopup
@@ -150,21 +149,24 @@ class GameViewModel @Inject constructor(
     fun rollDice(lobbyId: String) {
         if (isProcessingRoll) return
         isProcessingRoll = true
-        Log.d("GameViewModel", "Initiating dice roll for lobby: $lobbyId")
 
-        // Get both player ID and username
-        val player = players.value[playerId]
-        startRolling(player?.username)
+        val currentPlayer = players.value[playerId]
+        if (currentPlayer?.canRollDice != true) {
+            Log.w("GameViewModel", "Player cannot roll dice now")
+            isProcessingRoll = false
+            return
+        }
+
+        Log.d("GameViewModel", "Initiating dice roll for lobby: $lobbyId")
+        startRolling(currentPlayer.username)
 
         gameBoardLogic.rollDice(lobbyId)
 
         viewModelScope.launch {
-            // Increase delay to match server-side delay
-            delay(2500)  // 2.5 seconds to account for server delay and animation
+            delay(3000) // Extended timeout
 
-            // Only reset if still in rolling state (no result received)
             if (diceState.value?.isRolling == true) {
-                Log.w("GameViewModel", "Dice roll timeout - no result received")
+                Log.e("GameViewModel", "Dice roll timeout")
                 resetDiceState()
             }
             isProcessingRoll = false
@@ -186,57 +188,39 @@ class GameViewModel @Inject constructor(
     )
 
     fun startRolling(playerName: String?) {
-        Log.d("GameViewModel", "Starting dice roll for player: $playerName")
-
-        val currentState = _diceState.value
-
-        if (currentState == null || (!currentState.isRolling && !currentState.showResult)) {
-            _diceState.value = DiceState(
-                rollingPlayerUsername = playerName,
-                isRolling = true,
-                showResult = false
+        viewModelScope.launch {
+            gameDataHandler.updateDiceState(
+                DiceState(
+                    rollingPlayerUsername = playerName,
+                    isRolling = true,
+                    dice1 = (1..6).random(),
+                    dice2 = (1..6).random(),
+                    showResult = false
+                )
             )
-            _showDicePopup.value = true
-            Log.d("GameViewModel", "Started rolling for player: $playerName")
-        } else {
-            Log.d("GameViewModel", "Cannot start rolling - current state: isRolling=${currentState.isRolling}, showResult=${currentState.showResult}")
+            delay(2000) // Extended timeout
         }
     }
 
     fun showResult(playerName: String?, dice1: Int, dice2: Int) {
-        Log.d("GameViewModel", "Showing dice result for $playerName: $dice1, $dice2")
-        _diceState.value?.let { currentState ->
-            _diceState.value = currentState.copy(
-                isRolling = false,
-                dice1 = dice1,
-                dice2 = dice2,
-                showResult = true
+        viewModelScope.launch {
+            gameDataHandler.updateDiceState(
+                  DiceState(
+                    rollingPlayerUsername = playerName,
+                    isRolling = false,
+                    dice1 = dice1,
+                    dice2 = dice2,
+                    showResult = true
+                )
             )
-        } ?: run {
-            _diceState.value = DiceState(
-                rollingPlayerUsername = playerName,
-                isRolling = false,
-                dice1 = dice1,
-                dice2 = dice2,
-                showResult = true
-            )
+            delay(3000) // Show result for 2 seconds
+            resetDiceState()
         }
-        updateDiceResult(dice1, dice2)
     }
-
 
     fun resetDiceState() {
-        Log.d("GameViewModel", "Resetting dice state")
-        _diceState.value = null
-        _showDicePopup.value = false
-        updateDiceResult(null, null)
-    }
-
-    fun closeDicePopup() {
-        Log.d("GameViewModel", "Closing dice popup")
-        _showDicePopup.value = false
         viewModelScope.launch {
-            resetDiceState()
+            gameDataHandler.updateDiceState(null)
         }
     }
 }

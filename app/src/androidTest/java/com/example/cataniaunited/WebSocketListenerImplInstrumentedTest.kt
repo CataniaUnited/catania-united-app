@@ -400,54 +400,54 @@ class WebSocketListenerImplInstrumentedTest {
 
     @Test
     fun handleDiceResult_callsOnDiceResultWithParsedValues() {
-        val receivedDice1 = 3
-        val receivedDice2 = 4
-        val playerName = "Player1"
-
-        val messagePayload = buildJsonObject {
-            put("dice1", receivedDice1)
-            put("dice2", receivedDice2)
+        val message = buildJsonObject {
+            put("dice1", 3)
+            put("dice2", 4)
+            put("total", 7)
             put("rollingUsername", "Player1")
         }
-        val playersMap = mapOf("p1" to PlayerInfo("p1", "Player1"))
 
         val dto = MessageDTO(
             type = MessageType.DICE_RESULT,
-            message = messagePayload,
-            players = playersMap
+            player = "p1",
+            lobbyId = "l1",
+            players = mapOf("p1" to PlayerInfo("p1", "Player1", "#8C4E27")),
+            message = message
         )
 
         webSocketListener.handleDiceResult(dto)
 
-        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2, playerName) }
-        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(playersMap) }
+        verify {
+            mockDiceResult.onDiceResult(3, 4, "Player1")
+        }
     }
 
 
     @Test
     fun handleDiceResult_callsOnDiceResultAndUpdatesPlayersWhenPlayersArePresent() {
-        val receivedDice1 = 3
-        val receivedDice2 = 4
-        val playerName = "Player1"
+        val players = mapOf("player1" to PlayerInfo("player1", "UserA", "#8C4E27"))
 
-        val playersMap = mapOf("player1" to PlayerInfo("player1", "UserA"))
-
-        val messagePayload = buildJsonObject {
-            put("dice1", receivedDice1)
-            put("dice2", receivedDice2)
-            put("rollingUsername", playerName)
+        val message = buildJsonObject {
+            put("dice1", 1)
+            put("dice2", 2)
+            put("total", 3)
+            put("rollingUsername", "UserA")
         }
 
         val dto = MessageDTO(
             type = MessageType.DICE_RESULT,
-            message = messagePayload,
-            players = playersMap
+            player = "player1",
+            lobbyId = "lobby1",
+            players = players,
+            message = message
         )
 
         webSocketListener.handleDiceResult(dto)
 
-        verify(exactly = 1) { mockDiceResult.onDiceResult(receivedDice1, receivedDice2, playerName) }
-        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(playersMap) }
+        verify {
+            mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(players)
+            mockDiceResult.onDiceResult(1, 2, "UserA")
+        }
     }
 
     @Test

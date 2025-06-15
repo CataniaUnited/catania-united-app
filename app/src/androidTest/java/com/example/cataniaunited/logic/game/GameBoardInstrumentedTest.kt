@@ -292,7 +292,12 @@ class GameBoardInstrumentedTest() {
         println("Running testRollDice...")
         val lobbyId = "lobby-dice-${System.currentTimeMillis()}"
 
-        val messagePayload = buildJsonObject { put("action", "rollDice") }
+        val messagePayload = buildJsonObject {
+            put("action", "rollDice")
+            put("player", playerId)
+            put("playerName", playerId)
+        }
+
         val expectedMessageDTO =
             MessageDTO(MessageType.ROLL_DICE, playerId, lobbyId, null, messagePayload)
         val expectedJson =

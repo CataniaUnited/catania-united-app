@@ -24,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -209,28 +210,19 @@ open class MainApplication : Application(),
 
 
     override fun onDiceRolling(playerName: String) {
-        Log.d("MainApplication", "Dice rolling started for $playerName")
+        Log.d("MainApplication", "Player $playerName is rolling dice")
         applicationScope.launch {
-            gameViewModel?.let { vm ->
-                vm.resetDiceState()
-                kotlinx.coroutines.delay(50)
-                vm.startRolling(playerName)
-            }
+            gameViewModel?.resetDiceState()
+            delay(100)
+            gameViewModel?.startRolling(playerName)
         }
     }
 
-    override fun onDiceResult(dice1: Int, dice2: Int) {
-        Log.d("MainApplication", "Processing dice result: $dice1, $dice2")
+    override fun onDiceResult(dice1: Int, dice2: Int, playerName: String) {
+        Log.d("MainApplication", "Processing dice result from server: $dice1, $dice2")
         applicationScope.launch {
-            val currentState = gameViewModel?.diceState?.value
-            if (currentState?.isRolling == true) {
-                gameViewModel?.showResult(currentState.rollingPlayerUsername, dice1, dice2)
-            } else {
-                Log.w("MainApplication", "Received dice result without rolling state")
-                gameViewModel?.startRolling("Unknown Player")
-                kotlinx.coroutines.delay(50)
-                gameViewModel?.showResult("Unknown Player", dice1, dice2)
-            }
+            delay(1500)
+            gameViewModel?.showResult(playerName, dice1, dice2)
         }
     }
 

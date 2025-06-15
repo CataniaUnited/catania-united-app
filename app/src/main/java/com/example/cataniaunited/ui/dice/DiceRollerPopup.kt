@@ -39,26 +39,22 @@ fun DiceRollerPopup(
         )
     )
 
-    LaunchedEffect(diceState) {
-        val state = diceState ?: return@LaunchedEffect
-
-        if (state.isRolling) {
+    LaunchedEffect(diceState?.isRolling) {
+        if (diceState?.isRolling == true) {
             showFinalResult = false
-            val startTime = System.currentTimeMillis()
-
-            // Minimum 2 second rolling animation
-            while (state.isRolling && System.currentTimeMillis() - startTime < 2000) {
+            while (diceState?.isRolling == true) {
                 currentDice1 = (1..6).random()
                 currentDice2 = (1..6).random()
                 delay(100)
             }
         }
-
-        if (state.showResult) {
-            currentDice1 = state.dice1
-            currentDice2 = state.dice2
+    }
+    LaunchedEffect(diceState?.showResult) {
+        if (diceState?.showResult == true) {
+            currentDice1 = diceState?.dice1 ?: 1
+            currentDice2 = diceState?.dice2 ?: 1
             showFinalResult = true
-            delay(2000) // Show result for 2 seconds
+            delay(3000)
             onClose()
         }
     }

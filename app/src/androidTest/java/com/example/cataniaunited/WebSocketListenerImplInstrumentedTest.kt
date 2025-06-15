@@ -445,7 +445,7 @@ class WebSocketListenerImplInstrumentedTest {
         webSocketListener.handleDiceResult(dto)
 
         verify {
-            mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(players)
+            mockGameDataHandler.updatePlayers(players)
             mockDiceResult.onDiceResult(1, 2, "UserA")
         }
     }

@@ -60,6 +60,7 @@ fun GameScreen(
     val application = LocalContext.current.applicationContext as MainApplication
     var showDicePopup by remember { mutableStateOf(false) }
     val diceResult by gameViewModel.diceResult.collectAsState()
+    val robberTile by gameViewModel.robberTile.collectAsState()
     val playerResources by gameViewModel.playerResources.collectAsState()
     val gameWonState by application.gameWonState.collectAsState()
     val players by gameViewModel.players.collectAsState()
@@ -150,6 +151,7 @@ fun GameScreen(
                                 settlementPositions = board.settlementPositions,
                                 roads = board.roads,
                                 ports = board.ports,
+                                robberTile = board.robber,
                                 isBuildMode = isBuildMenuOpen,
                                 playerId = gameViewModel.playerId,
                                 onTileClicked = { tile ->
@@ -173,6 +175,10 @@ fun GameScreen(
                                 onRoadClicked = { road ->
                                     Log.d("GameScreen", "Road Clicked: ID=${road.id}")
                                     gameViewModel.handleRoadClick(road, lobbyId)
+                                },
+                                onRobberClick = { robber ->
+                                    Log.d("GameScreen", "Robber Clicked: ID=${robber.id}")
+                                    gameViewModel.handleTileClick(robber, lobbyId)
                                 }
                             )
 

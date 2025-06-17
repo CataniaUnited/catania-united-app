@@ -12,6 +12,7 @@ enum class MessageType {
     DICE_RESULT,
     GAME_WON,
     GAME_STARTED,
+    ROBBER_PHASE,
     NEXT_TURN,
 
     //Client Messages
@@ -25,6 +26,7 @@ enum class MessageType {
     START_GAME,
     BUY_DEVELOPMENT_CARD,
     ROLL_DICE,
+    PLACE_ROBBER,
     SET_READY,
     END_TURN
 }

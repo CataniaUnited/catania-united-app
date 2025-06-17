@@ -21,10 +21,12 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.cataniaunited.data.model.Port
 import com.example.cataniaunited.data.model.Road
+import com.example.cataniaunited.data.model.Robber
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.ui.game_board.port.PortComposable
 import com.example.cataniaunited.ui.game_board.road.RoadComposable
+import com.example.cataniaunited.ui.game_board.robber.RobberComposable
 import com.example.cataniaunited.ui.game_board.settlementPosition.SettlementComposable
 import com.example.cataniaunited.ui.game_board.tile.HexagonTile
 import com.example.cataniaunited.ui.theme.catanBlue
@@ -60,13 +62,15 @@ fun CatanBoard(
     settlementPositions: List<SettlementPosition>,
     roads: List<Road>,
     ports: List<Port>,
+    robberTile: Int?,
     outerMarginDp: Dp = 16.dp,
     boardBackgroundColor: Color = catanBlue,
     isBuildMode: Boolean,
     playerId: String,
     onTileClicked: (Tile) -> Unit = {},
     onSettlementClicked: (Pair<SettlementPosition, Boolean>) -> Unit = {},
-    onRoadClicked: (Road) -> Unit = {}
+    onRoadClicked: (Road) -> Unit = {},
+    onRobberClick: (Robber) -> Unit = {}
 ) {
     // Check if essential data is present
     if (tiles.isEmpty() || settlementPositions.isEmpty()) {
@@ -218,9 +222,21 @@ fun CatanBoard(
                         modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
                         tile = tile,
                         size = baseParams.initialHexSizeDp, // Use initial size
+                        hasRobber = robberTile != null && robberTile == tile.id,
                         onTileClick = onTileClicked // Pass down the handler
                     )
+
+                    if (robberTile != null && robberTile == tile.id) {
+                        RobberComposable(modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
+                            size = baseParams.initialHexSizeDp,
+                            onRobberClick = onRobberClick)
+                    }
                 }
+
+                //Draw robber
+                val robberSizePx = with(density) { baseParams.initialHexSizeDp.toPx() }
+                robberTile.f
+
 
                 // Draw Settlements
                 val settlementSizePx = with(density) { baseParams.initialSettlementSizeDp.toPx() }

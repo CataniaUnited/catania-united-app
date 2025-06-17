@@ -3,6 +3,7 @@ package com.example.cataniaunited.logic.game
 import android.util.Log
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.PlayerInfo
+import com.example.cataniaunited.data.model.Robber
 import com.example.cataniaunited.data.util.parseGameBoard
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +22,9 @@ class GameDataHandler @Inject constructor() {
     private val _victoryPointsState = MutableStateFlow<Map<String, Int>>(emptyMap())
     val victoryPointsState: StateFlow<Map<String, Int>> = _victoryPointsState.asStateFlow()
 
+    private val _robberTileState = MutableStateFlow<List<Int>?>(null)
+    val robberTileState: StateFlow<List<Int>?> = _robberTileState.asStateFlow()
+
     private val jsonParser = Json { ignoreUnknownKeys = true }
 
     fun updateGameBoard(jsonString: String) {
@@ -35,7 +39,8 @@ class GameDataHandler @Inject constructor() {
                 tiles = board.tiles.toList(),
                 settlementPositions = board.settlementPositions.toList(),
                 roads = board.roads.toList(),
-                ports = board.ports.toList()
+                ports = board.ports.toList(),
+                robber = board.robber
             )
 
             if (updatedBoard != null) {
@@ -62,4 +67,10 @@ class GameDataHandler @Inject constructor() {
             Log.d("GameDataHandler", "PlayersState value unchanged. Not emitting new value.")
         }
     }
+
+    fun updateRobber(robber: Robber){
+        //_robberTileState.value = robber.id
+        Log.d("GameDataHandler", "Updated robber: $robber (Value changed)")
+    }
+
 }

@@ -79,7 +79,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.GAME_STARTED,
                 MessageType.NEXT_TURN,
                 MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
-
+                MessageType.ROBBER_PHASE -> handleRobberPhase(messageDTO)
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.GAME_WON -> handleGameWon(messageDTO)
                 // TODO: Other Messages
@@ -165,10 +165,12 @@ open class WebSocketListenerImpl @Inject constructor(
                 gameDataHandler.updateGameBoard(fullMessageString)
                 gameDataHandler.updateVictoryPoints(vpMap)
                 gameDataHandler.updatePlayers(players)
+                //gameDataHandler.updateRobber()
             }
 
             onPlayerResourcesReceived.onPlayerResourcesReceived(players)
             onGameBoardReceived.onGameBoardReceived(lobbyId ?: "", fullMessageString)
+
 
         } catch (e: Exception) {
             Log.e("WebSocketListener", "Error processing game board", e)
@@ -234,5 +236,9 @@ open class WebSocketListenerImpl @Inject constructor(
         }
 
         onDiceResult.onDiceResult(dice1, dice2)
+    }
+
+    private fun handleRobberPhase(messageDTO : MessageDTO) {
+
     }
 }

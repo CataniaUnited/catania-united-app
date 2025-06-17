@@ -44,6 +44,9 @@ class GameViewModel @Inject constructor(
     private val _players = MutableStateFlow<Map<String, PlayerInfo>>(emptyMap())
     val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
 
+    private val _robberTile = MutableStateFlow<List<Int>?>(null)
+    val robberTile: StateFlow<List<Int>?> = _robberTile.asStateFlow()
+
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
 
@@ -53,6 +56,7 @@ class GameViewModel @Inject constructor(
             .filter { it != TileType.DESERT }
             .associateWith { 0 }
         _victoryPoints.value = gameDataHandler.victoryPointsState.value
+        _robberTile.value = gameDataHandler.robberTileState.value
 
         Log.d("GameViewModel", "Players initialized: ${players.value}")
         Log.d("GameViewModel", "Resources initialized: ${playerResources.value}")
@@ -77,6 +81,13 @@ class GameViewModel @Inject constructor(
                 }
             }
             Log.d("GameViewModel_Collect", "playersState collect FINISHED in ViewModelScope.")
+        }
+
+        viewModelScope.launch {
+            gameDataHandler.robberTileState.collect {
+                Log.d("GameViewModel_Collect", "RECEIVED robberTileState in collect: $it")
+                _robberTile.value = it
+            }
         }
     }
 
@@ -105,6 +116,7 @@ class GameViewModel @Inject constructor(
     fun handleTileClick(tile: Tile, lobbyId: String) {
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
         // TODO: Implement logic for tile click (e.g., move robber phase)
+        gameBoardLogic.placeRobber(tile.id, lobbyId)
     }
 
     fun handleSettlementClick(

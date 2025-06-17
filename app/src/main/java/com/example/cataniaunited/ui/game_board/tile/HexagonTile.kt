@@ -76,6 +76,7 @@ fun HexagonTile(
     modifier: Modifier = Modifier,
     tile: Tile,
     size: Dp,
+    hasRobber: Boolean = false,
     onTileClick: (Tile) -> Unit = {}
 ) {
     Box(
@@ -123,6 +124,16 @@ fun HexagonTile(
                     maxLines = 1
                 )
             }
+        }
+        if (hasRobber){
+            Image(
+                painter = painterResource(id = R.drawable.robber_icon),
+                contentDescription = "Robber Icon",
+                modifier = Modifier
+                    .size(size * 0.2f)
+                    .align(Alignment.Center)
+                    .background(Color(0xFFFFFDD0))
+            )
         }
     }
 }

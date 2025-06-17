@@ -546,6 +546,98 @@ class WebSocketListenerImplInstrumentedTest {
     }
 
     @Test
+    fun handleDiceResult_usesPlayerNameFromPlayersFallback() {
+        val players = mapOf("player1" to PlayerInfo("player1", "FallbackUser", "#123456"))
+        val message = buildJsonObject {
+            put("dice1", 3)
+            put("dice2", 4)
+            put("total", 7)
+        }
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "player1",
+            lobbyId = "lobbyX",
+            players = players,
+            message = message
+        )
+
+        webSocketListener.handleDiceResult(dto)
+
+        verify {
+            mockDiceResult.onDiceResult(3, 4, "FallbackUser")
+        }
+    }
+
+    @Test
+    fun handleDiceResult_defaultsToUnknownPlayer() {
+        val message = buildJsonObject {
+            put("dice1", 1)
+            put("dice2", 2)
+            put("total", 3)
+        }
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "missingPlayer",
+            lobbyId = "lobbyX",
+            players = null,
+            message = message
+        )
+
+        webSocketListener.handleDiceResult(dto)
+
+        verify {
+            mockDiceResult.onDiceResult(1, 2, "Unknown Player")
+        }
+    }
+
+    @Test
+    fun onMessage_triggersHandleDiceRolling() {
+        val message = buildJsonObject {
+            put("rollingUsername", "TestUser")
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.ROLL_DICE,
+            player = "p1",
+            lobbyId = "lobby1",
+            players = null,
+            message = message
+        )
+
+        val json = Json.encodeToString(MessageDTO.serializer(), dto)
+        webSocketListener.onMessage(mockWebSocket, json)
+
+        verify {
+            mockDiceRolling.onDiceRolling("TestUser")
+        }
+    }
+
+    @Test
+    fun onMessage_triggersHandleDiceResult() {
+        val message = buildJsonObject {
+            put("dice1", 2)
+            put("dice2", 3)
+            put("total", 5)
+            put("rollingUsername", "DiceUser")
+        }
+
+        val dto = MessageDTO(
+            type = MessageType.DICE_RESULT,
+            player = "p1",
+            lobbyId = "lobby1",
+            players = null,
+            message = message
+        )
+
+        val json = Json.encodeToString(MessageDTO.serializer(), dto)
+        webSocketListener.onMessage(mockWebSocket, json)
+
+        verify {
+            mockDiceResult.onDiceResult(2, 3, "DiceUser")
+        }
+    }
+
+    @Test
     fun onMessage_handlesPlayerJoined_withValidData() {
         val lobbyId = "lobby123"
         val playerInfo1 = PlayerInfo("p1", "Player1")

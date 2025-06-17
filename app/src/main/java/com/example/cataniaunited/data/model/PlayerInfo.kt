@@ -11,6 +11,7 @@ data class PlayerInfo(
     val isReady: Boolean = false,
     val isActivePlayer: Boolean = false,
     val canRollDice: Boolean = false,
+    val isSetupRound: Boolean = false,
     val victoryPoints: Int = 0,
     val resources: Map<TileType, Int> = emptyMap<TileType, Int>()
 )

@@ -70,6 +70,7 @@ fun GameScreen(
     }
 
     if (player?.isActivePlayer == true && player.canRollDice == true) {
+    if (player?.isActivePlayer == true && player.isSetupRound == false && player.canRollDice == true) {
         ShakeDetector {
             if (!showDicePopup) {
                 gameViewModel.rollDice(lobbyId)
@@ -93,7 +94,7 @@ fun GameScreen(
             },
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
-                    if (player.canRollDice == true) {
+                    if (player.isSetupRound == false && player.canRollDice == true) {
                         //Roll dice action
                         FloatingActionButton(
                             onClick = {
@@ -179,7 +180,7 @@ fun GameScreen(
                             ) {
                                 if (player?.isActivePlayer == true) {
                                     BuildButton(
-                                        enabled = player.canRollDice == false,
+                                        enabled = player.canRollDice == false || player.isSetupRound == true,
                                         isOpen = isBuildMenuOpen,
                                         onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
                                     )

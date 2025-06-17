@@ -11,6 +11,7 @@ import io.mockk.every
 import io.mockk.mockkStatic
 import io.mockk.unmockkAll
 import io.mockk.verify
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -189,5 +190,38 @@ class GameDataHandlerTest {
         assertEquals(originalPorts, updatedBoard?.ports)
 
         verify(exactly = 1) { parseGameBoard(boardJsonContent) }
+    }
+
+    @Test
+    fun testUpdateDiceStateShouldUpdateDiceStateFlow() = runTest {
+        val testState = GameViewModel.DiceState(
+            rollingPlayerUsername = "testPlayer",
+            isRolling = true,
+            dice1 = 3,
+            dice2 = 4,
+            showResult = false
+        )
+
+        gameDataHandler.updateDiceState(testState)
+
+        val currentState = gameDataHandler.diceState.first()
+        assertEquals(testState, currentState)
+    }
+
+    @Test
+    fun testUpdateDiceStateWithNullShouldClearDiceState() = runTest {
+        val testState = GameViewModel.DiceState(
+            rollingPlayerUsername = "testPlayer",
+            isRolling = true,
+            dice1 = 3,
+            dice2 = 4,
+            showResult = false
+        )
+        gameDataHandler.updateDiceState(testState)
+
+        gameDataHandler.updateDiceState(null)
+
+        val currentState = gameDataHandler.diceState.first()
+        assertNull(currentState)
     }
 }

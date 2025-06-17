@@ -1,6 +1,7 @@
 package com.example.cataniaunited.logic.game
 
 import android.util.Log
+import app.cash.turbine.test
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.Road
@@ -21,6 +22,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.TestCoroutineScheduler
 import kotlinx.coroutines.test.TestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -93,11 +95,14 @@ class GameViewModelTest {
     private lateinit var victoryPointsMutableStateFlow: MutableStateFlow<Map<String, Int>>
     private lateinit var playersMutableStateFlow: MutableStateFlow<Map<String, PlayerInfo>>
     private lateinit var diceMutableStateFlow: MutableStateFlow<GameViewModel.DiceState?>
+    private val dispatcher = StandardTestDispatcher(TestCoroutineScheduler())
     private val testPlayerId = "testPlayerId"
 
 
     @BeforeEach
     fun setUp() {
+        Dispatchers.setMain(dispatcher)
+
         gameBoardMutableStateFlow = MutableStateFlow<GameBoardModel?>(null)
         victoryPointsMutableStateFlow = MutableStateFlow(emptyMap())
         playersMutableStateFlow = MutableStateFlow(emptyMap()) // Initialize players flow
@@ -170,6 +175,7 @@ class GameViewModelTest {
     @AfterEach
     fun tearDown() {
         unmockkStatic(Log::class) // Unmock Log after each test
+        Dispatchers.resetMain()
     }
 
 
@@ -448,6 +454,73 @@ class GameViewModelTest {
 
         verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
         assertNull(diceMutableStateFlow.value)
+    }
+
+    @Test
+    fun testRollDiceShouldNotProceedIfAlreadyProcessing() = runTest {
+        viewModel.isProcessingRoll = true
+
+        viewModel.rollDice("lobby123")
+
+        verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
+    }
+
+    @Test
+    fun testRollDiceShouldNotProceedIfPlayerCannotRoll() = runTest {
+        val player = PlayerInfo(
+            id = testPlayerId,
+            username = "TestPlayer",
+            canRollDice = false
+        )
+        playersMutableStateFlow.value = mapOf(testPlayerId to player)
+
+        viewModel.rollDice("lobby123")
+
+        verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
+    }
+
+    @Test
+    fun testRollDiceShouldResetStateAfterTimeoutIfNoResultReceived() = runTest {
+        val player = PlayerInfo(
+            id = testPlayerId,
+            username = "TestPlayer",
+            canRollDice = true
+        )
+        playersMutableStateFlow.value = mapOf(testPlayerId to player)
+
+        viewModel.rollDice("lobby123")
+        advanceUntilIdle()
+
+        assertNull(diceMutableStateFlow.value)
+        assertFalse(viewModel.isProcessingRoll)
+    }
+
+    @Test
+    fun testShowResultShouldUpdatesDiceStateAndResetsAfterDelay() = runTest(dispatcher.scheduler) {
+        viewModel.showResult("Tester", 3, 4)
+
+        viewModel.diceState.test {
+            skipItems(1)
+            val state = awaitItem()
+            assert(state != null && state.showResult)
+            assert(state?.dice1 == 3 && state.dice2 == 4)
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
+    @Test
+    fun testResetDiceStateShouldClearsStateAndHidesPopup() = runTest {
+        viewModel.resetDiceState()
+        advanceUntilIdle()
+
+        viewModel.diceState.test {
+            val state = awaitItem()
+            assert(state == null)
+        }
+
+        viewModel.showDicePopup.test {
+            assert(!awaitItem())
+        }
     }
 
     @Nested

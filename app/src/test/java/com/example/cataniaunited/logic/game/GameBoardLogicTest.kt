@@ -14,6 +14,8 @@ import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -180,4 +182,33 @@ class GameBoardLogicTest {
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
 
+    @Test
+    fun testRollDiceShouldIncludePlayerIdAndNameInMessage() {
+        val testPlayer = PlayerInfo(id = testPlayerId, username = "TestPlayer")
+        val playersStateList = mutableStateListOf<PlayerInfo>()
+        playersStateList.add(testPlayer)
+        every { mockMainApplication.players } returns playersStateList
+
+        gameBoardLogic.rollDice(testLobbyId)
+
+        verify { mockWebSocketClient.sendMessage(match {
+            it.type == MessageType.ROLL_DICE &&
+                    it.player == testPlayerId &&
+                    it.lobbyId == testLobbyId &&
+                    it.message?.get("player")?.jsonPrimitive?.contentOrNull == testPlayerId &&
+                    it.message["playerName"]?.jsonPrimitive?.contentOrNull == testPlayer.username
+        }) }
+    }
+
+    @Test
+    fun testRollDiceShouldUsePlayerIdAsNameIfNotFoundInPlayersList() {
+        val playersStateList = mutableStateListOf<PlayerInfo>()
+        every { mockMainApplication.players } returns playersStateList
+
+        gameBoardLogic.rollDice(testLobbyId)
+
+        verify { mockWebSocketClient.sendMessage(match {
+            it.message?.get("playerName")?.jsonPrimitive?.contentOrNull == testPlayerId
+        }) }
+    }
 }

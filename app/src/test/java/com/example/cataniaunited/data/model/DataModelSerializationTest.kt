@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test
 class DataModelSerializationTest {
     private val tileJsonWood =
         """{"id":5,"type":"WOOD","value":6,"coordinates":[-8.660254037844389,-14.999999999999996]}"""
-    private val tileJsonWaste =
-        """{"id":17,"type":"WASTE","value":0,"coordinates":[-25.980762113533153,14.999999999999996]}"""
+    private val tileJsonDesert =
+        """{"id":17,"type":"DESERT","value":0,"coordinates":[-25.980762113533153,14.999999999999996]}"""
     private val settlementJsonNullBuilding =
         """{"id":1,"building": null,"coordinates":[1.1842378929335002E-15,9.999999999999998]}"""
     private val roadJsonNullOwner =
@@ -74,10 +74,10 @@ class DataModelSerializationTest {
     }
 
     @Test
-    fun deserializeTileWaste() {
-        val tile = jsonParser.decodeFromString<Tile>(tileJsonWaste)
+    fun deserializeTileDesert() {
+        val tile = jsonParser.decodeFromString<Tile>(tileJsonDesert)
         assertEquals(17, tile.id)
-        assertEquals(TileType.WASTE, tile.type)
+        assertEquals(TileType.DESERT, tile.type)
         assertEquals(0, tile.value)
     }
 
@@ -411,7 +411,7 @@ class DataModelSerializationTest {
       },
       {
          "id":17,
-         "type":"WASTE",
+         "type":"DESERT",
          "value":0,
          "coordinates":[
             -25.980762113533153,

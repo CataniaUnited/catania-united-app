@@ -437,7 +437,7 @@ class GameViewModelTest {
             playersMutableStateFlow.value = mapOf(testPlayerId to PlayerInfo(id = testPlayerId, username = "Test", resources = emptyMap()))
 
             val expectedInitialResources = TileType.entries
-                .filter { it != TileType.WASTE }
+                .filter { it != TileType.DESERT }
                 .associateWith { 0 }
             assertEquals(expectedInitialResources, viewModel.playerResources.value)
         }

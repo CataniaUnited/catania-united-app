@@ -50,7 +50,7 @@ class GameViewModel @Inject constructor(
         _players.value = gameDataHandler.playersState.value
         val resources: Map<TileType, Int>? = _players.value[playerId]?.resources
         _playerResources.value = resources ?: TileType.entries
-            .filter { it != TileType.WASTE }
+            .filter { it != TileType.DESERT }
             .associateWith { 0 }
         _victoryPoints.value = gameDataHandler.victoryPointsState.value
 

@@ -76,6 +76,6 @@ private fun getResourceIconForPort(tileType: TileType): Int {
         TileType.SHEEP -> R.drawable.sheep_icon
         TileType.WHEAT -> R.drawable.wheat_icon
         TileType.ORE -> R.drawable.ore_icon
-        TileType.WASTE -> R.drawable.desert_tile
+        TileType.DESERT -> R.drawable.desert_tile
     }
 }

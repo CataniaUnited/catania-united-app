@@ -37,7 +37,7 @@ fun getTileImageResId(type: TileType): Int {
         TileType.SHEEP -> R.drawable.sheep_tile
         TileType.WHEAT -> R.drawable.wheat_tile
         TileType.ORE -> R.drawable.ore_tile
-        TileType.WASTE -> R.drawable.desert_tile
+        TileType.DESERT -> R.drawable.desert_tile
     }
 }
 
@@ -95,8 +95,8 @@ fun HexagonTile(
             contentScale = ContentScale.Crop
         )
 
-        // Draw the number circle and text (only if not desert/waste)
-        if (tile.type != TileType.WASTE && tile.value != 0) {
+        // Draw the number circle and text (only if not desert)
+        if (tile.type != TileType.DESERT && tile.value != 0) {
             val circleSizeFraction = 0.45f
             val fontSizeFraction = 0.22f
 

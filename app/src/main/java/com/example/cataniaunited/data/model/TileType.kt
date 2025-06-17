@@ -9,5 +9,5 @@ enum class TileType {
     WHEAT,
     WOOD,
     CLAY,
-    WASTE
+    DESERT
 }

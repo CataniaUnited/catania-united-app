@@ -7,8 +7,10 @@ import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
+import com.example.cataniaunited.logic.trade.TradeLogic
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -36,20 +38,23 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.AfterEachCallback
+import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtendWith
+import org.junit.jupiter.api.extension.ExtensionContext
 
 
 @ExperimentalCoroutinesApi
 class MainCoroutineExtension(
     val testDispatcher: TestDispatcher = StandardTestDispatcher()
-) : org.junit.jupiter.api.extension.BeforeEachCallback,
-    org.junit.jupiter.api.extension.AfterEachCallback {
+) : BeforeEachCallback,
+    AfterEachCallback {
 
-    override fun beforeEach(context: org.junit.jupiter.api.extension.ExtensionContext?) {
+    override fun beforeEach(context: ExtensionContext?) {
         Dispatchers.setMain(testDispatcher)
     }
 
-    override fun afterEach(context: org.junit.jupiter.api.extension.ExtensionContext?) {
+    override fun afterEach(context: ExtensionContext?) {
         Dispatchers.resetMain()
     }
 }
@@ -63,6 +68,7 @@ class GameViewModelTest {
     private lateinit var mockGameDataHandler: GameDataHandler
     private lateinit var mockGameBoardLogic: GameBoardLogic
     private lateinit var mockLobbyLogic: LobbyLogic
+    private lateinit var mockTradeLogic: TradeLogic
 
     private lateinit var viewModel: GameViewModel
 
@@ -111,6 +117,7 @@ class GameViewModelTest {
 
         mockGameBoardLogic = mockk(relaxed = true)
         mockLobbyLogic = mockk(relaxed = true)
+        mockTradeLogic = mockk(relaxed = true)
         mockPlayerSessionManager = mockk(relaxed = true)
         every { mockPlayerSessionManager.getPlayerId() } returns testPlayerId
 
@@ -153,6 +160,7 @@ class GameViewModelTest {
             mockLobbyLogic,
             mockGameDataHandler,
             mockPlayerSessionManager,
+            mockTradeLogic,
         )
     }
 
@@ -448,7 +456,7 @@ class GameViewModelTest {
              playersMutableStateFlow.value = mapOf(testPlayerId to PlayerInfo(id = testPlayerId, username = "Test", resources = initialPlayerResources))
 
              // Recreate ViewModel to pick up the new playersState from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic)
              advanceUntilIdle()
 
              assertEquals(initialPlayerResources, viewModel.playerResources.value)
@@ -475,7 +483,7 @@ class GameViewModelTest {
              val initialPlayers = mapOf("p1" to PlayerInfo(id = "p1", username = "Player One"))
              playersMutableStateFlow.value = initialPlayers // Simulate GameDataHandler having this state
              // Recreate ViewModel to pick up the new playersState from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic)
              advanceUntilIdle()
              assertEquals(initialPlayers, viewModel.players.value)
          }
@@ -485,7 +493,7 @@ class GameViewModelTest {
              val initialVPs = mapOf("p1" to 5)
              victoryPointsMutableStateFlow.value = initialVPs // Simulate GameDataHandler having this state
              // Recreate ViewModel to pick up the new state from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic)
              advanceUntilIdle()
              assertEquals(initialVPs, viewModel.victoryPoints.value)
          }
@@ -537,5 +545,134 @@ class GameViewModelTest {
 
              assertEquals(true, viewModel.isBuildMenuOpen.value, "Build menu should remain open")
          }
+    }
+    
+    @Nested
+    @DisplayName("Trade Menu and Offer State")
+    inner class TradeMenuAndOfferStateTests {
+
+        @BeforeEach
+        fun tradeSetup() {
+            // Ensure the player has some resources for testing offer limits
+            val initialPlayerResources = mapOf(TileType.WOOD to 3, TileType.SHEEP to 2)
+            val initialPlayers = mapOf(testPlayerId to PlayerInfo(
+                id = testPlayerId,
+                username = "Test Trader",
+                color = "#FF0000",
+                isHost = false,
+                isReady = true,
+                isActivePlayer = true,
+                canRollDice = false, // Set to false, as trading happens after rolling
+                isSetupRound = false,
+                victoryPoints = 2,
+                resources = initialPlayerResources
+            ))
+            playersMutableStateFlow.value = initialPlayers
+
+            // Recreate ViewModel to ensure it collects the initial player state
+            viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic)
+        }
+
+        @Test
+        fun isTradeMenuOpenDefaultsToFalse() = runTest {
+            assertFalse(viewModel.isTradeMenuOpen.value)
+        }
+
+        @Test
+        fun setTradeMenuOpenChangesState() = runTest {
+            viewModel.setTradeMenuOpen(true)
+            assertTrue(viewModel.isTradeMenuOpen.value)
+
+            viewModel.setTradeMenuOpen(false)
+            assertFalse(viewModel.isTradeMenuOpen.value)
+        }
+
+        @Test
+        fun setTradeMenuOpenToFalseResetsTradeOffer() = runTest {
+            viewModel.updateOfferedResource(TileType.WOOD, 1)
+            viewModel.updateTargetResource(TileType.CLAY, 1)
+            advanceUntilIdle()
+
+            val expectedOffer = Pair(mapOf(TileType.WOOD to 1), mapOf(TileType.CLAY to 1))
+            assertEquals(expectedOffer, viewModel.tradeOffer.value)
+
+            viewModel.setTradeMenuOpen(false)
+            advanceUntilIdle()
+
+            val emptyOffer = Pair(emptyMap<TileType, Int>(), emptyMap<TileType, Int>())
+            assertEquals(emptyOffer, viewModel.tradeOffer.value)
+        }
+
+        @Test
+        fun updateOfferedResourceCorrectlyIncrementsAndDecrements() = runTest {
+            // Increment
+            viewModel.updateOfferedResource(TileType.WOOD, 1)
+            assertEquals(mapOf(TileType.WOOD to 1), viewModel.tradeOffer.value.first)
+
+            viewModel.updateOfferedResource(TileType.WOOD, 1)
+            assertEquals(mapOf(TileType.WOOD to 2), viewModel.tradeOffer.value.first)
+
+            // Decrement
+            viewModel.updateOfferedResource(TileType.WOOD, -1)
+            assertEquals(mapOf(TileType.WOOD to 1), viewModel.tradeOffer.value.first)
+        }
+
+        @Test
+        fun updateOfferedResourceRemovesItemWhenCountIsZero() = runTest {
+            viewModel.updateOfferedResource(TileType.SHEEP, 1)
+            assertEquals(mapOf(TileType.SHEEP to 1), viewModel.tradeOffer.value.first)
+
+            viewModel.updateOfferedResource(TileType.SHEEP, -1)
+            assertTrue(viewModel.tradeOffer.value.first.isEmpty())
+        }
+
+        @Test
+        fun updateOfferedResourceDoesNotGoBelowZero() = runTest {
+            viewModel.updateOfferedResource(TileType.WOOD, -1)
+            assertTrue(viewModel.tradeOffer.value.first.isEmpty())
+        }
+
+        @Test
+        fun updateOfferedResourceDoesNotExceedPlayerResources() = runTest {
+            // Player has 3 wood from setup
+            viewModel.updateOfferedResource(TileType.WOOD, 1)
+            viewModel.updateOfferedResource(TileType.WOOD, 1)
+            viewModel.updateOfferedResource(TileType.WOOD, 1)
+            assertEquals(3, viewModel.tradeOffer.value.first[TileType.WOOD])
+
+            // This next increment should be ignored
+            viewModel.updateOfferedResource(TileType.WOOD, 1)
+            assertEquals(3, viewModel.tradeOffer.value.first[TileType.WOOD])
+        }
+
+        @Test
+        fun updateTargetResourceCorrectlyUpdatesTargetMap() = runTest {
+            viewModel.updateTargetResource(TileType.ORE, 1)
+            assertEquals(mapOf(TileType.ORE to 1), viewModel.tradeOffer.value.second)
+
+            viewModel.updateTargetResource(TileType.ORE, -1)
+            assertTrue(viewModel.tradeOffer.value.second.isEmpty())
+        }
+
+        @Test
+        fun submitBankTradeCallsTradeLogicAndClosesMenu() = runTest {
+            val lobbyId = "trade-lobby"
+            val offered = mapOf(TileType.WOOD to 2)
+            val target = mapOf(TileType.CLAY to 1)
+            val expectedRequest = TradeRequest(offered as Map<TileType, Int>,
+                target as Map<TileType, Int>
+            )
+
+            viewModel.setTradeMenuOpen(true)
+            viewModel.updateOfferedResource(TileType.WOOD, 2)
+            viewModel.updateTargetResource(TileType.CLAY, 1)
+            advanceUntilIdle()
+
+            viewModel.submitBankTrade(lobbyId)
+            advanceUntilIdle()
+
+            verify(exactly = 1) { mockTradeLogic.sendBankTrade(lobbyId, expectedRequest) }
+            assertFalse(viewModel.isTradeMenuOpen.value)
+        }
     }
 }

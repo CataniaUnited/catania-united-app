@@ -8,8 +8,6 @@ import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.encodeToJsonElement
 import javax.inject.Inject
 

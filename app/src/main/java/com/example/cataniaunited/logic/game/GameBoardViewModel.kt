@@ -213,9 +213,7 @@ class GameViewModel @Inject constructor(
 
     fun submitBankTrade(lobbyId: String) {
         val (offered, target) = _tradeOffer.value
-        val tradeRequest = TradeRequest(offered as Map<TileType, Int>,
-            target as Map<TileType, Int>
-        )
+        val tradeRequest = TradeRequest(offered, target)
         tradeLogic.sendBankTrade(lobbyId, tradeRequest)
         setTradeMenuOpen(false) // Close menu after submitting
     }

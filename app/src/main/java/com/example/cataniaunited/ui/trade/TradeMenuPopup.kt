@@ -20,7 +20,7 @@ fun TradeMenuPopup(
     onUpdateTarget: (TileType, Int) -> Unit,
     onSubmit: () -> Unit
 ) {
-    var tradeStep by remember { mutableStateOf(1) }
+    var tradeStep by remember { mutableIntStateOf(1) }
 
     Dialog(onDismissRequest = onDismiss) {
         Box(

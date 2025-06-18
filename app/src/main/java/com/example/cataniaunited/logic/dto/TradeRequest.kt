@@ -2,7 +2,6 @@ package com.example.cataniaunited.logic.dto
 
 import com.example.cataniaunited.data.model.TileType
 import kotlinx.serialization.Serializable
-import java.util.Map
 
 @Serializable
 data class TradeRequest(

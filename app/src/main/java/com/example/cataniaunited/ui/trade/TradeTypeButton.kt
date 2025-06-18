@@ -26,11 +26,10 @@ fun TradeTypeButton(
     onClick: () -> Unit,
     enabled: Boolean = true
 ) {
-    // A simple Box provides the shape, background, and click behavior.
     Box(
         contentAlignment = Alignment.Center,
         modifier = Modifier
-            .size(120.dp) // Smaller, square button size
+            .size(120.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(catanGold.copy(alpha = if (enabled) 1f else 0.6f))
             .border(2.dp, catanClayDark, RoundedCornerShape(20.dp))

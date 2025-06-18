@@ -569,4 +569,24 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 1) { mockLobbyUpdated.onLobbyUpdated(lobbyId, updatedPlayersMap) }
     }
+
+    @Test
+    fun onMessage_handlesPlayerResourceUpdate_withValidData() {
+        val lobbyId = "resourceUpdateLobby"
+        val playerInfo1 = PlayerInfo("p1", "UserA", resources = mapOf())
+        val updatedPlayersMap = mapOf("p1" to playerInfo1)
+
+        val messageJson = buildJsonObject {
+            put("type", MessageType.PLAYER_RESOURCE_UPDATE.name)
+            put("lobbyId", lobbyId)
+            put("players", Json.encodeToJsonElement(updatedPlayersMap))
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(updatedPlayersMap) }
+
+        verify(exactly = 0) { mockError.onError(any()) }
+        verify(exactly = 0) { mockLobbyUpdated.onLobbyUpdated(any(), any()) }
+    }
 }

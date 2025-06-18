@@ -28,24 +28,20 @@ fun BankTradeStep(
 
     val isTradeValid = offered.isNotEmpty() && target.isNotEmpty()
 
-    // Root column for sticky header/footer layout
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        // --- 1. Header (Sticky Top) ---
         Text("Trade with Bank", style = MaterialTheme.typography.headlineSmall, color = Color.White)
         Spacer(Modifier.height(16.dp))
 
-        // --- 2. Scrollable Content Area ---
         Column(
             modifier = Modifier
-                .weight(1f) // This makes the column fill available space
-                .verticalScroll(rememberScrollState()) // This makes the content scrollable
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.Top // Align to top to prevent stretching
+                verticalAlignment = Alignment.Top
             ) {
-                // "You Give" Section
                 Column(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -62,17 +58,15 @@ fun BankTradeStep(
                     }
                 }
 
-                // Arrow Separator
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = "Trade to",
                     tint = catanGoldLight,
                     modifier = Modifier
                         .size(48.dp)
-                        .padding(horizontal = 8.dp, vertical = 48.dp) // Add padding to center it vertically a bit
+                        .padding(horizontal = 8.dp, vertical = 48.dp)
                 )
 
-                // "You Get" Section
                 Column(
                     modifier = Modifier.weight(1f),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -92,7 +86,6 @@ fun BankTradeStep(
         }
         Spacer(Modifier.height(16.dp))
 
-        // --- 3. Footer (Sticky Bottom) ---
         Row(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,

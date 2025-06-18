@@ -241,11 +241,9 @@ open class WebSocketListenerImpl @Inject constructor(
         val players = messageDTO.players
 
         if (lobbyId != null && players != null) {
-            // This is the single point of truth for updating player data
             MainApplication.getInstance().applicationScope.launch {
                 gameDataHandler.updatePlayers(players)
             }
-            // Use the existing callbacks for lobby-specific logic
             when (messageDTO.type) {
                 MessageType.PLAYER_JOINED -> onPlayerJoined.onPlayerJoined(lobbyId, players)
                 MessageType.LOBBY_UPDATED -> onLobbyUpdated.onLobbyUpdated(lobbyId, players)

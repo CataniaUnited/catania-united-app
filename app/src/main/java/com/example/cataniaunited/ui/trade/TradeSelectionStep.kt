@@ -24,13 +24,13 @@ fun TradeSelectionStep(onTradeWithBank: () -> Unit, onTradeWithPlayer: () -> Uni
             verticalAlignment = Alignment.CenterVertically
         ) {
             TradeTypeButton(
-                iconRes = R.drawable.bank_trade_icon, // Add this drawable
+                iconRes = R.drawable.bank_trade_icon,
                 onClick = onTradeWithBank,
                 enabled = true,
                 contentDescription = "bank_trade"
             )
             TradeTypeButton(
-                iconRes = R.drawable.player_trade_icon, // Add this drawable
+                iconRes = R.drawable.player_trade_icon,
                 onClick = onTradeWithPlayer,
                 enabled = false,
                 contentDescription = "player_trade"

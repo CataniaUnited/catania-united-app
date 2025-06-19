@@ -200,7 +200,6 @@ fun GameScreen(
                             )
                         }
 
-
                         Text(
                             text = "Lobby ID: $lobbyId",
                             fontSize = 12.sp,

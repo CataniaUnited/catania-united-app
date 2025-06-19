@@ -51,6 +51,7 @@ import com.example.cataniaunited.ui.game_board.board.CatanBoard
 import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import com.example.cataniaunited.ui.game_end.GameWinScreen
 import com.example.cataniaunited.ui.theme.catanBlue
+import com.example.cataniaunited.ui.trade.TradeMenuPopup
 
 @Composable
 fun GameScreen(
@@ -60,6 +61,8 @@ fun GameScreen(
 ) {
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
     val isBuildMenuOpen by gameViewModel.isBuildMenuOpen.collectAsState()
+    val isTradeMenuOpen by gameViewModel.isTradeMenuOpen.collectAsState()
+    val tradeOffer by gameViewModel.tradeOffer.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication
     var showDicePopup by remember { mutableStateOf(false) }
     val diceResult by gameViewModel.diceResult.collectAsState()
@@ -78,7 +81,8 @@ fun GameScreen(
         }
     }
 
-    if (player?.isActivePlayer == true && player.canRollDice == true) {
+    if (player?.isActivePlayer == true && player.isSetupRound == false && player.canRollDice == true) {
+
         ShakeDetector {
             if (!showDicePopup) {
                 showDicePopup = true
@@ -112,7 +116,7 @@ fun GameScreen(
             },
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
-                    if (player.canRollDice == true) {
+                    if (player.isSetupRound == false && player.canRollDice == true) {
                         //Roll dice action
                         FloatingActionButton(
                             onClick = {
@@ -199,9 +203,13 @@ fun GameScreen(
                             ) {
                                 if (player?.isActivePlayer == true) {
                                     BuildButton(
-                                        enabled = player.canRollDice == false,
+                                        enabled = player.canRollDice == false || player.isSetupRound == true,
                                         isOpen = isBuildMenuOpen,
                                         onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
+                                    )
+                                    TradeButton(
+                                        enabled = player.canRollDice == false,
+                                        onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
                                 }
                             }
@@ -231,6 +239,20 @@ fun GameScreen(
                             },
                             dice1Result = diceResult?.first,
                             dice2Result = diceResult?.second
+                        )
+                    }
+
+                    if (isTradeMenuOpen) {
+                        TradeMenuPopup(
+                            onDismiss = { gameViewModel.setTradeMenuOpen(false) },
+                            tradeOffer = tradeOffer,
+                            onUpdateOffer = { resource, delta ->
+                                gameViewModel.updateOfferedResource(resource, delta)
+                            },
+                            onUpdateTarget = { resource, delta ->
+                                gameViewModel.updateTargetResource(resource, delta)
+                            },
+                            onSubmit = { gameViewModel.submitBankTrade(lobbyId) }
                         )
                     }
 

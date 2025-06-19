@@ -14,6 +14,7 @@ enum class MessageType {
     GAME_STARTED,
     ROBBER_PHASE,
     NEXT_TURN,
+    PLAYER_RESOURCE_UPDATE,
 
     //Client Messages
     CREATE_LOBBY,
@@ -28,5 +29,7 @@ enum class MessageType {
     ROLL_DICE,
     PLACE_ROBBER,
     SET_READY,
-    END_TURN
+    END_TURN,
+    TRADE_WITH_BANK,
+    TRADE_WITH_PLAYER
 }

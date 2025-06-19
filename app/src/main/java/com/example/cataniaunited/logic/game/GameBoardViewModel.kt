@@ -9,8 +9,10 @@ import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
+import com.example.cataniaunited.logic.trade.TradeLogic
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,7 +25,8 @@ class GameViewModel @Inject constructor(
     private val gameBoardLogic: GameBoardLogic,
     private val lobbyLogic: LobbyLogic,
     private val gameDataHandler: GameDataHandler,
-    private val sessionManager: PlayerSessionManager
+    private val sessionManager: PlayerSessionManager,
+    private val tradeLogic: TradeLogic,
 ) : ViewModel() {
 
     val playerId get() = sessionManager.getPlayerId()
@@ -43,6 +46,12 @@ class GameViewModel @Inject constructor(
 
     private val _players = MutableStateFlow<Map<String, PlayerInfo>>(emptyMap())
     val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
+
+    private val _isTradeMenuOpen = MutableStateFlow(false)
+    val isTradeMenuOpen: StateFlow<Boolean> = _isTradeMenuOpen.asStateFlow()
+
+    private val _tradeOffer = MutableStateFlow<Pair<Map<TileType, Int>, Map<TileType, Int>>>(Pair(emptyMap(), emptyMap()))
+    val tradeOffer: StateFlow<Pair<Map<TileType, Int>, Map<TileType, Int>>> = _tradeOffer.asStateFlow()
 
     private val _robberTile = MutableStateFlow<List<Int>?>(null)
     val robberTile: StateFlow<List<Int>?> = _robberTile.asStateFlow()
@@ -172,5 +181,52 @@ class GameViewModel @Inject constructor(
                 _diceResult.value = null
             }
         }
+    }
+
+    fun setTradeMenuOpen(isOpen: Boolean) {
+        _isTradeMenuOpen.value = isOpen
+        if (!isOpen) {
+            // Reset the trade offer when the menu is closed
+            _tradeOffer.value = Pair(emptyMap(), emptyMap())
+        }
+    }
+
+    fun updateOfferedResource(resource: TileType, delta: Int) {
+        val currentOffer = _tradeOffer.value.first.toMutableMap()
+        val currentCount = currentOffer.getOrDefault(resource, 0)
+        val newCount = currentCount + delta
+
+        // Validation: Ensure count doesn't go below zero and player has the resource
+        val playerHas = playerResources.value.getOrDefault(resource, 0)
+        if (newCount >= 0 && newCount <= playerHas) {
+            if (newCount == 0) {
+                currentOffer.remove(resource)
+            } else {
+                currentOffer[resource] = newCount
+            }
+            _tradeOffer.value = Pair(currentOffer, _tradeOffer.value.second)
+        }
+    }
+
+    fun updateTargetResource(resource: TileType, delta: Int) {
+        val currentTarget = _tradeOffer.value.second.toMutableMap()
+        val currentCount = currentTarget.getOrDefault(resource, 0)
+        val newCount = currentCount + delta
+
+        if (newCount >= 0) {
+            if (newCount == 0) {
+                currentTarget.remove(resource)
+            } else {
+                currentTarget[resource] = newCount
+            }
+            _tradeOffer.value = Pair(_tradeOffer.value.first, currentTarget)
+        }
+    }
+
+    fun submitBankTrade(lobbyId: String) {
+        val (offered, target) = _tradeOffer.value
+        val tradeRequest = TradeRequest(offered, target)
+        tradeLogic.sendBankTrade(lobbyId, tradeRequest)
+        setTradeMenuOpen(false) // Close menu after submitting
     }
 }

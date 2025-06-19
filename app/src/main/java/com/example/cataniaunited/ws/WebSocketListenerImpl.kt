@@ -9,6 +9,7 @@ import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
+import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnLobbyUpdated
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -37,6 +39,7 @@ open class WebSocketListenerImpl @Inject constructor(
     private val onError: OnWebSocketError,
     private val onClosed: OnWebSocketClosed,
     private val onDiceResult: OnDiceResult,
+    private val onDiceRolling: OnDiceRolling,
     private val onPlayerResourcesReceived: OnPlayerResourcesReceived,
     private val gameDataHandler: GameDataHandler
 ) : WebSocketListener() {
@@ -82,6 +85,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
 
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
+                MessageType.ROLL_DICE -> handleDiceRolling(messageDTO)
                 MessageType.GAME_WON -> handleGameWon(messageDTO)
                 // TODO: Other Messages
 
@@ -221,20 +225,31 @@ open class WebSocketListenerImpl @Inject constructor(
         }
     }
 
+    internal fun handleDiceRolling(messageDTO: MessageDTO) {
+        val playerName = messageDTO.message?.get("rollingUsername")?.jsonPrimitive?.contentOrNull
+            ?: messageDTO.players?.get(messageDTO.player)?.username
+            ?: "Player"
+        val playerId = messageDTO.player ?: ""
+
+        Log.d("WebSocketListener", "Dice rolling for: $playerName (ID: $playerId)")
+        onDiceRolling.onDiceRolling(playerName)
+    }
+
     internal fun handleDiceResult(messageDTO: MessageDTO) {
-        val dice1 = messageDTO.message?.get("dice1")?.jsonPrimitive?.content?.toInt() ?: 0
-        val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.content?.toInt() ?: 0
+        val dice1 = messageDTO.message?.get("dice1")?.jsonPrimitive?.intOrNull ?: 0
+        val dice2 = messageDTO.message?.get("dice2")?.jsonPrimitive?.intOrNull ?: 0
+        val playerName = messageDTO.message?.get("rollingUsername")?.jsonPrimitive?.contentOrNull
+            ?: messageDTO.players?.get(messageDTO.player)?.username
+            ?: "Unknown Player"
 
-        Log.d("WebSocketListener", "Processing new dice result: $dice1, $dice2")
+        Log.d("WebSocketListener", "Dice result for $playerName: $dice1, $dice2")
 
-        if (messageDTO.players != null) {
+        messageDTO.players?.let { players ->
             MainApplication.getInstance().applicationScope.launch {
-                gameDataHandler.updatePlayers(messageDTO.players)
+                gameDataHandler.updatePlayers(players)
             }
-            onPlayerResourcesReceived.onPlayerResourcesReceived(messageDTO.players)
         }
-
-        onDiceResult.onDiceResult(dice1, dice2)
+        onDiceResult.onDiceResult(dice1, dice2, playerName)
     }
     private fun handlePlayersUpdate(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId

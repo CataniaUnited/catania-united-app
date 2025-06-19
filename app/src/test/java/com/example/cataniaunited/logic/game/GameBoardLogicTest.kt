@@ -1,6 +1,8 @@
 package com.example.cataniaunited.logic.game
 
+import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -12,6 +14,8 @@ import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -147,7 +151,16 @@ class GameBoardLogicTest {
 
     @Test
     fun rollDiceSendsCorrectMessageWhenConnected() {
-        val expectedPayload = buildJsonObject { put("action", "rollDice") }
+        val testPlayer = PlayerInfo(id = testPlayerId, username = "TestPlayer")
+        val playersStateList = mutableStateListOf<PlayerInfo>()
+        playersStateList.add(testPlayer)
+        every { mockMainApplication.players } returns playersStateList
+
+        val expectedPayload = buildJsonObject {
+            put("action", "rollDice")
+            put("player", testPlayerId)
+            put("playerName", "TestPlayer")
+        }
         val expectedMessage = MessageDTO(
             type = MessageType.ROLL_DICE,
             player = testPlayerId,
@@ -164,9 +177,38 @@ class GameBoardLogicTest {
     @Test
     fun rollDiceDoesNotSendWhenGetPlayerIdThrows() {
         val exception = IllegalStateException("Player ID not set")
-        every { mockMainApplication.getPlayerId() } throws exception
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
         gameBoardLogic.rollDice(testLobbyId)
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }
 
+    @Test
+    fun testRollDiceShouldIncludePlayerIdAndNameInMessage() {
+        val testPlayer = PlayerInfo(id = testPlayerId, username = "TestPlayer")
+        val playersStateList = mutableStateListOf<PlayerInfo>()
+        playersStateList.add(testPlayer)
+        every { mockMainApplication.players } returns playersStateList
+
+        gameBoardLogic.rollDice(testLobbyId)
+
+        verify { mockWebSocketClient.sendMessage(match {
+            it.type == MessageType.ROLL_DICE &&
+                    it.player == testPlayerId &&
+                    it.lobbyId == testLobbyId &&
+                    it.message?.get("player")?.jsonPrimitive?.contentOrNull == testPlayerId &&
+                    it.message["playerName"]?.jsonPrimitive?.contentOrNull == testPlayer.username
+        }) }
+    }
+
+    @Test
+    fun testRollDiceShouldUsePlayerIdAsNameIfNotFoundInPlayersList() {
+        val playersStateList = mutableStateListOf<PlayerInfo>()
+        every { mockMainApplication.players } returns playersStateList
+
+        gameBoardLogic.rollDice(testLobbyId)
+
+        verify { mockWebSocketClient.sendMessage(match {
+            it.message?.get("playerName")?.jsonPrimitive?.contentOrNull == testPlayerId
+        }) }
+    }
 }

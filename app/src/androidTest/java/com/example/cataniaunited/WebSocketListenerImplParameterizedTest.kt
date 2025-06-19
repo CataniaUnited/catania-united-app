@@ -6,6 +6,7 @@ import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnDiceResult
+import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnLobbyUpdated
@@ -38,6 +39,7 @@ class WebSocketListenerImplParameterizedTest {
     private lateinit var mockLobbyCreated: OnLobbyCreated
     private lateinit var mockGameBoardReceived: OnGameBoardReceived
     private lateinit var mockOnDiceResult: OnDiceResult
+    private lateinit var mockOnDiceRolling: OnDiceRolling
     private lateinit var mockError: OnWebSocketError
     private lateinit var mockClosed: OnWebSocketClosed
     private lateinit var mockGameDataHandler: GameDataHandler
@@ -54,6 +56,7 @@ class WebSocketListenerImplParameterizedTest {
         mockLobbyCreated = mockk(relaxed = true)
         mockGameBoardReceived = mockk(relaxed = true)
         mockOnDiceResult = mockk(relaxed = true)
+        mockOnDiceRolling = mockk(relaxed = true)
         mockError = mockk(relaxed = true)
         mockClosed = mockk(relaxed = true)
         mockGameDataHandler = mockk(relaxed = true)
@@ -72,6 +75,7 @@ class WebSocketListenerImplParameterizedTest {
             onError = mockError,
             onClosed = mockClosed,
             onDiceResult = mockOnDiceResult,
+            onDiceRolling = mockOnDiceRolling,
             gameDataHandler = mockGameDataHandler,
             onPlayerResourcesReceived = mockOnPlayerResourcesReceived,
             onPlayerJoined = mockOnPlayerJoined,

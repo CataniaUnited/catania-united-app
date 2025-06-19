@@ -72,8 +72,7 @@ fun GameScreen(
         }
     }
 
-    if (player?.isActivePlayer == true && player.canRollDice == true) {
-        if (player?.isActivePlayer == true && player.isSetupRound == false && player.canRollDice == true) {
+    if (player?.isActivePlayer == true && player.isSetupRound == false && player.canRollDice == true) {
             ShakeDetector {
                 if (!showDicePopup) {
                     gameViewModel.rollDice(lobbyId)
@@ -81,23 +80,23 @@ fun GameScreen(
             }
         }
 
-        Box(Modifier.fillMaxSize()) {
-            Scaffold(
-                containerColor = Color(0xff177fde),
-                bottomBar = {
-                    if (gameBoardState != null) {
-                        PlayerResourcesBar(
-                            modifier = Modifier.fillMaxWidth(),
-                            resources = playerResources
-                        )
-                    }
-                },
-                topBar = {
-                    LivePlayerVictoryBar()
-                },
-                floatingActionButton = {
-                    if (player?.isActivePlayer == true) {
-                        if (player.isSetupRound == false && player.canRollDice == true) {
+    Box(Modifier.fillMaxSize()) {
+        Scaffold(
+            containerColor = Color(0xff177fde),
+            bottomBar = {
+                if (gameBoardState != null) {
+                    PlayerResourcesBar(
+                        modifier = Modifier.fillMaxWidth(),
+                        resources = playerResources
+                    )
+                }
+            },
+            topBar = {
+                LivePlayerVictoryBar()
+            },
+            floatingActionButton = {
+                if (player?.isActivePlayer == true) {
+                    if (player.isSetupRound == false && player.canRollDice == true) {
                             //Roll dice action
                             FloatingActionButton(
                                 onClick = {
@@ -112,86 +111,69 @@ fun GameScreen(
                                     modifier = Modifier.size(32.dp)
                                 )
                             }
-                        } else {
-                            FloatingActionButton(
-                                onClick = {
-                                    gameViewModel.handleEndTurnClick(lobbyId)
-                                },
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Filled.DoubleArrow,
-                                    contentDescription = "End turn"
-                                )
-                            }
+                    } else {
+                        FloatingActionButton(
+                            onClick = {
+                                gameViewModel.handleEndTurnClick(lobbyId)
+                            },
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.DoubleArrow,
+                                contentDescription = "End turn"
+                            )
                         }
                     }
                 }
-            ) { padding ->
-                Column(
+            }
+        ) { padding ->
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding)
+                    .background(catanBlue)
+            ) {
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(padding)
-                        .background(catanBlue)
+                        .weight(1f)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .weight(1f)
-                    ) {
-                        when (val board = gameBoardState) {
-                            null -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                            else -> {
-                                CatanBoard(
-                                    modifier = Modifier.fillMaxSize(),
-                                    tiles = board.tiles,
-                                    settlementPositions = board.settlementPositions,
-                                    roads = board.roads,
-                                    ports = board.ports,
-                                    isBuildMode = isBuildMenuOpen,
-                                    playerId = gameViewModel.playerId,
-                                    onTileClicked = { tile ->
-                                        Log.d(
-                                            "GameScreen",
-                                            "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}"
-                                        )
-                                        gameViewModel.handleTileClick(tile, lobbyId)
-                                    },
-                                    onSettlementClicked = { (settlementPos, isUpgrade) ->
-                                        Log.d(
-                                            "GameScreen",
-                                            "Settlement Clicked: ID=${settlementPos.id}"
-                                        )
-                                        gameViewModel.handleSettlementClick(
-                                            settlementPos,
-                                            isUpgrade,
-                                            lobbyId
-                                        )
-                                    },
-                                    onRoadClicked = { road ->
-                                        Log.d("GameScreen", "Road Clicked: ID=${road.id}")
-                                        gameViewModel.handleRoadClick(road, lobbyId)
-                                    }
-                                )
+                    when (val board = gameBoardState) {
+                        null -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                        else -> {
+                            CatanBoard(
+                                modifier = Modifier.fillMaxSize(),
+                                tiles = board.tiles,
+                                settlementPositions = board.settlementPositions,
+                                roads = board.roads,
+                                ports = board.ports,
+                                isBuildMode = isBuildMenuOpen,
+                                playerId = gameViewModel.playerId,
+                                onTileClicked = { tile ->
+                                    Log.d(
+                                        "GameScreen",
+                                        "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}"
+                                    )
+                                    gameViewModel.handleTileClick(tile, lobbyId)
+                                },
+                                onSettlementClicked = { (settlementPos, isUpgrade) ->
+                                    Log.d(
+                                        "GameScreen",
+                                        "Settlement Clicked: ID=${settlementPos.id}"
+                                    )
+                                    gameViewModel.handleSettlementClick(
+                                        settlementPos,
+                                        isUpgrade,
+                                        lobbyId
+                                    )
+                                },
+                                onRoadClicked = { road ->
+                                    Log.d("GameScreen", "Road Clicked: ID=${road.id}")
+                                    gameViewModel.handleRoadClick(road, lobbyId)
+                                }
+                            )
 
-                                Column(
-                                    modifier = Modifier
-                                        .align(Alignment.TopEnd)
-                                        .padding(top = 32.dp, end = 16.dp)
-                                        .zIndex(2f)
-                                ) {
-                                    if (player?.isActivePlayer == true) {
-                                        BuildButton(
-                                            enabled = player.canRollDice == false || player.isSetupRound == true,
-                                            isOpen = isBuildMenuOpen,
-                                            onClick = { isOpen ->
-                                                gameViewModel.setBuildMenuOpen(
-                                                    isOpen
-                                                )
-                                            }
-                                        )
-                                    }
                             Column(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
@@ -208,26 +190,15 @@ fun GameScreen(
                                         enabled = player.canRollDice == false,
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
-
                                 }
                             }
                         }
+                    }
 
-                        if (diceState != null) {
-                            DiceRollerPopup(
-                                viewModel = gameViewModel,
-                                onClose = { gameViewModel.resetDiceState() }
-                            )
-                        }
-
-                        Text(
-                            text = "Lobby ID: $lobbyId",
-                            fontSize = 12.sp,
-                            color = Color.DarkGray,
-                            textAlign = TextAlign.Start,
-                            modifier = Modifier
-                                .align(Alignment.BottomStart)
-                                .padding(8.dp)
+                    if (diceState != null) {
+                        DiceRollerPopup(
+                            viewModel = gameViewModel,
+                            onClose = { gameViewModel.resetDiceState() }
                         )
                     }
 
@@ -256,32 +227,31 @@ fun GameScreen(
                     )
                 }
             }
+        }
 
-            AnimatedVisibility(
-                visible = gameWonState != null,
-                enter = fadeIn() + scaleIn(initialScale = 0.9f),
+        AnimatedVisibility(
+            visible = gameWonState != null,
+            enter = fadeIn() + scaleIn(initialScale = 0.9f),
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0x99000000)),
+                contentAlignment = Alignment.Center
             ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color(0x99000000)),
-                    contentAlignment = Alignment.Center
-                ) {
-                    gameWonState?.let { (winner, leaderboard) ->
-                        GameWinScreen(
-                            winner = winner,
-                            leaderboard = leaderboard,
-                            onReturnToMenu = {
-                                application.clearLobbyData()
-                                navController.navigate("starting") {
-                                    popUpTo("starting") { inclusive = true }
-                                }
+                gameWonState?.let { (winner, leaderboard) ->
+                    GameWinScreen(
+                        winner = winner,
+                        leaderboard = leaderboard,
+                        onReturnToMenu = {
+                            application.clearLobbyData()
+                            navController.navigate("starting") {
+                                popUpTo("starting") { inclusive = true }
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
     }
 }
-

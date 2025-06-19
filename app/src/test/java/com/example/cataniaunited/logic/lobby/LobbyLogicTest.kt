@@ -3,6 +3,7 @@ package com.example.cataniaunited.logic.lobby
 import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
+import com.example.cataniaunited.logic.dto.UsernameRequest
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.ws.WebSocketClient
 import io.mockk.every
@@ -11,6 +12,9 @@ import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkObject
 import io.mockk.verify
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.encodeToJsonElement
+import kotlinx.serialization.json.jsonObject
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
@@ -187,6 +191,44 @@ class LobbyLogicTest {
         every { mockPlayerSessionManager.getPlayerId() } throws exception
 
         lobbyLogic.endTurn(testLobbyId)
+
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
+    @Test
+    fun setUsernameSendsCorrectMessageWhenConnected() {
+        val username = "new_username"
+        val expectedUsernameRequest = UsernameRequest(username)
+        val expectedMessage = MessageDTO(
+            type = MessageType.SET_USERNAME,
+            player = testPlayerId,
+            lobbyId = testLobbyId,
+            players = null,
+            message = Json.encodeToJsonElement(expectedUsernameRequest).jsonObject
+        )
+        val messageSlot = slot<MessageDTO>()
+
+        lobbyLogic.setUsername(testLobbyId, username)
+
+        verify(exactly = 1) { mockWebSocketClient.sendMessage(capture(messageSlot)) }
+        assertEquals(expectedMessage, messageSlot.captured)
+    }
+
+    @Test
+    fun setUsernameDoesNotSendWhenNotConnected() {
+        every { mockWebSocketClient.isConnected() } returns false
+
+        lobbyLogic.setUsername(testLobbyId, "new_username")
+
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
+    @Test
+    fun setUsernameDoesNotSendWhenGetPlayerIdThrows() {
+        val exception = IllegalStateException("Player ID not set for setUsername")
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
+
+        lobbyLogic.setUsername(testLobbyId, "new_username")
 
         verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
     }

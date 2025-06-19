@@ -209,6 +209,10 @@ class MainActivity : ComponentActivity() {
                                     onToggleReadyClick = {
                                         Log.i("LobbyScreen", "Toggle ready state")
                                         lobbyLogic.toggleReady(lobbyId)
+                                    },
+                                    onChangeUsername = {
+                                        Log.i("LobbyScreen", "Changing username: username = $it")
+                                        lobbyLogic.setUsername(lobbyId, it)
                                     }
                                 )
                             }

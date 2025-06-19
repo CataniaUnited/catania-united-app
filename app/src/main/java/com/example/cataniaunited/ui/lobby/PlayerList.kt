@@ -14,6 +14,7 @@ fun PlayerList(
     players: List<PlayerInfo>,
     modifier: Modifier = Modifier,
     onToggleReadyClick: () -> Unit,
+    onChangeUsername: (username: String) -> Unit,
 ) {
 
     LazyColumn(
@@ -24,6 +25,7 @@ fun PlayerList(
             PlayerListItem(
                 player = player,
                 onToggleReadyClick = onToggleReadyClick,
+                onChangeUsername = onChangeUsername,
             )
         }
     }

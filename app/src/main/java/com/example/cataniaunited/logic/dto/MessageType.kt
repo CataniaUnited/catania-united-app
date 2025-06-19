@@ -28,6 +28,7 @@ enum class MessageType {
     ROLL_DICE,
     SET_READY,
     END_TURN,
+    PLACE_ROBBER,
     TRADE_WITH_BANK,
     TRADE_WITH_PLAYER
 }

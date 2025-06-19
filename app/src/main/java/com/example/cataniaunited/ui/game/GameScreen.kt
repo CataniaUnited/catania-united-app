@@ -45,6 +45,7 @@ import com.example.cataniaunited.ui.game_board.board.CatanBoard
 import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import com.example.cataniaunited.ui.game_end.GameWinScreen
 import com.example.cataniaunited.ui.theme.catanBlue
+import com.example.cataniaunited.ui.trade.TradeMenuPopup
 
 @Composable
 fun GameScreen(
@@ -54,6 +55,8 @@ fun GameScreen(
 ) {
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
     val isBuildMenuOpen by gameViewModel.isBuildMenuOpen.collectAsState()
+    val isTradeMenuOpen by gameViewModel.isTradeMenuOpen.collectAsState()
+    val tradeOffer by gameViewModel.tradeOffer.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication
     val showDicePopup by gameViewModel.showDicePopup.collectAsState()
     val diceState by gameViewModel.diceState.collectAsState()
@@ -189,6 +192,23 @@ fun GameScreen(
                                             }
                                         )
                                     }
+                            Column(
+                                modifier = Modifier
+                                    .align(Alignment.TopEnd)
+                                    .padding(top = 32.dp, end = 16.dp)
+                                    .zIndex(2f)
+                            ) {
+                                if (player?.isActivePlayer == true) {
+                                    BuildButton(
+                                        enabled = player.canRollDice == false || player.isSetupRound == true,
+                                        isOpen = isBuildMenuOpen,
+                                        onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
+                                    )
+                                    TradeButton(
+                                        enabled = player.canRollDice == false,
+                                        onClick = { gameViewModel.setTradeMenuOpen(true) }
+                                    )
+
                                 }
                             }
                         }
@@ -210,6 +230,30 @@ fun GameScreen(
                                 .padding(8.dp)
                         )
                     }
+
+                    if (isTradeMenuOpen) {
+                        TradeMenuPopup(
+                            onDismiss = { gameViewModel.setTradeMenuOpen(false) },
+                            tradeOffer = tradeOffer,
+                            onUpdateOffer = { resource, delta ->
+                                gameViewModel.updateOfferedResource(resource, delta)
+                            },
+                            onUpdateTarget = { resource, delta ->
+                                gameViewModel.updateTargetResource(resource, delta)
+                            },
+                            onSubmit = { gameViewModel.submitBankTrade(lobbyId) }
+                        )
+                    }
+
+                    Text(
+                        text = "Lobby ID: $lobbyId",
+                        fontSize = 12.sp,
+                        color = Color.DarkGray,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier
+                            .align(Alignment.BottomStart)
+                            .padding(8.dp)
+                    )
                 }
             }
 

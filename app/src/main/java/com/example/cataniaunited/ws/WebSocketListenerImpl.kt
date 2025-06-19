@@ -76,6 +76,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
                 MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
                 MessageType.LOBBY_UPDATED -> handleLobbyUpdated(messageDTO)
+                MessageType.PLAYER_RESOURCE_UPDATE -> handlePlayersUpdate(messageDTO)
                 MessageType.GAME_BOARD_JSON,
                 MessageType.PLACE_SETTLEMENT,
                 MessageType.PLACE_ROAD,
@@ -249,5 +250,23 @@ open class WebSocketListenerImpl @Inject constructor(
             }
         }
         onDiceResult.onDiceResult(dice1, dice2, playerName)
+    }
+    private fun handlePlayersUpdate(messageDTO: MessageDTO) {
+        val lobbyId = messageDTO.lobbyId
+        val players = messageDTO.players
+
+        if (lobbyId != null && players != null) {
+            MainApplication.getInstance().applicationScope.launch {
+                gameDataHandler.updatePlayers(players)
+            }
+            when (messageDTO.type) {
+                MessageType.PLAYER_JOINED -> onPlayerJoined.onPlayerJoined(lobbyId, players)
+                MessageType.LOBBY_UPDATED -> onLobbyUpdated.onLobbyUpdated(lobbyId, players)
+                MessageType.PLAYER_RESOURCE_UPDATE -> onPlayerResourcesReceived.onPlayerResourcesReceived(players)
+                else -> {} // Should not happen
+            }
+        } else {
+            Log.w("WebSocketListener", "Player update message missing lobbyId or players map")
+        }
     }
 }

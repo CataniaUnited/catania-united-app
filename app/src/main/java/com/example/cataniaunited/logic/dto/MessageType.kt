@@ -13,6 +13,7 @@ enum class MessageType {
     GAME_WON,
     GAME_STARTED,
     NEXT_TURN,
+    PLAYER_RESOURCE_UPDATE,
 
     //Client Messages
     CREATE_LOBBY,
@@ -26,5 +27,7 @@ enum class MessageType {
     BUY_DEVELOPMENT_CARD,
     ROLL_DICE,
     SET_READY,
-    END_TURN
+    END_TURN,
+    TRADE_WITH_BANK,
+    TRADE_WITH_PLAYER
 }

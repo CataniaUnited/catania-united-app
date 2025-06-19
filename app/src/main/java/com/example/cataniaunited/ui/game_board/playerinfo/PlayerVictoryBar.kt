@@ -45,33 +45,19 @@ fun PlayerVictoryBar(
 
     Box(modifier = modifier.fillMaxWidth()) {
 
-        // Scroll back button
         if (canScrollBack) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .padding(start = 4.dp)
-                    .size(24.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.6f))
-                    .clickable {
-                        val prevIndex = (listState.firstVisibleItemIndex - 2).coerceAtLeast(0)
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(prevIndex)
-                        }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.DoubleArrow,
-                    contentDescription = "Scroll left",
-                    tint = Color.DarkGray,
-                    modifier = Modifier.size(14.dp).rotate(180f)
-                )
-            }
+            ScrollButton(
+                modifier = Modifier.align(Alignment.CenterStart),
+                onClick = {
+                    val prevIndex = (listState.firstVisibleItemIndex - 2).coerceAtLeast(0)
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(prevIndex)
+                    }
+                },
+                rotate = true
+            )
         }
 
-        // Player cards row
         LazyRow(
             state = listState,
             modifier = Modifier
@@ -86,101 +72,132 @@ fun PlayerVictoryBar(
                 val vpTextColor =
                     if (borderColor.luminance() > 0.5f) Color.Black else Color.White
 
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Box(
-                        modifier = Modifier
-                            .height(40.dp)
-                            .width(260.dp)
-                            .border(2.dp, borderColor, RoundedCornerShape(12.dp))
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(Color.Transparent)
-                            .clickable {
-                                onPlayerClicked(player, index)
-                            }
-                            .onGloballyPositioned { coords ->
-                                if (selectedPlayerId == player.id) {
-                                    onPlayerOffsetChanged(coords.positionInRoot().x)
-                                }
-                            }
-                    ) {
-                        Row(modifier = Modifier.fillMaxSize()) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxHeight()
-                                    .background(catanClayLight),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.fillMaxHeight()
-                                ) {
-                                    if (player.isActivePlayer) {
-                                        Icon(
-                                            imageVector = Icons.Default.Star,
-                                            contentDescription = null,
-                                            tint = Color.White,
-                                            modifier = Modifier.size(16.dp)
-                                        )
-                                        Spacer(modifier = Modifier.width(8.dp))
-                                    }
-                                    player.username?.let {
-                                        Text(
-                                            text = it,
-                                            style = appTypography.bodyLarge.copy(fontSize = 16.sp),
-                                            color = Color.White
-                                        )
-                                    }
-                                }
-                            }
-                            Box(
-                                modifier = Modifier
-                                    .width(2.dp)
-                                    .fillMaxHeight()
-                                    .background(borderColor)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .width(60.dp)
-                                    .fillMaxHeight()
-                                    .background(borderColor),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = "${player.victoryPoints} VP",
-                                    style = appTypography.bodyLarge.copy(fontSize = 16.sp),
-                                    color = vpTextColor
-                                )
-                            }
-                        }
-                    }
-                }
+                PlayerCard(
+                    player = player,
+                    borderColor = borderColor,
+                    vpTextColor = vpTextColor,
+                    isSelected = selectedPlayerId == player.id,
+                    index = index,
+                    onPlayerClicked = onPlayerClicked,
+                    onPlayerOffsetChanged = onPlayerOffsetChanged
+                )
             }
         }
 
-        // Scroll forward button
         if (canScrollForward) {
-            Box(
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .padding(end = 4.dp)
-                    .size(24.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color.White.copy(alpha = 0.6f))
-                    .clickable {
-                        val nextIndex = (listState.firstVisibleItemIndex + 2).coerceAtMost(players.lastIndex)
-                        coroutineScope.launch {
-                            listState.animateScrollToItem(nextIndex)
+            ScrollButton(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                onClick = {
+                    val nextIndex = (listState.firstVisibleItemIndex + 2).coerceAtMost(players.lastIndex)
+                    coroutineScope.launch {
+                        listState.animateScrollToItem(nextIndex)
+                    }
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScrollButton(
+    modifier: Modifier,
+    onClick: () -> Unit,
+    rotate: Boolean = false
+) {
+    Box(
+        modifier = modifier
+            .padding(horizontal = 4.dp)
+            .size(24.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(Color.White.copy(alpha = 0.6f))
+            .clickable { onClick() },
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            imageVector = Icons.Default.DoubleArrow,
+            contentDescription = null,
+            tint = Color.DarkGray,
+            modifier = Modifier
+                .size(14.dp)
+                .rotate(if (rotate) 180f else 0f)
+        )
+    }
+}
+
+@Composable
+private fun PlayerCard(
+    player: PlayerInfo,
+    borderColor: Color,
+    vpTextColor: Color,
+    isSelected: Boolean,
+    index: Int,
+    onPlayerClicked: (PlayerInfo, Int) -> Unit,
+    onPlayerOffsetChanged: (Float) -> Unit
+) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Box(
+            modifier = Modifier
+                .height(40.dp)
+                .width(260.dp)
+                .border(2.dp, borderColor, RoundedCornerShape(12.dp))
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color.Transparent)
+                .clickable { onPlayerClicked(player, index) }
+                .onGloballyPositioned { coords ->
+                    if (isSelected) {
+                        onPlayerOffsetChanged(coords.positionInRoot().x)
+                    }
+                }
+        ) {
+            Row(modifier = Modifier.fillMaxSize()) {
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxHeight()
+                        .background(catanClayLight),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxHeight()
+                    ) {
+                        if (player.isActivePlayer) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
                         }
-                    },
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = Icons.Default.DoubleArrow,
-                    contentDescription = "Scroll right",
-                    tint = Color.DarkGray,
-                    modifier = Modifier.size(14.dp)
+                        player.username?.let {
+                            Text(
+                                text = it,
+                                style = appTypography.bodyLarge.copy(fontSize = 16.sp),
+                                color = Color.White
+                            )
+                        }
+                    }
+                }
+                Box(
+                    modifier = Modifier
+                        .width(2.dp)
+                        .fillMaxHeight()
+                        .background(borderColor)
                 )
+                Box(
+                    modifier = Modifier
+                        .width(60.dp)
+                        .fillMaxHeight()
+                        .background(borderColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "${player.victoryPoints} VP",
+                        style = appTypography.bodyLarge.copy(fontSize = 16.sp),
+                        color = vpTextColor
+                    )
+                }
             }
         }
     }

@@ -26,6 +26,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -36,6 +37,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
@@ -52,6 +54,7 @@ import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import com.example.cataniaunited.ui.game_end.GameWinScreen
 import com.example.cataniaunited.ui.theme.catanBlue
 import com.example.cataniaunited.ui.trade.TradeMenuPopup
+import kotlin.math.roundToInt
 
 @Composable
 fun GameScreen(
@@ -72,7 +75,12 @@ fun GameScreen(
     val player: PlayerInfo? = players[gameViewModel.playerId]
     val selectedPlayer = remember { mutableStateOf<PlayerInfo?>(null) }
     val selectedPlayerIndex = remember { mutableStateOf<Int?>(null) }
-    val selectedPlayerOffsetX = remember { mutableStateOf(0f) }
+    val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
+    val density = LocalDensity.current
+    val popupOffsetX = with(density) { selectedPlayerOffsetX.floatValue.toDp().roundToPx() }
+    val popupOffsetY = with(density) { 3.dp.toPx().roundToInt() }
+
+
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
@@ -110,7 +118,7 @@ fun GameScreen(
                         selectedPlayerIndex.value = if (selectedPlayer.value?.id == playerInfo.id) index else null
                     },
                     onPlayerOffsetChanged = { offsetX ->
-                        selectedPlayerOffsetX.value = offsetX
+                        selectedPlayerOffsetX.floatValue = offsetX
                     }
                 )
             },
@@ -219,10 +227,7 @@ fun GameScreen(
                                     modifier = Modifier
                                         .wrapContentSize()
                                         .zIndex(10f)
-                                        .offset(
-                                            x = with(LocalDensity.current) { selectedPlayerOffsetX.value.toDp() },
-                                            y = 3.dp
-                                        )
+                                        .offset { IntOffset(x = popupOffsetX, y = popupOffsetY) }
                                         .align(Alignment.TopStart)
                                 ) {
                                     PlayerResourcePopup(resources = selectedPlayer.value!!.resources)

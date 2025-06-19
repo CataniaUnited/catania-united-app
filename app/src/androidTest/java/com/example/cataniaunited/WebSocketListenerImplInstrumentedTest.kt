@@ -1,5 +1,6 @@
 package com.example.cataniaunited
 
+import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.exception.GameException
@@ -52,7 +53,7 @@ class WebSocketListenerImplInstrumentedTest {
     private lateinit var mockOnPlayerResoucesRecieved: OnPlayerResourcesReceived
 
 
-            private val minimalBoardContent =
+    private val minimalBoardContent =
         """{"tiles":[],"settlementPositions":[],"roads":[],"ports":[],"ringsOfBoard":0,"sizeOfHex":0}"""
 
 
@@ -344,7 +345,8 @@ class WebSocketListenerImplInstrumentedTest {
 
     @Test
     fun onMessage_handlesInvalidMessageDTOJson_callsOnError() {
-        val invalidJson = """{"type":"INVALID_TYPE","player":"abc"}""" // Missing required fields for MessageDTO
+        val invalidJson =
+            """{"type":"INVALID_TYPE","player":"abc"}""" // Missing required fields for MessageDTO
 
         webSocketListener.onMessage(mockWebSocket, invalidJson)
 
@@ -687,7 +689,8 @@ class WebSocketListenerImplInstrumentedTest {
 
     @Test
     fun onMessage_handlesGameWon_withMissingWinnerId() {
-        val playersList = listOf(PlayerInfo(id = "winnerId", username = "Alice", victoryPoints = 10))
+        val playersList =
+            listOf(PlayerInfo(id = "winnerId", username = "Alice", victoryPoints = 10))
         val messageJson = buildJsonObject {
             put("type", MessageType.GAME_WON.name)
             put("message", buildJsonObject {
@@ -742,5 +745,86 @@ class WebSocketListenerImplInstrumentedTest {
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
         verify(exactly = 1) { mockLobbyUpdated.onLobbyUpdated(lobbyId, updatedPlayersMap) }
+    }
+
+    @Test
+    fun onMessage_handlesPlayerResourceUpdate_withValidData() {
+        val lobbyId = "resourceUpdateLobby"
+        val playerInfo1 = PlayerInfo("p1", "UserA", resources = mapOf())
+        val updatedPlayersMap = mapOf("p1" to playerInfo1)
+
+        val messageJson = buildJsonObject {
+            put("type", MessageType.PLAYER_RESOURCE_UPDATE.name)
+            put("lobbyId", lobbyId)
+            put("players", Json.encodeToJsonElement(updatedPlayersMap))
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(updatedPlayersMap) }
+    }
+
+    @Test
+    fun onMessageWithPlayer_JoinedCallsCorrectHandlerAndUpdatesData(){
+        val lobbyId = "test-lobby"
+        val playersMap = mapOf("p1" to PlayerInfo("p1", "UserA"))
+        val messageJson = buildJsonObject {
+            put("type", MessageType.PLAYER_JOINED.name)
+            put("lobbyId", lobbyId)
+            put("players", Json.encodeToJsonElement(playersMap))
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 1) { mockPlayerJoined.onPlayerJoined(lobbyId, playersMap) }
+        verify(exactly = 0) { mockLobbyUpdated.onLobbyUpdated(any(), any()) }
+        verify(exactly = 0) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(any()) }
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+    @Test
+    fun onMessageWithPlayer_ResourceUpdateCallsCorrectHandlerAndUpdatesData(){
+        val lobbyId = "test-lobby"
+        val playersMap = mapOf("p1" to PlayerInfo("p1", "UserA"))
+        val messageJson = buildJsonObject {
+            put("type", MessageType.PLAYER_RESOURCE_UPDATE.name)
+            put("lobbyId", lobbyId)
+            put("players", Json.encodeToJsonElement(playersMap))
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 1) { mockOnPlayerResoucesRecieved.onPlayerResourcesReceived(playersMap) }
+        verify(exactly = 0) { mockPlayerJoined.onPlayerJoined(any(), any()) }
+        verify(exactly = 0) { mockLobbyUpdated.onLobbyUpdated(any(), any()) }
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+    @Test
+    fun doesNotProcessUpdateWhenLobbyIdIsMissing(){
+        val playersMap = mapOf("p1" to PlayerInfo("p1", "UserA"))
+        val messageJson = buildJsonObject {
+            put("type", MessageType.LOBBY_UPDATED.name)
+            // Missing lobbyId
+            put("players", Json.encodeToJsonElement(playersMap))
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 0) { mockLobbyUpdated.onLobbyUpdated(any(), any()) }
+    }
+
+    @Test
+    fun doesNotProcessUpdateWhenPlayersMapIsMissing(){
+        val lobbyId = "test-lobby"
+        val messageJson = buildJsonObject {
+            put("type", MessageType.LOBBY_UPDATED.name)
+            put("lobbyId", lobbyId)
+            // Missing players map
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 0) { mockLobbyUpdated.onLobbyUpdated(any(), any()) }
     }
 }

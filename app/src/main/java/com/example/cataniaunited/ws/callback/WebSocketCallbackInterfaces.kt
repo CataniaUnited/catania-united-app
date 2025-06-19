@@ -31,7 +31,11 @@ fun interface OnWebSocketClosed {
 }
 
 fun interface OnDiceResult {
-    fun onDiceResult(dice1: Int, dice2: Int)
+    fun onDiceResult(dice1: Int, dice2: Int, playerName: String)
+}
+
+fun interface OnDiceRolling {
+    fun onDiceRolling(playerName: String)
 }
 
 fun interface OnPlayerResourcesReceived {

@@ -10,6 +10,7 @@ import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
+import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnLobbyUpdated
@@ -23,6 +24,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -40,6 +42,7 @@ open class MainApplication : Application(),
     OnWebSocketError,
     OnWebSocketClosed,
     OnDiceResult,
+    OnDiceRolling,
     OnPlayerResourcesReceived,
     WebSocketErrorProvider {
 
@@ -204,10 +207,22 @@ open class MainApplication : Application(),
         }
     }
 
-    override fun onDiceResult(dice1: Int, dice2: Int) {
-        Log.d("MainApplication", "Callback: onDiceResult. Dice1: $dice1, Dice2: $dice2")
+
+
+    override fun onDiceRolling(playerName: String) {
+        Log.d("MainApplication", "Player $playerName is rolling dice")
         applicationScope.launch {
-            gameViewModel?.updateDiceResult(dice1, dice2)
+            gameViewModel?.resetDiceState()
+            delay(100)
+            gameViewModel?.startRolling(playerName)
+        }
+    }
+
+    override fun onDiceResult(dice1: Int, dice2: Int, playerName: String) {
+        Log.d("MainApplication", "Processing dice result from server: $dice1, $dice2")
+        applicationScope.launch {
+            delay(1500)
+            gameViewModel?.showResult(playerName, dice1, dice2)
         }
     }
 

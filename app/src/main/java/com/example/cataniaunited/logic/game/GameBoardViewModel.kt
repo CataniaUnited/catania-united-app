@@ -14,6 +14,7 @@ import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.logic.trade.TradeLogic
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +39,10 @@ class GameViewModel @Inject constructor(
     private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
     val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
 
+    val diceState: StateFlow<DiceState?> = gameDataHandler.diceState
+
+    private val _showDicePopup = MutableStateFlow(false)
+    val showDicePopup: StateFlow<Boolean> = _showDicePopup
     private val _victoryPoints = MutableStateFlow<Map<String, Int>>(emptyMap())
     val victoryPoints: StateFlow<Map<String, Int>> = _victoryPoints
 
@@ -149,25 +154,82 @@ class GameViewModel @Inject constructor(
     }
 
     var isProcessingRoll = false
+
     fun rollDice(lobbyId: String) {
         if (isProcessingRoll) return
-
         isProcessingRoll = true
+
+        val currentPlayer = players.value[playerId]
+        if (currentPlayer?.canRollDice != true) {
+            Log.w("GameViewModel", "Player cannot roll dice now")
+            isProcessingRoll = false
+            return
+        }
+
         Log.d("GameViewModel", "Initiating dice roll for lobby: $lobbyId")
+        startRolling(currentPlayer.username)
+
         gameBoardLogic.rollDice(lobbyId)
 
         viewModelScope.launch {
+            delay(3000) // timeout
+
+            if (diceState.value?.isRolling == true) {
+                Log.e("GameViewModel", "Dice roll timeout")
+                resetDiceState()
+            }
             isProcessingRoll = false
         }
     }
 
     fun updateDiceResult(dice1: Int?, dice2: Int?) {
         viewModelScope.launch {
-            if (dice1 != null && dice2 != null) {
-                _diceResult.value = Pair(dice1, dice2)
-            } else {
-                _diceResult.value = null
-            }
+            _diceResult.value = if (dice1 != null && dice2 != null) dice1 to dice2 else null
+        }
+    }
+
+    data class DiceState(
+        val rollingPlayerUsername: String?,
+        val isRolling: Boolean,
+        val dice1: Int = 1,
+        val dice2: Int = 1,
+        val showResult: Boolean = false
+    )
+
+    fun startRolling(playerName: String?) {
+        viewModelScope.launch {
+            gameDataHandler.updateDiceState(
+                DiceState(
+                    rollingPlayerUsername = playerName,
+                    isRolling = true,
+                    dice1 = (1..6).random(),
+                    dice2 = (1..6).random(),
+                    showResult = false
+                )
+            )
+            delay(2000) // timeout
+        }
+    }
+
+    fun showResult(playerName: String?, dice1: Int, dice2: Int) {
+        viewModelScope.launch {
+            gameDataHandler.updateDiceState(
+                  DiceState(
+                    rollingPlayerUsername = playerName,
+                    isRolling = false,
+                    dice1 = dice1,
+                    dice2 = dice2,
+                    showResult = true
+                )
+            )
+            delay(3000) // Show result for 3 seconds
+            resetDiceState()
+        }
+    }
+
+    fun resetDiceState() {
+        viewModelScope.launch {
+            gameDataHandler.updateDiceState(null)
         }
     }
 

@@ -24,9 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -61,8 +58,8 @@ fun GameScreen(
     val isTradeMenuOpen by gameViewModel.isTradeMenuOpen.collectAsState()
     val tradeOffer by gameViewModel.tradeOffer.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication
-    var showDicePopup by remember { mutableStateOf(false) }
-    val diceResult by gameViewModel.diceResult.collectAsState()
+    val showDicePopup by gameViewModel.showDicePopup.collectAsState()
+    val diceState by gameViewModel.diceState.collectAsState()
     val playerResources by gameViewModel.playerResources.collectAsState()
     val gameWonState by application.gameWonState.collectAsState()
     val players by gameViewModel.players.collectAsState()
@@ -76,13 +73,12 @@ fun GameScreen(
     }
 
     if (player?.isActivePlayer == true && player.isSetupRound == false && player.canRollDice == true) {
-        ShakeDetector {
-            if (!showDicePopup) {
-                showDicePopup = true
-                gameViewModel.rollDice(lobbyId)
+            ShakeDetector {
+                if (!showDicePopup) {
+                    gameViewModel.rollDice(lobbyId)
+                }
             }
         }
-    }
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
@@ -101,21 +97,20 @@ fun GameScreen(
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
                     if (player.isSetupRound == false && player.canRollDice == true) {
-                        //Roll dice action
-                        FloatingActionButton(
-                            onClick = {
-                                showDicePopup = true
-                                gameViewModel.rollDice(lobbyId)
-                            },
-                            containerColor = MaterialTheme.colorScheme.primary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.dice_6),
-                                contentDescription = "Roll dice",
-                                modifier = Modifier.size(32.dp)
-                            )
-                        }
+                            //Roll dice action
+                            FloatingActionButton(
+                                onClick = {
+                                    gameViewModel.rollDice(lobbyId)
+                                },
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary
+                            ) {
+                                Image(
+                                    painter = painterResource(R.drawable.dice_6),
+                                    contentDescription = "Roll dice",
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
                     } else {
                         FloatingActionButton(
                             onClick = {
@@ -200,14 +195,10 @@ fun GameScreen(
                         }
                     }
 
-                    if (showDicePopup) {
+                    if (diceState != null) {
                         DiceRollerPopup(
-                            onClose = {
-                                showDicePopup = false
-                                gameViewModel.updateDiceResult(null, null)
-                            },
-                            dice1Result = diceResult?.first,
-                            dice2Result = diceResult?.second
+                            viewModel = gameViewModel,
+                            onClose = { gameViewModel.resetDiceState() }
                         )
                     }
 
@@ -264,4 +255,3 @@ fun GameScreen(
         }
     }
 }
-

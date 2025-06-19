@@ -6,6 +6,7 @@ import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
 import com.example.cataniaunited.ws.callback.OnDiceResult
+import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
 import com.example.cataniaunited.ws.callback.OnPlayerJoined
@@ -61,6 +62,12 @@ object WebSocketModule {
 
     @Provides
     @Singleton
+    fun provideOnDiceRolling(application: Application): OnDiceRolling {
+        return application as MainApplication
+    }
+
+    @Provides
+    @Singleton
     fun provideOnWebSocketError(application: Application): OnWebSocketError {
         return application as MainApplication
     }
@@ -88,6 +95,7 @@ object WebSocketModule {
         onError: OnWebSocketError,
         onClosed: OnWebSocketClosed,
         onDiceResult: OnDiceResult,
+        onDiceRolling: OnDiceRolling,
         onPlayerResourcesReceived: OnPlayerResourcesReceived,
         gameDataHandler: GameDataHandler
     ): WebSocketListenerImpl {
@@ -100,6 +108,7 @@ object WebSocketModule {
             onError = onError,
             onClosed = onClosed,
             onDiceResult = onDiceResult,
+            onDiceRolling = onDiceRolling,
             gameDataHandler = gameDataHandler,
             onPlayerResourcesReceived = onPlayerResourcesReceived
         )

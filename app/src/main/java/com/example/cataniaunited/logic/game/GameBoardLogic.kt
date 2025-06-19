@@ -65,10 +65,13 @@ class GameBoardLogic @Inject constructor(
 
     fun rollDice(lobbyId: String) {
         try {
-            Log.d("GameBoard", "Rolling dice for lobby: $lobbyId")
-            val playerId = MainApplication.getInstance().getPlayerId()
+            val playerId = playerSessionManager.getPlayerId()
+            val playerName = MainApplication.getInstance().players
+                .firstOrNull { it.id == playerId }?.username ?: playerId
             val message = buildJsonObject {
                 put("action", "rollDice")
+                put("player", playerId)
+                put("playerName", playerName)
             }
             val webSocketClient = MainApplication.getInstance().getWebSocketClient()
             webSocketClient.sendMessage(

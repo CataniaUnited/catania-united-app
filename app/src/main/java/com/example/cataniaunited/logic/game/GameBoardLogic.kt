@@ -63,6 +63,29 @@ class GameBoardLogic @Inject constructor(
         }
     }
 
+    fun placeRobber(robberTileId: Int, lobbyId: String){
+        val playerId = try {
+            playerSessionManager.getPlayerId()
+        } catch (ise: IllegalStateException) {
+            return
+        }
+        val message = buildJsonObject { put("robberTileId", robberTileId) }
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        if (webSocketClient.isConnected()) {
+            webSocketClient.sendMessage(
+                MessageDTO(
+                    MessageType.PLACE_ROBBER,
+                    playerId,
+                    lobbyId,
+                    null,
+                    message
+                )
+            )
+        } else {
+            Log.e("GameBoardLogic", "WS not connected for placeRobber")
+        }
+    }
+
     fun rollDice(lobbyId: String) {
         try {
             val playerId = playerSessionManager.getPlayerId()

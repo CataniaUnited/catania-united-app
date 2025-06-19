@@ -50,8 +50,8 @@ fun PlayerVictoryBar(
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterStart)
-                    .padding(start = 6.dp)
-                    .size(20.dp)
+                    .padding(start = 4.dp)
+                    .size(24.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color.White.copy(alpha = 0.6f))
                     .clickable {
@@ -76,7 +76,7 @@ fun PlayerVictoryBar(
             state = listState,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 48.dp),
+                .padding(horizontal = 40.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.Top,
             contentPadding = PaddingValues(horizontal = 16.dp)
@@ -163,8 +163,8 @@ fun PlayerVictoryBar(
             Box(
                 modifier = Modifier
                     .align(Alignment.CenterEnd)
-                    .padding(end = 6.dp)
-                    .size(20.dp)
+                    .padding(end = 4.dp)
+                    .size(24.dp)
                     .clip(RoundedCornerShape(12.dp))
                     .background(Color.White.copy(alpha = 0.6f))
                     .clickable {

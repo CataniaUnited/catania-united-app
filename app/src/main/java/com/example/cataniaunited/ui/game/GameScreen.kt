@@ -6,32 +6,19 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoubleArrow
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.*
 import androidx.compose.ui.zIndex
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -46,6 +33,7 @@ import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import com.example.cataniaunited.ui.game_end.GameWinScreen
 import com.example.cataniaunited.ui.theme.catanBlue
 import com.example.cataniaunited.ui.trade.TradeMenuPopup
+import kotlin.math.roundToInt
 
 @Composable
 fun GameScreen(
@@ -65,6 +53,14 @@ fun GameScreen(
     val players by gameViewModel.players.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
 
+    val selectedPlayer = remember { mutableStateOf<PlayerInfo?>(null) }
+    val selectedPlayerIndex = remember { mutableStateOf<Int?>(null) }
+    val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
+
+    val density = LocalDensity.current
+    val popupOffsetX = with(density) { selectedPlayerOffsetX.floatValue.toDp().roundToPx() }
+    val popupOffsetY = with(density) { 3.dp.toPx().roundToInt() }
+
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
         if (gameBoardState == null) {
@@ -73,12 +69,12 @@ fun GameScreen(
     }
 
     if (player?.isActivePlayer == true && player.isSetupRound == false && player.canRollDice == true) {
-            ShakeDetector {
-                if (!showDicePopup) {
-                    gameViewModel.rollDice(lobbyId)
-                }
+        ShakeDetector {
+            if (!showDicePopup) {
+                gameViewModel.rollDice(lobbyId)
             }
         }
+    }
 
     Box(Modifier.fillMaxSize()) {
         Scaffold(
@@ -92,30 +88,36 @@ fun GameScreen(
                 }
             },
             topBar = {
-                LivePlayerVictoryBar()
+                LivePlayerVictoryBar(
+                    selectedPlayerId = selectedPlayer.value?.id,
+                    onPlayerClicked = { playerInfo, index ->
+                        selectedPlayer.value =
+                            if (selectedPlayer.value?.id == playerInfo.id) null else playerInfo
+                        selectedPlayerIndex.value =
+                            if (selectedPlayer.value?.id == playerInfo.id) index else null
+                    },
+                    onPlayerOffsetChanged = { offsetX ->
+                        selectedPlayerOffsetX.floatValue = offsetX
+                    }
+                )
             },
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
                     if (player.isSetupRound == false && player.canRollDice == true) {
-                            //Roll dice action
-                            FloatingActionButton(
-                                onClick = {
-                                    gameViewModel.rollDice(lobbyId)
-                                },
-                                containerColor = MaterialTheme.colorScheme.primary,
-                                contentColor = MaterialTheme.colorScheme.onPrimary
-                            ) {
-                                Image(
-                                    painter = painterResource(R.drawable.dice_6),
-                                    contentDescription = "Roll dice",
-                                    modifier = Modifier.size(32.dp)
-                                )
-                            }
+                        FloatingActionButton(
+                            onClick = { gameViewModel.rollDice(lobbyId) },
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) {
+                            Image(
+                                painter = painterResource(R.drawable.dice_6),
+                                contentDescription = "Roll dice",
+                                modifier = Modifier.size(32.dp)
+                            )
+                        }
                     } else {
                         FloatingActionButton(
-                            onClick = {
-                                gameViewModel.handleEndTurnClick(lobbyId)
-                            },
+                            onClick = { gameViewModel.handleEndTurnClick(lobbyId) },
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ) {
@@ -151,17 +153,11 @@ fun GameScreen(
                                 isBuildMode = isBuildMenuOpen,
                                 playerId = gameViewModel.playerId,
                                 onTileClicked = { tile ->
-                                    Log.d(
-                                        "GameScreen",
-                                        "Tile Clicked: ID=${tile.id}, Type=${tile.type}, Value=${tile.value}"
-                                    )
+                                    Log.d("GameScreen", "Tile Clicked: ${tile.id}")
                                     gameViewModel.handleTileClick(tile, lobbyId)
                                 },
                                 onSettlementClicked = { (settlementPos, isUpgrade) ->
-                                    Log.d(
-                                        "GameScreen",
-                                        "Settlement Clicked: ID=${settlementPos.id}"
-                                    )
+                                    Log.d("GameScreen", "Settlement Clicked: ${settlementPos.id}")
                                     gameViewModel.handleSettlementClick(
                                         settlementPos,
                                         isUpgrade,
@@ -169,7 +165,7 @@ fun GameScreen(
                                     )
                                 },
                                 onRoadClicked = { road ->
-                                    Log.d("GameScreen", "Road Clicked: ID=${road.id}")
+                                    Log.d("GameScreen", "Road Clicked: ${road.id}")
                                     gameViewModel.handleRoadClick(road, lobbyId)
                                 }
                             )
@@ -190,6 +186,18 @@ fun GameScreen(
                                         enabled = player.canRollDice == false,
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
+                                }
+                            }
+
+                            if (selectedPlayer.value != null && selectedPlayerIndex.value != null) {
+                                Box(
+                                    modifier = Modifier
+                                        .wrapContentSize()
+                                        .zIndex(10f)
+                                        .offset { IntOffset(x = popupOffsetX, y = popupOffsetY) }
+                                        .align(Alignment.TopStart)
+                                ) {
+                                    PlayerResourcePopup(resources = selectedPlayer.value!!.resources)
                                 }
                             }
                         }

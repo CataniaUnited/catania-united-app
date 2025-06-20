@@ -2,6 +2,7 @@ package com.example.cataniaunited.logic.game
 
 import android.util.Log
 import app.cash.turbine.test
+import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.Road
@@ -45,6 +46,13 @@ import org.junit.jupiter.api.extension.AfterEachCallback
 import org.junit.jupiter.api.extension.BeforeEachCallback
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.ExtensionContext
+import com.example.cataniaunited.logic.dto.MessageDTO
+import com.example.cataniaunited.logic.dto.MessageType
+import com.example.cataniaunited.ws.WebSocketClient
+import io.mockk.*
+import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.jsonPrimitive
+import kotlin.test.assertEquals
 
 
 @ExperimentalCoroutinesApi
@@ -530,6 +538,56 @@ class GameViewModelTest {
             assert(!awaitItem())
         }
     }
+
+    @Test
+    fun onCheatAttemptSendsCHEAT_ATTEMPTMessageAndUpdatesResources() = runTest {
+
+        val lobbyId = "lobby123"
+        val tileType = TileType.ORE
+
+        val mockWsClient = mockk<WebSocketClient>(relaxed = true)
+        mockkObject(MainApplication)
+        every { MainApplication.getInstance() } returns mockk {
+            every { getWebSocketClient() } returns mockWsClient
+        }
+
+        viewModel.updatePlayerResources(mapOf(tileType to 2))
+        viewModel.onCheatAttempt(tileType, lobbyId)
+
+        val playerId = viewModel.playerId
+        val slot = slot<MessageDTO>()
+        verify { mockWsClient.sendMessage(capture(slot)) }
+        val sentMessage = slot.captured
+        assertEquals(MessageType.CHEAT_ATTEMPT, sentMessage.type)
+        assertEquals(playerId, sentMessage.player)
+        assertEquals(lobbyId, sentMessage.lobbyId)
+        assertEquals(tileType.name, sentMessage.message?.get("resource")?.jsonPrimitive?.content)
+
+        assertEquals(3, viewModel.playerResources.value[tileType])
+
+        unmockkObject(MainApplication)
+    }
+
+    @Test
+    fun onCheatAttemptAddsResourceWhenNotPresent() = runTest {
+        val lobbyId = "lobby123"
+        val tileType = TileType.WHEAT
+
+        val mockWsClient = mockk<WebSocketClient>(relaxed = true)
+        mockkObject(MainApplication)
+        every { MainApplication.getInstance() } returns mockk {
+            every { getWebSocketClient() } returns mockWsClient
+        }
+
+        viewModel.updatePlayerResources(mapOf())
+        viewModel.onCheatAttempt(tileType, lobbyId)
+
+        assertEquals(1, viewModel.playerResources.value[tileType])
+
+        unmockkObject(MainApplication)
+    }
+
+
 
     @Nested
     @DisplayName("Initialization via initializeBoardState")

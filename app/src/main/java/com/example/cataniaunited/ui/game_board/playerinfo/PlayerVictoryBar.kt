@@ -22,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.toColorInt
@@ -29,6 +30,7 @@ import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.ui.theme.appTypography
 import com.example.cataniaunited.ui.theme.catanClayLight
 import kotlinx.coroutines.launch
+
 
 @Composable
 fun PlayerVictoryBar(
@@ -174,7 +176,9 @@ private fun PlayerCard(
                             Text(
                                 text = it,
                                 style = appTypography.bodyLarge.copy(fontSize = 16.sp),
-                                color = Color.White
+                                color = Color.White,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
                         }
                     }

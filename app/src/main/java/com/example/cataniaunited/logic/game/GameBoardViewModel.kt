@@ -298,5 +298,10 @@ class GameViewModel @Inject constructor(
             }
         )
         wsClient.sendMessage(messageDTO)
+
+        // update the cheaters resource count immediately
+        val currentResources = _playerResources.value.toMutableMap()
+        currentResources[tileType] = (currentResources[tileType] ?: 0) + 1
+        _playerResources.value = currentResources
     }
 }

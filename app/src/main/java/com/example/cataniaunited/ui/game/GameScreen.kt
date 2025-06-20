@@ -198,7 +198,11 @@ fun GameScreen(
                                         .align(Alignment.TopStart)
                                 ) {
                                     PlayerResourcePopup(
-                                        resources = selectedPlayer.value!!.resources,
+                                        resources = if (selectedPlayer.value?.id == gameViewModel.playerId) {
+                                            playerResources
+                                        } else {
+                                            selectedPlayer.value!!.resources
+                                        },
                                         onCheatAttempt = { tileType ->
                                             if (selectedPlayer.value?.id == gameViewModel.playerId) {
                                                 gameViewModel.onCheatAttempt(tileType, lobbyId)

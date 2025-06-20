@@ -1,16 +1,20 @@
 package com.example.cataniaunited.ui.game
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.theme.catanClayLight
+import kotlinx.coroutines.launch
 
 @Composable
 fun PlayerResourcePopup(
@@ -24,6 +28,7 @@ fun PlayerResourcePopup(
         TileType.WHEAT,
         TileType.ORE
     )
+    val coroutineScope = rememberCoroutineScope()
 
     Card(
         colors = CardDefaults.cardColors(containerColor = catanClayLight),
@@ -50,7 +55,15 @@ fun PlayerResourcePopup(
                             }
                         ),
                         contentDescription = type.name,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier
+                            .size(48.dp)
+                            .pointerInput(type) {
+                                detectTapGestures(
+                                    onDoubleTap = {
+                                        onCheatAttempt(type)
+                                    }
+                                )
+                            }
                     )
                     Text(text = resources[type]?.toString() ?: "0")
                 }

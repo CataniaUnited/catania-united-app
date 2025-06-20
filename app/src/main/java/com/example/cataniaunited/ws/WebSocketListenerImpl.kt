@@ -248,6 +248,7 @@ open class WebSocketListenerImpl @Inject constructor(
             MainApplication.getInstance().applicationScope.launch {
                 gameDataHandler.updatePlayers(players)
             }
+            onPlayerResourcesReceived.onPlayerResourcesReceived(players)
         }
         onDiceResult.onDiceResult(dice1, dice2, playerName)
     }

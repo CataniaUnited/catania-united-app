@@ -197,7 +197,13 @@ fun GameScreen(
                                         .offset { IntOffset(x = popupOffsetX, y = popupOffsetY) }
                                         .align(Alignment.TopStart)
                                 ) {
-                                    PlayerResourcePopup(resources = selectedPlayer.value!!.resources)
+                                    PlayerResourcePopup(
+                                        resources = selectedPlayer.value!!.resources,
+                                        onCheatAttempt = { tileType ->
+                                            gameViewModel.onCheatAttempt(tileType, lobbyId)
+                                        }
+                                    )
+
                                 }
                             }
                         }

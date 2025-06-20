@@ -19,7 +19,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun PlayerResourcePopup(
     resources: Map<TileType, Int>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onCheatAttempt: (TileType) -> Unit
 ) {
     val displayOrder = listOf(
         TileType.WOOD,

@@ -286,7 +286,6 @@ class GameViewModel @Inject constructor(
     }
 
     fun onCheatAttempt(tileType: TileType, lobbyId: String) {
-
         val mainApp = MainApplication.getInstance()
         val wsClient = mainApp.getWebSocketClient()
 
@@ -295,7 +294,7 @@ class GameViewModel @Inject constructor(
             player = playerId,
             lobbyId = lobbyId,
             message = buildJsonObject {
-                put("tileType", tileType.name)
+                put("resource", tileType.name)
             }
         )
         wsClient.sendMessage(messageDTO)

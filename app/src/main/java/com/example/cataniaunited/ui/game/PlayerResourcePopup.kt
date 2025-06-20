@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.R
 import com.example.cataniaunited.ui.theme.catanClayLight
-import kotlinx.coroutines.launch
 
 @Composable
 fun PlayerResourcePopup(
@@ -29,7 +28,6 @@ fun PlayerResourcePopup(
         TileType.WHEAT,
         TileType.ORE
     )
-    val coroutineScope = rememberCoroutineScope()
 
     Card(
         colors = CardDefaults.cardColors(containerColor = catanClayLight),

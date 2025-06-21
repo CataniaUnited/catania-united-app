@@ -51,7 +51,7 @@ class GameDataHandlerTest {
         val jsonString = """
     {
       "gameboard": {
-        "tiles":[{"id":1,"type":"WOOD","value":8,"coordinates":[0.0,0.0]}],
+        "tiles":[{"id":1,"type":"WOOD","value":8,"coordinates":[0.0,0.0], "isRobbed": false}],
         "settlementPositions":[{"id":1,"building":null,"coordinates":[10.0,10.0]}],
         "roads":[{"id":1,"owner":null,"color":null,"coordinates":[5.0,5.0],"rotationAngle":0.0}],
         "ports": [], 
@@ -62,8 +62,8 @@ class GameDataHandlerTest {
     """.trimIndent()
 
         // When parseGameBoard is called with the content of "gameboard"
-        every { parseGameBoard("""{"tiles":[{"id":1,"type":"WOOD","value":8,"coordinates":[0.0,0.0]}],"settlementPositions":[{"id":1,"building":null,"coordinates":[10.0,10.0]}],"roads":[{"id":1,"owner":null,"color":null,"coordinates":[5.0,5.0],"rotationAngle":0.0}],"ports":[],"ringsOfBoard":3,"sizeOfHex":50}""") } returns GameBoardModel(
-            tiles = listOf(Tile(1, TileType.WOOD, 8, listOf(0.0, 0.0))),
+        every { parseGameBoard("""{"tiles":[{"id":1,"type":"WOOD","value":8,"coordinates":[0.0,0.0], "isRobbed": false}],"settlementPositions":[{"id":1,"building":null,"coordinates":[10.0,10.0]}],"roads":[{"id":1,"owner":null,"color":null,"coordinates":[5.0,5.0],"rotationAngle":0.0}],"ports":[],"ringsOfBoard":3,"sizeOfHex":50}""") } returns GameBoardModel(
+            tiles = listOf(Tile(1, TileType.WOOD, 8, listOf(0.0, 0.0), isRobbed = false)),
             settlementPositions = listOf(SettlementPosition(1, null, listOf(10.0, 10.0))),
             roads = listOf(Road(1, null, listOf(5.0, 5.0), 0.0, null)),
             ports = emptyList(),
@@ -103,7 +103,7 @@ class GameDataHandlerTest {
         {
           "gameboard": {
             "tiles": [
-              {"id":1,"type":"WOOD","value":8,"coordinates":[0.0,0.0]}
+              {"id":1,"type":"WOOD","value":8,"coordinates":[0.0,0.0], "isRobbed": false}
             ],
             "settlementPositions": [
               {"id":1,"building":null,"coordinates":[10.0,10.0]}

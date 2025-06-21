@@ -77,7 +77,7 @@ class GameViewModelTest {
 
     private val validBoardJson = """
         {
-           "tiles":[{"id":1,"type":"CLAY","value":5,"coordinates":[0.0,0.0]}],
+           "tiles":[{"id":1,"type":"CLAY","value":5,"coordinates":[0.0,0.0], "isRobbed": false}],
            "settlementPositions":[{"id":1,"building":null,"coordinates":[0.0,10.0]}],
            "roads":[{"id":1,"owner":null,"color":null,"coordinates":[0.0,5.0],"rotationAngle":0.0}],
            "ports": [],
@@ -87,7 +87,7 @@ class GameViewModelTest {
     """
     private val anotherValidBoardJson = """
         {
-           "tiles":[{"id":2,"type":"WOOD","value":6,"coordinates":[1.0,1.0]}],
+           "tiles":[{"id":2,"type":"WOOD","value":6,"coordinates":[1.0,1.0], "isRobbed": false}],
            "settlementPositions":[{"id":2,"building":null,"coordinates":[1.0,11.0]}],
            "roads":[{"id":2,"owner":null,"color":null,"coordinates":[1.0,6.0],"rotationAngle":0.0}],
            "ports": [],

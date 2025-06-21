@@ -150,6 +150,38 @@ class GameBoardLogicTest {
     }
 
     @Test
+    fun placeRobberSendsCorrectMessageWhenConnected() {
+        val testRobberTileId = 10
+        val expectedPayload = buildJsonObject { put("robberTileId", testRobberTileId) }
+        val expectedMessage = MessageDTO(
+            type = MessageType.PLACE_ROBBER,
+            player = testPlayerId,
+            lobbyId = testLobbyId,
+            players = null,
+            message = expectedPayload
+        )
+        val messageSlot = slot<MessageDTO>()
+        gameBoardLogic.placeRobber(testLobbyId, testRobberTileId)
+        verify(exactly = 1) { mockWebSocketClient.sendMessage(capture(messageSlot)) }
+        assertEquals(expectedMessage, messageSlot.captured)
+    }
+
+    @Test
+    fun placeRobberDoesNotSendWhenNotConnected() {
+        every { mockWebSocketClient.isConnected() } returns false
+        gameBoardLogic.placeRobber(testLobbyId, 10)
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
+    @Test
+    fun placeRobberDoesNotSendWhenGetPlayerIdThrows() {
+        val exception = IllegalStateException("Player ID not set")
+        every { mockPlayerSessionManager.getPlayerId() } throws exception
+        gameBoardLogic.placeRobber(testLobbyId, 10)
+        verify(exactly = 0) { mockWebSocketClient.sendMessage(any()) }
+    }
+
+    @Test
     fun rollDiceSendsCorrectMessageWhenConnected() {
         val testPlayer = PlayerInfo(id = testPlayerId, username = "TestPlayer")
         val playersStateList = mutableStateListOf<PlayerInfo>()

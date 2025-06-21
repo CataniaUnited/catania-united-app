@@ -89,25 +89,10 @@ class GameBoardLogic @Inject constructor(
     }
 
     fun buyDevelopmentCard(lobbyId: String) {
-        val playerId = try {
-            MainApplication.getInstance().getPlayerId()
-        } catch (e: Exception) {
-            Log.e("GameBoardLogic", "PlayerID Error in buyDevelopmentCard", e)
-            return
-        }
-
-        val card = developmentCardDeck.drawCard()
-        if (card == null) {
-            Log.e("GameBoardLogic", "No development cards left!")
-            return
-        }
-
-        val message = buildJsonObject {
-            put("cardType", card.type.name)
-        }
-
+        val playerId = MainApplication.getInstance().getPlayerId()
         val webSocketClient = MainApplication.getInstance().getWebSocketClient()
         if (webSocketClient.isConnected()) {
+            val message = buildJsonObject {}
             webSocketClient.sendMessage(
                 MessageDTO(MessageType.BUY_DEVELOPMENT_CARD, playerId, lobbyId, null, message)
             )

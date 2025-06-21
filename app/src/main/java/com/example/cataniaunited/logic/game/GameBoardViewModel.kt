@@ -38,6 +38,12 @@ class GameViewModel @Inject constructor(
     private val _isBuildMenuOpen = MutableStateFlow(false)
     val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
 
+    private val _isDevelopmentCardPopupOpen = MutableStateFlow(false)
+    val isDevelopmentCardPopupOpen: StateFlow<Boolean> = _isDevelopmentCardPopupOpen
+
+    private val _drawnCardType = MutableStateFlow<String?>(null)
+    val drawnCardType: StateFlow<String?> = _drawnCardType.asStateFlow()
+
     private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
     val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
 
@@ -224,7 +230,12 @@ class GameViewModel @Inject constructor(
     fun onDevCardDrawn(cardType: String) {
         Log.i("GameViewModel", "Card received from server: $cardType")
         addDevelopmentCard(cardType)
-        }
+        _drawnCardType.value = cardType
+    }
+
+    fun clearDrawnCard() {
+        _drawnCardType.value = null
+    }
 
 
 }

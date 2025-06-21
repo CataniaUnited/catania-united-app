@@ -9,6 +9,7 @@ import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDevelopmentCardReceived
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
@@ -41,7 +42,8 @@ open class WebSocketListenerImpl @Inject constructor(
     private val onClosed: OnWebSocketClosed,
     private val onDiceResult: OnDiceResult,
     private val onPlayerResourcesReceived: OnPlayerResourcesReceived,
-    private val gameDataHandler: GameDataHandler
+    private val gameDataHandler: GameDataHandler,
+    private val onDevelopmentCardReceived: OnDevelopmentCardReceived
 ) : WebSocketListener() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
@@ -248,7 +250,7 @@ open class WebSocketListenerImpl @Inject constructor(
         val cardTypeString = messageDTO.message?.get("cardType")?.jsonPrimitive?.contentOrNull
         if (cardTypeString != null) {
             Log.i("WebSocketListener", "Development card drawn: $cardTypeString")
-            onDevelopmentCardReceived(cardTypeString) // Call the ViewModel logic via callback
+            onDevelopmentCardReceived.onDevelopmentCardReceived(cardTypeString)
         } else {
             Log.e("WebSocketListener", "BUY_DEVELOPMENT_CARD message missing cardType")
         }

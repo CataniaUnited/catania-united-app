@@ -45,6 +45,8 @@ import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.R
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.game.GameViewModel
+import com.example.cataniaunited.ui.components.DevelopmentCardPopup
+import com.example.cataniaunited.ui.components.DevelopmentCardRowPopup
 import com.example.cataniaunited.ui.dice.DiceRollerPopup
 import com.example.cataniaunited.ui.dice.ShakeDetector
 import com.example.cataniaunited.ui.game_board.board.CatanBoard
@@ -68,6 +70,8 @@ fun GameScreen(
     val players by gameViewModel.players.collectAsState()
     val buildingCosts by gameViewModel.buildingCosts.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
+    val drawnCardType by gameViewModel.drawnCardType.collectAsState()
+    var showCardPopup by remember { mutableStateOf(false) }
     val buildingCostsText = buildString {
         buildingCosts?.let {
             appendLine("Settlement: " + it.settlement.entries.joinToString { "${it.value} ${it.key}" })
@@ -75,6 +79,7 @@ fun GameScreen(
             appendLine("Road: " + it.road.entries.joinToString { "${it.value} ${it.key}" })
             appendLine("Development Card: " + it.developmentCard.entries.joinToString { "${it.value} ${it.key}" })
         } ?: append("Loading building costs...")
+    }
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
@@ -84,6 +89,18 @@ fun GameScreen(
         gameViewModel.requestBuildingCosts(lobbyId)
     }
 
+    if (drawnCardType != null) {
+        DevelopmentCardPopup(
+            cardType = drawnCardType!!,
+            onDismiss = { gameViewModel.clearDrawnCard() }
+        )
+    }
+
+    if (showCardPopup) {
+        DevelopmentCardRowPopup(
+            cards = gameViewModel.myDevelopmentCards,
+            onDismiss = { showCardPopup = false }
+        )
     }
 
     if(player?.isActivePlayer == true && player.canRollDice == true){
@@ -202,6 +219,11 @@ fun GameScreen(
                                         isOpen = isBuildMenuOpen,
                                         onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
                                     )
+                                    Button(onClick = {
+                                        gameViewModel.handleBuyDevCardClick(lobbyId)
+                                    }) {
+                                        Text("Buy Dev Card")
+                                    }
                                 }
 
                             }

@@ -5,10 +5,12 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDevelopmentCardReceived
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
@@ -41,12 +43,15 @@ open class MainApplication : Application(),
     OnWebSocketClosed,
     OnDiceResult,
     OnPlayerResourcesReceived,
-    WebSocketErrorProvider {
+    WebSocketErrorProvider,
+    OnDevelopmentCardReceived {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     @Inject
     lateinit var webSocketListener: WebSocketListenerImpl
+
+    @Inject lateinit var gameDataHandler: GameDataHandler
 
     internal lateinit var webSocketClient: WebSocketClient
     private var _playerId: String? = null
@@ -94,10 +99,13 @@ open class MainApplication : Application(),
                 Log.d("MainApplication", "Callback: onConnectionSuccess. Player ID: $playerId")
                 setPlayerId(playerId)
             },
-            onLobbyCreated = { lobbyId ->
+            onLobbyCreated = { lobbyId, playersMap ->
                 Log.i("MainApplication", "Callback: onLobbyCreated. Lobby ID: $lobbyId")
                 currentLobbyId = lobbyId
-                Log.d("MainApplication", ">>> _currentLobbyIdFlow value is now: ${_currentLobbyIdFlow.value}")
+                Log.d(
+                    "MainApplication",
+                    ">>> _currentLobbyIdFlow value is now: ${_currentLobbyIdFlow.value}"
+                )
             },
             onGameBoardReceived = { lobbyId, boardJson ->
                 Log.d("MainApplication", "Callback: onGameBoardReceived for Lobby $lobbyId.")
@@ -108,11 +116,18 @@ open class MainApplication : Application(),
                             _navigateToGameChannel.send(lobbyId)
                             Log.d("MainApplication", "Sent lobbyId $lobbyId to navigation channel.")
                         } catch (e: Exception) {
-                            Log.e("MainApplication", "Error sending navigation event for lobby $lobbyId", e)
+                            Log.e(
+                                "MainApplication",
+                                "Error sending navigation event for lobby $lobbyId",
+                                e
+                            )
                         }
                     }
                 } else {
-                    Log.w("MainApplication", "Received board for lobby $lobbyId, but current lobby flow value is ${_currentLobbyIdFlow.value}. Ignoring navigation.")
+                    Log.w(
+                        "MainApplication",
+                        "Received board for lobby $lobbyId, but current lobby flow value is ${_currentLobbyIdFlow.value}. Ignoring navigation."
+                    )
                 }
             },
             onError = { error ->
@@ -126,12 +141,21 @@ open class MainApplication : Application(),
                 currentLobbyId = null
                 latestBoardJson = null
             },
-
+            onPlayerJoined =  { lobbyId, players ->
+                Log.w("MainApplication", "Callback: onPlayerJoined. lobbyId=$lobbyId, Players=$players")
+            },
+            onLobbyUpdated = { lobbyId, players ->
+                Log.w("MainApplication", "Callback: onLobbyUpdated. lobbyId=$lobbyId, Dice2=$players")
+            },
+            onDiceResult = { dice1, dice2 ->
+                Log.w("MainApplication", "Callback: onClosed. Dice1=$dice1, Dice2=$dice2")
+            },
+            onPlayerResourcesReceived = { players ->
+                Log.w("MainApplication", "Callback: onPlayerResourcesReceived. Players=$players")
+            },
+            gameDataHandler = gameDataHandler,
             onDevelopmentCardReceived = { cardType ->
-                Log.d("MainApplication", "Card received from server: $cardType")
-                applicationScope.launch {
-                    com.example.cataniaunited.logic.CardReceiver.sendCard(cardType)
-                }
+                gameViewModel?.onDevCardDrawn(cardType)
             }
         )
 
@@ -291,5 +315,10 @@ open class MainApplication : Application(),
             } ?: Log.w("MainApplication", "gameViewModel was null — skipping update.")
         }
     }
-
+    override fun onDevelopmentCardReceived(cardType: String) {
+        Log.d("MainApplication", "Development card received (interface override): $cardType")
+        applicationScope.launch {
+            com.example.cataniaunited.logic.CardReceiver.sendCard(cardType)
+        }
+    }
 }

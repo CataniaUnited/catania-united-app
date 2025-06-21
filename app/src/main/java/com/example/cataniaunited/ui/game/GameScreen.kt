@@ -83,7 +83,10 @@ fun GameScreen(
                 if (gameBoardState != null) {
                     PlayerResourcesBar(
                         modifier = Modifier.fillMaxWidth(),
-                        resources = playerResources
+                        resources = playerResources,
+                        onCheatAttempt = {tileType ->
+                            gameViewModel.onCheatAttempt(tileType, lobbyId)
+                        }
                     )
                 }
             },

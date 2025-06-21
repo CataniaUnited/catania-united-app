@@ -288,9 +288,5 @@ class GameViewModel @Inject constructor(
 
     fun onCheatAttempt(tileType: TileType, lobbyId: String) {
         cheatingLogic.sendCheatAttempt(tileType, lobbyId)
-
-        val currentResources = _playerResources.value.toMutableMap()
-        currentResources[tileType] = (currentResources[tileType] ?: 0) + 1
-        _playerResources.value = currentResources
     }
 }

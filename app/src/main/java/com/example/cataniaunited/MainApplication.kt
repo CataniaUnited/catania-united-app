@@ -213,7 +213,6 @@ open class MainApplication : Application(),
         Log.d("MainApplication", "Player $playerName is rolling dice")
         applicationScope.launch {
             gameViewModel?.resetDiceState()
-            delay(100)
             gameViewModel?.startRolling(playerName)
         }
     }

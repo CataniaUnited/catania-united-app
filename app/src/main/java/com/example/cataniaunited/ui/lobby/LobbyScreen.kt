@@ -40,7 +40,8 @@ fun LobbyScreen(
     gameViewModel: GameViewModel = hiltViewModel(),
     onCancelClick: () -> Unit,
     onStartGameClick: () -> Unit,
-    onToggleReadyClick: () -> Unit
+    onToggleReadyClick: () -> Unit,
+    onChangeUsername: (username: String) -> Unit,
 ) {
 
     val playerId = gameViewModel.playerId
@@ -67,8 +68,9 @@ fun LobbyScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            val title: String = if(actualPlayers.size > 1) "Players Ready: ${actualPlayers.filter { it.isReady }.size} / ${actualPlayers.size}"
-            else "Need at least 2 players to start"
+            val title: String =
+                if (actualPlayers.size > 1) "Players Ready: ${actualPlayers.filter { it.isReady }.size} / ${actualPlayers.size}"
+                else "Need at least 2 players to start"
             Text(
                 text = title,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -96,7 +98,11 @@ fun LobbyScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            PlayerList(players = actualPlayers, onToggleReadyClick = onToggleReadyClick)
+            PlayerList(
+                players = actualPlayers,
+                onToggleReadyClick = onToggleReadyClick,
+                onChangeUsername = onChangeUsername
+            )
         }
 
         IconButton(

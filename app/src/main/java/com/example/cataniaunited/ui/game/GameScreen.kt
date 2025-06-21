@@ -44,6 +44,7 @@ fun GameScreen(
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
     val isBuildMenuOpen by gameViewModel.isBuildMenuOpen.collectAsState()
     val isTradeMenuOpen by gameViewModel.isTradeMenuOpen.collectAsState()
+    val isRobMenuOpen by gameViewModel.isRobMenuOpen.collectAsState()
     val tradeOffer by gameViewModel.tradeOffer.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication
     val showDicePopup by gameViewModel.showDicePopup.collectAsState()
@@ -151,6 +152,7 @@ fun GameScreen(
                                 roads = board.roads,
                                 ports = board.ports,
                                 isBuildMode = isBuildMenuOpen,
+                                isRobMode = isRobMenuOpen,
                                 playerId = gameViewModel.playerId,
                                 onTileClicked = { tile ->
                                     Log.d("GameScreen", "Tile Clicked: ${tile.id}")
@@ -186,6 +188,11 @@ fun GameScreen(
                                         enabled = player.canRollDice == false,
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
+                                    RobberButton (
+                                        enabled = isRobMenuOpen,
+                                        onClick = { gameViewModel.setRobMenuOpen(true) }
+                                    )
+
                                 }
                             }
 

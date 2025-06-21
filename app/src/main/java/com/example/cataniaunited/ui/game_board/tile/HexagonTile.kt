@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,6 +22,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
 import com.example.cataniaunited.data.model.Tile
@@ -76,6 +78,7 @@ fun HexagonTile(
     modifier: Modifier = Modifier,
     tile: Tile,
     size: Dp,
+    showRobberBorder: Boolean,
     onTileClick: (Tile) -> Unit = {}
 ) {
     Box(
@@ -94,6 +97,45 @@ fun HexagonTile(
                 .clip(HexagonShape()), // Clip the image to a hexagon shape
             contentScale = ContentScale.Crop
         )
+
+        if (tile.isRobbed){
+            val circleSizeFraction = 0.45f
+            Box(
+                modifier = Modifier
+                    .size(size * circleSizeFraction)
+                    .graphicsLayer {
+                        clip = true
+                        shape = CircleShape
+                    }
+                    .background(Color(0xFFFFFDD0)),
+                contentAlignment = Alignment.Center
+            ) {
+                Image(
+                    painter = painterResource(id = R.drawable.robber_icon),
+                    contentDescription = "robber",
+                    modifier = Modifier.size((size.value * 0.8f).dp)
+
+                )
+            }
+        }
+
+        if (showRobberBorder){
+            val circleSizeFraction = 0.45f
+
+            Box(
+                modifier = Modifier
+                    .size(size * circleSizeFraction)
+                    .graphicsLayer {
+                        clip = true
+                        shape = CircleShape
+                    }
+                    .border(2.dp, Color.DarkGray, CircleShape)
+                    .background(Color(0xFFFFFDD0)),
+                contentAlignment = Alignment.Center
+            ){
+
+            }
+        }
 
         // Draw the number circle and text (only if not desert/waste)
         if (tile.type != TileType.WASTE && tile.value != 0) {

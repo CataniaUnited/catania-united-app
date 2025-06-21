@@ -63,6 +63,7 @@ fun CatanBoard(
     outerMarginDp: Dp = 16.dp,
     boardBackgroundColor: Color = catanBlue,
     isBuildMode: Boolean,
+    isRobMode: Boolean,
     playerId: String,
     onTileClicked: (Tile) -> Unit = {},
     onSettlementClicked: (Pair<SettlementPosition, Boolean>) -> Unit = {},
@@ -218,6 +219,7 @@ fun CatanBoard(
                         modifier = Modifier.offset { IntOffset(composableOffsetX.roundToInt(), composableOffsetY.roundToInt()) },
                         tile = tile,
                         size = baseParams.initialHexSizeDp, // Use initial size
+                        showRobberBorder = isRobMode,
                         onTileClick = onTileClicked // Pass down the handler
                     )
                 }

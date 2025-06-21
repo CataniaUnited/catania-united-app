@@ -9,5 +9,6 @@ data class Tile(
     val id: Int,
     val type: TileType,
     val value: Int,
-    val coordinates: List<Double> // [x, y]
+    val coordinates: List<Double>,  // [x, y]
+    val isRobbed : Boolean = false
 )

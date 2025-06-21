@@ -13,6 +13,7 @@ enum class MessageType {
     GAME_WON,
     GAME_STARTED,
     NEXT_TURN,
+    BUILDING_COST,
 
     //Client Messages
     CREATE_LOBBY,

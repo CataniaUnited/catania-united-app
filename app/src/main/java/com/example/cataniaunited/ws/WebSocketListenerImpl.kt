@@ -2,6 +2,7 @@ package com.example.cataniaunited.ws
 
 import android.util.Log
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.model.BuildingCostModel
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
@@ -20,6 +21,7 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.decodeFromJsonElement
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -82,6 +84,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.GAME_STARTED,
                 MessageType.NEXT_TURN,
                 MessageType.UPGRADE_SETTLEMENT -> handleGameBoardJson(messageDTO)
+                MessageType.BUILDING_COST -> handleBuildingCost(messageDTO)
 
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.GAME_WON -> handleGameWon(messageDTO)
@@ -112,6 +115,24 @@ open class WebSocketListenerImpl @Inject constructor(
 
         if (lobbyId != null && players != null) {
             onLobbyUpdated.onLobbyUpdated(lobbyId, players)
+        }
+    }
+
+    private fun handleBuildingCost(messageDTO: MessageDTO) {
+
+        val costsJson = messageDTO.message?.get("costs")?.jsonObject ?: run {
+            Log.e("WebSocketListener", "Missing 'costs' field in BUILDING_COST message")
+            return
+        }
+
+        try {
+            val parsed = jsonParser.decodeFromJsonElement<BuildingCostModel>(costsJson)
+            Log.i("WebSocketListener", "Parsed building costs: $parsed")
+            MainApplication.getInstance().applicationScope.launch {
+                gameDataHandler.updateBuildingCosts(parsed)
+            }
+        } catch (e: Exception) {
+            Log.e("WebSocketListener", "Failed to parse building costs JSON", e)
         }
     }
 

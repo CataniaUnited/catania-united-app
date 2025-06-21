@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoubleArrow
+import com.example.cataniaunited.ui.theme.catanClay
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -63,6 +66,7 @@ fun GameScreen(
     val playerResources by gameViewModel.playerResources.collectAsState()
     val gameWonState by application.gameWonState.collectAsState()
     val players by gameViewModel.players.collectAsState()
+    val buildingCosts by gameViewModel.buildingCosts.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
 
     LaunchedEffect(Unit) {
@@ -189,6 +193,22 @@ fun GameScreen(
                                         onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
                                     )
                                 }
+
+                            }
+                            Column(
+                                horizontalAlignment = Alignment.Start,
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(12.dp)
+                                    .background(catanClay, shape = RoundedCornerShape(12.dp)) // Brown
+                                    .padding(12.dp)
+                            ) {
+                                Text(
+                                    text = buildingCostsText,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    lineHeight = 16.sp
+                                )
                             }
                         }
                     }

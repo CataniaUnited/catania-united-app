@@ -68,12 +68,22 @@ fun GameScreen(
     val players by gameViewModel.players.collectAsState()
     val buildingCosts by gameViewModel.buildingCosts.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
+    val buildingCostsText = buildString {
+        buildingCosts?.let {
+            appendLine("Settlement: " + it.settlement.entries.joinToString { "${it.value} ${it.key}" })
+            appendLine("City: " + it.city.entries.joinToString { "${it.value} ${it.key}" })
+            appendLine("Road: " + it.road.entries.joinToString { "${it.value} ${it.key}" })
+            appendLine("Development Card: " + it.developmentCard.entries.joinToString { "${it.value} ${it.key}" })
+        } ?: append("Loading building costs...")
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
         if (gameBoardState == null) {
             gameViewModel.initializeBoardState(application.latestBoardJson)
         }
+        gameViewModel.requestBuildingCosts(lobbyId)
+    }
+
     }
 
     if(player?.isActivePlayer == true && player.canRollDice == true){

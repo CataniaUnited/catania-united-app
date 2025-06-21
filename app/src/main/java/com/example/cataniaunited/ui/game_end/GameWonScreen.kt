@@ -30,7 +30,7 @@ import com.example.cataniaunited.ui.theme.catanClayDark
 import com.example.cataniaunited.ui.theme.catanClayLight
 import com.example.cataniaunited.ui.theme.catanGold
 import com.example.cataniaunited.ui.theme.catanGoldLight
-
+//
 @Composable
 fun GameEndScreen(
     currentPlayerInfo: PlayerInfo,

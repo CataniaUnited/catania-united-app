@@ -33,6 +33,7 @@ class GameViewModel @Inject constructor(
     private val gameDataHandler: GameDataHandler,
     private val sessionManager: PlayerSessionManager,
     private val tradeLogic: TradeLogic,
+    private val cheatingLogic: CheatingLogic,
 ) : ViewModel() {
 
     val playerId get() = sessionManager.getPlayerId()
@@ -286,20 +287,8 @@ class GameViewModel @Inject constructor(
     }
 
     fun onCheatAttempt(tileType: TileType, lobbyId: String) {
-        val mainApp = MainApplication.getInstance()
-        val wsClient = mainApp.getWebSocketClient()
+        cheatingLogic.sendCheatAttempt(tileType, lobbyId)
 
-        val messageDTO = MessageDTO(
-            type = MessageType.CHEAT_ATTEMPT,
-            player = playerId,
-            lobbyId = lobbyId,
-            message = buildJsonObject {
-                put("resource", tileType.name)
-            }
-        )
-        wsClient.sendMessage(messageDTO)
-
-        // update the cheaters resource count immediately
         val currentResources = _playerResources.value.toMutableMap()
         currentResources[tileType] = (currentResources[tileType] ?: 0) + 1
         _playerResources.value = currentResources

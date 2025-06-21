@@ -28,6 +28,7 @@ class GameViewModel @Inject constructor(
     private val gameDataHandler: GameDataHandler,
     private val sessionManager: PlayerSessionManager,
     private val tradeLogic: TradeLogic,
+    private val cheatingLogic: CheatingLogic,
 ) : ViewModel() {
 
     val playerId get() = sessionManager.getPlayerId()
@@ -278,5 +279,9 @@ class GameViewModel @Inject constructor(
         val tradeRequest = TradeRequest(offered, target)
         tradeLogic.sendBankTrade(lobbyId, tradeRequest)
         setTradeMenuOpen(false) // Close menu after submitting
+    }
+
+    fun onCheatAttempt(tileType: TileType, lobbyId: String) {
+        cheatingLogic.sendCheatAttempt(tileType, lobbyId)
     }
 }

@@ -47,6 +47,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.api.extension.ExtensionContext
 
 
+
 @ExperimentalCoroutinesApi
 class MainCoroutineExtension(
     val testDispatcher: TestDispatcher = StandardTestDispatcher()
@@ -72,7 +73,7 @@ class GameViewModelTest {
     private lateinit var mockGameBoardLogic: GameBoardLogic
     private lateinit var mockLobbyLogic: LobbyLogic
     private lateinit var mockTradeLogic: TradeLogic
-
+    private lateinit var mockCheatingLogic: CheatingLogic
     private lateinit var viewModel: GameViewModel
 
     private val validBoardJson = """
@@ -126,6 +127,7 @@ class GameViewModelTest {
         mockGameBoardLogic = mockk(relaxed = true)
         mockLobbyLogic = mockk(relaxed = true)
         mockTradeLogic = mockk(relaxed = true)
+        mockCheatingLogic = mockk(relaxed = true)
         mockPlayerSessionManager = mockk(relaxed = true)
         every { mockPlayerSessionManager.getPlayerId() } returns testPlayerId
 
@@ -177,6 +179,8 @@ class GameViewModelTest {
             mockGameDataHandler,
             mockPlayerSessionManager,
             mockTradeLogic,
+            mockCheatingLogic
+
         )
     }
 
@@ -531,6 +535,27 @@ class GameViewModelTest {
         }
     }
 
+    @Test
+    fun onCheatAttemptDelegatesToCheatingLogic() = runTest {
+        val mockCheatingLogic = mockk<CheatingLogic>(relaxed = true)
+        viewModel = GameViewModel(
+            mockGameBoardLogic,
+            mockLobbyLogic,
+            mockGameDataHandler,
+            mockPlayerSessionManager,
+            mockTradeLogic,
+            mockCheatingLogic,
+        )
+        val lobbyId = "lobby123"
+        val tileType = TileType.ORE
+
+        viewModel.onCheatAttempt(tileType, lobbyId)
+        verify { mockCheatingLogic.sendCheatAttempt(tileType, lobbyId) }
+    }
+
+
+
+
     @Nested
     @DisplayName("Initialization via initializeBoardState")
     inner class InitializationTests {
@@ -728,7 +753,7 @@ class GameViewModelTest {
              playersMutableStateFlow.value = mapOf(testPlayerId to PlayerInfo(id = testPlayerId, username = "Test", resources = initialPlayerResources))
 
              // Recreate ViewModel to pick up the new playersState from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
              advanceUntilIdle()
 
              assertEquals(initialPlayerResources, viewModel.playerResources.value)
@@ -755,7 +780,7 @@ class GameViewModelTest {
              val initialPlayers = mapOf("p1" to PlayerInfo(id = "p1", username = "Player One"))
              playersMutableStateFlow.value = initialPlayers // Simulate GameDataHandler having this state
              // Recreate ViewModel to pick up the new playersState from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
              advanceUntilIdle()
              assertEquals(initialPlayers, viewModel.players.value)
          }
@@ -765,7 +790,7 @@ class GameViewModelTest {
              val initialVPs = mapOf("p1" to 5)
              victoryPointsMutableStateFlow.value = initialVPs // Simulate GameDataHandler having this state
              // Recreate ViewModel to pick up the new state from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
              advanceUntilIdle()
              assertEquals(initialVPs, viewModel.victoryPoints.value)
          }
@@ -842,7 +867,7 @@ class GameViewModelTest {
             playersMutableStateFlow.value = initialPlayers
 
             // Recreate ViewModel to ensure it collects the initial player state
-            viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic)
+            viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
         }
 
         @Test

@@ -3,6 +3,7 @@ package com.example.cataniaunited.ui.game
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
@@ -11,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -23,7 +25,8 @@ import com.example.cataniaunited.ui.theme.catanClay
 @Composable
 fun PlayerResourcesBar(
     modifier: Modifier = Modifier,
-    resources: Map<TileType, Int>
+    resources: Map<TileType, Int>,
+    onCheatAttempt: (TileType) -> Unit
 ) {
     Log.d("DebugEnum", "PlayerResourcesBar data: $resources")
     Log.d("DebugEnum", "TileType.WOOD from UI: ${TileType.WOOD::class.java.name}")
@@ -47,20 +50,33 @@ fun PlayerResourcesBar(
         displayOrder.forEach { tileType ->
             val count = resources[tileType] ?: 0
             Log.d("DebugEnum", "Rendering $tileType with count $count")
-            ResourceItem(tileType = tileType, count = count)
+            ResourceItem(tileType = tileType, count = count, onCheatAttempt = onCheatAttempt)
         }
     }
 }
 
 @Composable
-private fun ResourceItem(tileType: TileType, count: Int) {
+private fun ResourceItem(
+    tileType: TileType,
+    count: Int,
+    onCheatAttempt: (TileType) -> Unit
+) {
     val iconRes = getResourceIcon(tileType)
 
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         Image(
             painter = painterResource(id = iconRes),
             contentDescription = tileType.name,
-            modifier = Modifier.size(30.dp), // Adjust size as needed
+            modifier = Modifier
+                .size(30.dp) // Adjust size as needed
+                .pointerInput(tileType) {
+                    detectTapGestures(
+                        onDoubleTap = {
+                            onCheatAttempt(tileType)
+                        }
+                    )
+                },
+
             colorFilter = ColorFilter.tint(Color.Black)
 
         )
@@ -72,7 +88,6 @@ private fun ResourceItem(tileType: TileType, count: Int) {
         )
     }
 }
-
 
 @Composable
 private fun getResourceIcon(tileType: TileType): Int {

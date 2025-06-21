@@ -83,7 +83,10 @@ fun GameScreen(
                 if (gameBoardState != null) {
                     PlayerResourcesBar(
                         modifier = Modifier.fillMaxWidth(),
-                        resources = playerResources
+                        resources = playerResources,
+                        onCheatAttempt = {tileType ->
+                            gameViewModel.onCheatAttempt(tileType, lobbyId)
+                        }
                     )
                 }
             },
@@ -197,7 +200,16 @@ fun GameScreen(
                                         .offset { IntOffset(x = popupOffsetX, y = popupOffsetY) }
                                         .align(Alignment.TopStart)
                                 ) {
-                                    PlayerResourcePopup(resources = selectedPlayer.value!!.resources)
+                                    PlayerResourcePopup(
+                                        playerId = selectedPlayer.value!!.id,
+                                        players = players,
+                                        onCheatAttempt = { tileType ->
+                                            // Only allow cheating if the popup is from the current user
+                                            if (selectedPlayer.value?.id == gameViewModel.playerId) {
+                                                gameViewModel.onCheatAttempt(tileType, lobbyId)
+                                            }
+                                        }
+                                    )
                                 }
                             }
                         }

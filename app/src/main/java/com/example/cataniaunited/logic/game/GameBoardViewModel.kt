@@ -126,6 +126,7 @@ class GameViewModel @Inject constructor(
         if (_isRobMenuOpen.value){
             gameBoardLogic.placeRobber(lobbyId, tile.id)
             _isRobMenuOpen.value = false
+            resetDiceState()
         }
     }
 
@@ -231,10 +232,10 @@ class GameViewModel @Inject constructor(
                 )
             )
             delay(3000) // Show result for 3 seconds
-            if (dice1 + dice2 == 7) {
-                setRobMenuOpen(true)
+            Log.d("GameViewModel", "showResult: dice result %")
+            if(isDiceSumSeven() == false){
+                resetDiceState()
             }
-            resetDiceState()
         }
     }
 
@@ -242,6 +243,11 @@ class GameViewModel @Inject constructor(
         viewModelScope.launch {
             gameDataHandler.updateDiceState(null)
         }
+    }
+
+    fun isDiceSumSeven(): Boolean {
+        val result = _diceResult.value
+        return result?.let { it.first + it.second == 7} ?: false
     }
 
     fun setRobMenuOpen(isRobOpen: Boolean) {

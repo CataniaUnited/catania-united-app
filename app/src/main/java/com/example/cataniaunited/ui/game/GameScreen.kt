@@ -154,6 +154,7 @@ fun GameScreen(
                                 isBuildMode = isBuildMenuOpen,
                                 isRobMode = isRobMenuOpen,
                                 playerId = gameViewModel.playerId,
+                                isActivePlayer = player?.isActivePlayer == true,
                                 onTileClicked = { tile ->
                                     Log.d("GameScreen", "Tile Clicked: ${tile.id}")
                                     gameViewModel.handleTileClick(tile, lobbyId)
@@ -189,7 +190,7 @@ fun GameScreen(
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
                                     RobberButton (
-                                        enabled = isRobMenuOpen,
+                                        enabled = gameViewModel.isDiceSumSeven() == true,
                                         onClick = { gameViewModel.setRobMenuOpen(true) }
                                     )
 

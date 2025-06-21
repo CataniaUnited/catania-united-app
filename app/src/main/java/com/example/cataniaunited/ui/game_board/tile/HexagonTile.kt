@@ -78,7 +78,8 @@ fun HexagonTile(
     modifier: Modifier = Modifier,
     tile: Tile,
     size: Dp,
-    showRobberBorder: Boolean,
+    isClickable: Boolean,
+    isActivePlayer: Boolean,
     onTileClick: (Tile) -> Unit = {}
 ) {
     Box(
@@ -98,6 +99,8 @@ fun HexagonTile(
             contentScale = ContentScale.Crop
         )
 
+        val actualBorderColor = if (isClickable && isActivePlayer) Color.DarkGray else Color.Transparent
+
         if (tile.isRobbed){
             val circleSizeFraction = 0.45f
             Box(
@@ -107,6 +110,7 @@ fun HexagonTile(
                         clip = true
                         shape = CircleShape
                     }
+                    .border(2.dp, actualBorderColor, CircleShape)
                     .background(Color(0xFFFFFDD0)),
                 contentAlignment = Alignment.Center
             ) {
@@ -118,52 +122,36 @@ fun HexagonTile(
                 )
             }
         }
+        else {
+            // Draw the number circle and text (only if not desert/waste)
+            if (tile.type != TileType.WASTE && tile.value != 0) {
+                val circleSizeFraction = 0.45f
+                val fontSizeFraction = 0.22f
 
-        if (showRobberBorder){
-            val circleSizeFraction = 0.45f
-
-            Box(
-                modifier = Modifier
-                    .size(size * circleSizeFraction)
-                    .graphicsLayer {
-                        clip = true
-                        shape = CircleShape
-                    }
-                    .border(2.dp, Color.DarkGray, CircleShape)
-                    .background(Color(0xFFFFFDD0)),
-                contentAlignment = Alignment.Center
-            ){
-
-            }
-        }
-
-        // Draw the number circle and text (only if not desert/waste)
-        if (tile.type != TileType.WASTE && tile.value != 0) {
-            val circleSizeFraction = 0.45f
-            val fontSizeFraction = 0.22f
-
-            Box(
-                modifier = Modifier
-                    .size(size * circleSizeFraction)
-                    .graphicsLayer {
-                        clip = true
-                        shape = CircleShape
-                    }
-                    .background(Color(0xFFFFFDD0)),
-                contentAlignment = Alignment.Center
-            ) {
-                val numberColor = if (tile.value == 6 || tile.value == 8) Color.Red else Color.Black
+                Box(
+                    modifier = Modifier
+                        .size(size * circleSizeFraction)
+                        .graphicsLayer {
+                            clip = true
+                            shape = CircleShape
+                        }
+                        .border(2.dp, actualBorderColor, CircleShape)
+                        .background(Color(0xFFFFFDD0)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val numberColor = if (tile.value == 6 || tile.value == 8) Color.Red else Color.Black
 
 
-                val calculatedFontSize = (size.value * fontSizeFraction).sp
+                    val calculatedFontSize = (size.value * fontSizeFraction).sp
 
-                Text(
-                    text = tile.value.toString(),
-                    color = numberColor,
-                    fontSize = calculatedFontSize,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1
-                )
+                    Text(
+                        text = tile.value.toString(),
+                        color = numberColor,
+                        fontSize = calculatedFontSize,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                }
             }
         }
     }

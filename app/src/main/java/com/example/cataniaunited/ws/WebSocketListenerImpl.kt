@@ -252,6 +252,7 @@ open class WebSocketListenerImpl @Inject constructor(
         }
         onDiceResult.onDiceResult(dice1, dice2, playerName)
     }
+
     private fun handlePlayersUpdate(messageDTO: MessageDTO) {
         val lobbyId = messageDTO.lobbyId
         val players = messageDTO.players

@@ -192,14 +192,7 @@ class GameViewModel @Inject constructor(
 
     fun updateDiceResult(dice1: Int?, dice2: Int?) {
         viewModelScope.launch {
-            if (dice1 != null && dice2 != null) {
-                _diceResult.value = dice1 to dice2
-                if (dice1 + dice2 == 7){
-                    _isRobMenuOpen.value = true
-                }
-            } else {
-                _diceResult.value = null
-            }
+            _diceResult.value = if (dice1 != null && dice2 != null) dice1 to dice2 else null
         }
     }
 
@@ -238,6 +231,9 @@ class GameViewModel @Inject constructor(
                 )
             )
             delay(3000) // Show result for 3 seconds
+            if (dice1 + dice2 == 7) {
+                setRobMenuOpen(true)
+            }
             resetDiceState()
         }
     }

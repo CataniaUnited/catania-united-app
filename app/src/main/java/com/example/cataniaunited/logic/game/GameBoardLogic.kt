@@ -63,7 +63,7 @@ class GameBoardLogic @Inject constructor(
         }
     }
 
-    fun placeRobber(robberTileId: Int, lobbyId: String){
+    fun placeRobber(lobbyId: String, robberTileId: Int){
         val playerId = try {
             playerSessionManager.getPlayerId()
         } catch (ise: IllegalStateException) {

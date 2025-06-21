@@ -1,5 +1,6 @@
 package com.example.cataniaunited.logic.game
 
+import android.util.Log
 import io.mockk.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -10,6 +11,7 @@ import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.ws.WebSocketClient
 import kotlinx.serialization.json.jsonPrimitive
+import org.junit.jupiter.api.AfterEach
 
 class CheatingLogicTest {
     private lateinit var cheatingLogic: CheatingLogic
@@ -21,6 +23,7 @@ class CheatingLogicTest {
         mockSessionManager = mockk(relaxed = true)
         mockWsClient = mockk(relaxed = true)
         mockkObject(MainApplication)
+        mockkStatic(Log::class)
         every { MainApplication.getInstance() } returns mockk {
             every { getWebSocketClient() } returns mockWsClient
         }
@@ -29,6 +32,12 @@ class CheatingLogicTest {
 
         cheatingLogic = CheatingLogic(mockSessionManager)
     }
+
+    @AfterEach
+    fun tearDown() {
+        unmockkStatic(Log::class)
+    }
+
 
     @Test
     fun sendCheatAttemptSendsCorrectMessageIfWebSocketConnected() {
@@ -47,5 +56,21 @@ class CheatingLogicTest {
         every { mockWsClient.isConnected() } returns false
         cheatingLogic.sendCheatAttempt(TileType.ORE, "lobby42")
         verify(exactly = 0) { mockWsClient.sendMessage(any()) }
+    }
+
+    @Test
+    fun sendCheatAttemptDoesNothingIfPlayerIdThrows() {
+        every { mockSessionManager.getPlayerId() } throws IllegalStateException("Player ID missing")
+
+        cheatingLogic.sendCheatAttempt(TileType.ORE, "lobby42")
+
+        verify(exactly = 0) { mockWsClient.sendMessage(any()) }
+        verify {
+            Log.e(
+                eq("CheatingLogic"),
+                match { it.contains("Error when fetching player id") },
+                any<IllegalStateException>()
+            )
+        }
     }
 }

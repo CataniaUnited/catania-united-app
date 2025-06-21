@@ -52,6 +52,9 @@ class GameViewModel @Inject constructor(
     private val _players = MutableStateFlow<Map<String, PlayerInfo>>(emptyMap())
     val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
 
+    private val _isRobMenuOpen = MutableStateFlow(false)
+    val isRobMenuOpen: StateFlow<Boolean> = _isRobMenuOpen
+
     private val _isTradeMenuOpen = MutableStateFlow(false)
     val isTradeMenuOpen: StateFlow<Boolean> = _isTradeMenuOpen.asStateFlow()
 
@@ -84,10 +87,11 @@ class GameViewModel @Inject constructor(
                 Log.d("GameViewModel_Collect", "RECEIVED playersState in collect: $it")
                 _players.value = it
 
-                val playerInfo: PlayerInfo? = it[playerId];
+                val playerInfo: PlayerInfo? = it[playerId]
                 if(playerInfo != null && !playerInfo.isActivePlayer){
-                    //Close build menu when player is not active player
+                    //Close build and rob menu when player is not active player
                     setBuildMenuOpen(false)
+                    setRobMenuOpen(false)
                 }
             }
             Log.d("GameViewModel_Collect", "playersState collect FINISHED in ViewModelScope.")
@@ -119,6 +123,10 @@ class GameViewModel @Inject constructor(
     fun handleTileClick(tile: Tile, lobbyId: String) {
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
         // TODO: Implement logic for tile click (e.g., move robber phase)
+        if (_isRobMenuOpen.value){
+            gameBoardLogic.placeRobber(lobbyId, tile.id)
+            _isRobMenuOpen.value = false
+        }
     }
 
     fun handleSettlementClick(
@@ -184,7 +192,14 @@ class GameViewModel @Inject constructor(
 
     fun updateDiceResult(dice1: Int?, dice2: Int?) {
         viewModelScope.launch {
-            _diceResult.value = if (dice1 != null && dice2 != null) dice1 to dice2 else null
+            if (dice1 != null && dice2 != null) {
+                _diceResult.value = dice1 to dice2
+                if (dice1 + dice2 == 7){
+                    _isRobMenuOpen.value = true
+                }
+            } else {
+                _diceResult.value = null
+            }
         }
     }
 
@@ -231,6 +246,11 @@ class GameViewModel @Inject constructor(
         viewModelScope.launch {
             gameDataHandler.updateDiceState(null)
         }
+    }
+
+    fun setRobMenuOpen(isRobOpen: Boolean) {
+        Log.d("GameViewModel", "handleRobMenuClick: isRobOpen=$isRobOpen")
+        _isRobMenuOpen.value = isRobOpen
     }
 
     fun setTradeMenuOpen(isOpen: Boolean) {

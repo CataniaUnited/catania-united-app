@@ -3,15 +3,12 @@ package com.example.cataniaunited.logic.game
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
-import com.example.cataniaunited.logic.dto.MessageDTO
-import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -23,8 +20,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
 
 @HiltViewModel
 class GameViewModel @Inject constructor(

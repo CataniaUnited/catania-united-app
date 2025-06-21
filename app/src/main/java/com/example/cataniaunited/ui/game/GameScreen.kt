@@ -201,19 +201,15 @@ fun GameScreen(
                                         .align(Alignment.TopStart)
                                 ) {
                                     PlayerResourcePopup(
-                                        resources = if (selectedPlayer.value?.id == gameViewModel.playerId) {
-                                            playerResources
-                                        } else {
-                                            selectedPlayer.value!!.resources
-                                        },
+                                        playerId = selectedPlayer.value!!.id,
+                                        players = players,
                                         onCheatAttempt = { tileType ->
+                                            // Only allow cheating if the popup is from the current user
                                             if (selectedPlayer.value?.id == gameViewModel.playerId) {
                                                 gameViewModel.onCheatAttempt(tileType, lobbyId)
                                             }
                                         }
-
                                     )
-
                                 }
                             }
                         }

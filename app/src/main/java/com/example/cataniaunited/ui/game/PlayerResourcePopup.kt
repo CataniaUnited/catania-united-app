@@ -12,14 +12,17 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.R
+import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.ui.theme.catanClayLight
 
 @Composable
 fun PlayerResourcePopup(
-    resources: Map<TileType, Int>,
+    playerId: String,
+    players: Map<String, PlayerInfo>,
     modifier: Modifier = Modifier,
     onCheatAttempt: (TileType) -> Unit
 ) {
+    val resources = players[playerId]?.resources ?: emptyMap()
     val displayOrder = listOf(
         TileType.WOOD,
         TileType.CLAY,

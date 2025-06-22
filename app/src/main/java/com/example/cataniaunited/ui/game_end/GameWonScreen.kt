@@ -188,7 +188,7 @@ fun GameEndScreen(
 
 @Preview(name = "Winner's View", showBackground = true)
 @Composable
-fun PreviewGameWinScreen_Winner() {
+fun PreviewGameEndScreenWinner() {
     val winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, victoryPoints = 10)
     GameEndScreen(
         currentPlayerInfo = winner,
@@ -204,7 +204,7 @@ fun PreviewGameWinScreen_Winner() {
 
 @Preview(name = "Loser's View", showBackground = true)
 @Composable
-fun PreviewGameWinScreen_Loser() {
+fun PreviewGameEndScreenLoser() {
     val currentPlayer = PlayerInfo("1", "Mia", "#FF0000", false, false, victoryPoints = 9)
     val winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, victoryPoints = 10)
     GameEndScreen(

@@ -248,10 +248,10 @@ fun GameScreen(
                 }
             }
         }
-        val currentGameState = gameWonState
+
 
         AnimatedVisibility(
-            visible = currentGameState != null && currentGameState.second.any { it.id == player?.id },
+            visible = gameWonState != null,
             enter = fadeIn() + scaleIn(initialScale = 0.9f),
         ) {
             Box(
@@ -260,7 +260,7 @@ fun GameScreen(
                     .background(Color(0x99000000)),
                 contentAlignment = Alignment.Center
             ) {
-                currentGameState?.let { (winner, leaderboard) ->
+                gameWonState?.let { (winner, leaderboard) ->
                     player?.let { currentPlayer ->
                         GameEndScreen(
                             currentPlayerInfo = currentPlayer,

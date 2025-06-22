@@ -30,7 +30,7 @@ import com.example.cataniaunited.ui.theme.catanClayDark
 import com.example.cataniaunited.ui.theme.catanClayLight
 import com.example.cataniaunited.ui.theme.catanGold
 import com.example.cataniaunited.ui.theme.catanGoldLight
-//
+
 @Composable
 fun GameEndScreen(
     currentPlayerInfo: PlayerInfo,
@@ -39,7 +39,7 @@ fun GameEndScreen(
     onReturnToMenu: () -> Unit,
 ) {
 
-    val isWinner = currentPlayerInfo.username == winner.username
+    val isWinner = currentPlayerInfo.id == winner.id
 
     Box(
         modifier = Modifier
@@ -47,8 +47,7 @@ fun GameEndScreen(
             .heightIn(max = 370.dp)
             .border(4.5.dp, catanClayDark, RoundedCornerShape(12.dp))
             .background(catanClayLight, RoundedCornerShape(12.dp)),
-
-        ) {
+    ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -56,7 +55,6 @@ fun GameEndScreen(
                 .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 72.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
             if (isWinner) {
                 Text(
                     text = "VICTORY!",
@@ -71,7 +69,6 @@ fun GameEndScreen(
                     color = catanGold
                 )
             } else {
-
                 Text(
                     text = "DEFEAT",
                     style = appTypography.titleLarge,
@@ -79,11 +76,10 @@ fun GameEndScreen(
                     fontWeight = FontWeight.Bold,
                     color = Color.Gray
                 )
-
                 val funnyMessage = when {
                     currentPlayerInfo.victoryPoints >= 8 -> "So close! You were just a step away."
                     currentPlayerInfo.victoryPoints >= 5 -> "A respectable performance."
-                    else -> "At least you built a nice long road?"
+                    else -> "At least you tried, better luck next time?"
                 }
                 Text(
                     text = funnyMessage,
@@ -92,7 +88,6 @@ fun GameEndScreen(
                     color = catanClayDark
                 )
             }
-
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -106,7 +101,6 @@ fun GameEndScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            // The rest of your code for the leaderboard remains the same...
             leaderboard.take(3).forEachIndexed { index, player ->
                 val rankLabel = when (index) {
                     0 -> "1st"
@@ -114,7 +108,6 @@ fun GameEndScreen(
                     2 -> "3rd"
                     else -> ""
                 }
-
                 Row(
                     modifier = Modifier
                         .padding(vertical = 6.dp)
@@ -138,7 +131,6 @@ fun GameEndScreen(
                             color = Color.Black
                         )
                     }
-
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -152,14 +144,12 @@ fun GameEndScreen(
                             color = catanGoldLight
                         )
                     }
-
                     Box(
                         modifier = Modifier
                             .width(2.dp)
                             .fillMaxHeight()
                             .background(catanGold)
                     )
-
                     Box(
                         modifier = Modifier
                             .width(60.dp)
@@ -201,12 +191,12 @@ fun GameEndScreen(
 fun PreviewGameWinScreen_Winner() {
     val winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, victoryPoints = 10)
     GameEndScreen(
-        currentPlayerInfo = winner, // Current player IS the winner
+        currentPlayerInfo = winner,
         winner = winner,
         leaderboard = listOf(
             winner,
-            PlayerInfo("1", "Mia", "#FF0000",false, false, victoryPoints = 9),
-            PlayerInfo("3", "Jean", "#D4AF37",false, false, victoryPoints =  7)
+            PlayerInfo("1", "Mia", "#FF0000", false, false, victoryPoints = 9),
+            PlayerInfo("3", "Jean", "#D4AF37", false, false, victoryPoints = 7)
         ),
         onReturnToMenu = {},
     )
@@ -215,15 +205,15 @@ fun PreviewGameWinScreen_Winner() {
 @Preview(name = "Loser's View", showBackground = true)
 @Composable
 fun PreviewGameWinScreen_Loser() {
-    val currentPlayer = PlayerInfo("1", "Mia", "#FF0000",false, false, victoryPoints = 9)
+    val currentPlayer = PlayerInfo("1", "Mia", "#FF0000", false, false, victoryPoints = 9)
     val winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, victoryPoints = 10)
     GameEndScreen(
-        currentPlayerInfo = currentPlayer, // Current player IS NOT the winner
+        currentPlayerInfo = currentPlayer,
         winner = winner,
         leaderboard = listOf(
             winner,
             currentPlayer,
-            PlayerInfo("3", "Jean", "#D4AF37",false, false, victoryPoints =  7)
+            PlayerInfo("3", "Jean", "#D4AF37", false, false, victoryPoints = 7)
         ),
         onReturnToMenu = {},
     )

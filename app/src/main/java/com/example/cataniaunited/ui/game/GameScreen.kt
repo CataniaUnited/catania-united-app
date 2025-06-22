@@ -30,7 +30,7 @@ import com.example.cataniaunited.ui.dice.DiceRollerPopup
 import com.example.cataniaunited.ui.dice.ShakeDetector
 import com.example.cataniaunited.ui.game_board.board.CatanBoard
 import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
-import com.example.cataniaunited.ui.game_end.GameWinScreen
+import com.example.cataniaunited.ui.game_end.GameEndScreen
 import com.example.cataniaunited.ui.theme.catanBlue
 import com.example.cataniaunited.ui.trade.TradeMenuPopup
 import kotlin.math.roundToInt
@@ -84,7 +84,7 @@ fun GameScreen(
                     PlayerResourcesBar(
                         modifier = Modifier.fillMaxWidth(),
                         resources = playerResources,
-                        onCheatAttempt = {tileType ->
+                        onCheatAttempt = { tileType ->
                             gameViewModel.onCheatAttempt(tileType, lobbyId)
                         }
                     )
@@ -249,6 +249,7 @@ fun GameScreen(
             }
         }
 
+
         AnimatedVisibility(
             visible = gameWonState != null,
             enter = fadeIn() + scaleIn(initialScale = 0.9f),
@@ -260,16 +261,19 @@ fun GameScreen(
                 contentAlignment = Alignment.Center
             ) {
                 gameWonState?.let { (winner, leaderboard) ->
-                    GameWinScreen(
-                        winner = winner,
-                        leaderboard = leaderboard,
-                        onReturnToMenu = {
-                            application.clearLobbyData()
-                            navController.navigate("starting") {
-                                popUpTo("starting") { inclusive = true }
+                    player?.let { currentPlayer ->
+                        GameEndScreen(
+                            currentPlayerInfo = currentPlayer,
+                            winner = winner,
+                            leaderboard = leaderboard,
+                            onReturnToMenu = {
+                                application.clearLobbyData()
+                                navController.navigate("starting") {
+                                    popUpTo("starting") { inclusive = true }
+                                }
                             }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

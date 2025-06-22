@@ -41,3 +41,7 @@ fun interface OnDiceRolling {
 fun interface OnPlayerResourcesReceived {
     fun onPlayerResourcesReceived(players: Map<String, PlayerInfo>)
 }
+
+fun interface OnDevelopmentCardReceived {
+    fun onDevelopmentCardReceived(cardType: String)
+}

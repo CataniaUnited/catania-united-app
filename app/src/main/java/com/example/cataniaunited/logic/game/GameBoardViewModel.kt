@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import androidx.compose.runtime.mutableStateListOf
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
@@ -36,6 +37,9 @@ class GameViewModel @Inject constructor(
 
     private val _isBuildMenuOpen = MutableStateFlow(false)
     val isBuildMenuOpen: StateFlow<Boolean> = _isBuildMenuOpen
+
+    private val _drawnCardType = MutableStateFlow<String?>(null)
+    val drawnCardType: StateFlow<String?> = _drawnCardType.asStateFlow()
 
     private val _diceResult = MutableStateFlow<Pair<Int, Int>?>(null)
     val diceResult: StateFlow<Pair<Int, Int>?> = _diceResult
@@ -257,6 +261,18 @@ class GameViewModel @Inject constructor(
             }
             _tradeOffer.value = Pair(currentOffer, _tradeOffer.value.second)
         }
+    }
+
+    fun handleBuyDevCardClick(lobbyId: String) {
+        gameBoardLogic.buyDevelopmentCard(lobbyId)
+    }
+
+    private val _myDevelopmentCards = mutableStateListOf<String>()
+    val myDevelopmentCards: List<String> = _myDevelopmentCards
+
+
+    fun clearDrawnCard() {
+        _drawnCardType.value = null
     }
 
     fun updateTargetResource(resource: TileType, delta: Int) {

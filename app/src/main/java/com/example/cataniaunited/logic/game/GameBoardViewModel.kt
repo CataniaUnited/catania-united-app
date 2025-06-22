@@ -20,6 +20,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.model.BuildingCostModel
+import com.example.cataniaunited.logic.dto.MessageDTO
+import com.example.cataniaunited.logic.dto.MessageType
+
 
 @HiltViewModel
 class GameViewModel @Inject constructor(
@@ -59,9 +64,21 @@ class GameViewModel @Inject constructor(
     private val _tradeOffer = MutableStateFlow<Pair<Map<TileType, Int>, Map<TileType, Int>>>(Pair(emptyMap(), emptyMap()))
     val tradeOffer: StateFlow<Pair<Map<TileType, Int>, Map<TileType, Int>>> = _tradeOffer.asStateFlow()
 
+    private val _buildingCosts = MutableStateFlow<BuildingCostModel?>(null)
+    val buildingCosts: StateFlow<BuildingCostModel?> = _buildingCosts.asStateFlow()
+
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
 
+        viewModelScope.launch {
+            gameDataHandler.buildingCosts.collect { costs ->
+                if (costs != null) {
+                    Log.d("GameViewModel", "Received building costs: $costs")
+                    _buildingCosts.value = costs
+                }
+            }
+        }
+    // New function to be called externally (e.g., from the Composable's LaunchedEffect)
         _players.value = gameDataHandler.playersState.value
         val resources: Map<TileType, Int>? = _players.value[playerId]?.resources
         _playerResources.value = resources ?: TileType.entries
@@ -104,6 +121,26 @@ class GameViewModel @Inject constructor(
                 Log.e("GameViewModel", "Initial board JSON was null during initialization!")
             }
         }
+    }
+
+
+    fun requestBuildingCosts(lobbyId: String) {
+        val playerId = playerId
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        if (webSocketClient.isConnected()) {
+            val message = MessageDTO(
+                type = MessageType.BUILDING_COST,
+                player = playerId,
+                lobbyId = lobbyId
+            )
+            webSocketClient.sendMessage(message)
+        } else {
+            Log.e("GameViewModel", "WebSocket not connected for BUILDING_COST request")
+        }
+    }
+
+    fun setBuildingCosts(costs: BuildingCostModel) {
+        _buildingCosts.value = costs
     }
 
     fun loadGameBoardFromJson(jsonString: String) {

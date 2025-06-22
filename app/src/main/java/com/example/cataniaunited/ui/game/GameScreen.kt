@@ -32,6 +32,8 @@ import com.example.cataniaunited.ui.game_board.board.CatanBoard
 import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import com.example.cataniaunited.ui.game_end.GameEndScreen
 import com.example.cataniaunited.ui.theme.catanBlue
+import com.example.cataniaunited.ui.theme.catanClay
+import androidx.compose.foundation.shape.RoundedCornerShape
 import com.example.cataniaunited.ui.trade.TradeMenuPopup
 import kotlin.math.roundToInt
 
@@ -51,8 +53,16 @@ fun GameScreen(
     val playerResources by gameViewModel.playerResources.collectAsState()
     val gameWonState by application.gameWonState.collectAsState()
     val players by gameViewModel.players.collectAsState()
+    val buildingCosts by gameViewModel.buildingCosts.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
-
+    val buildingCostsText = buildString {
+        buildingCosts?.let {
+            appendLine("Settlement: " + it.settlement.entries.joinToString { "${it.value} ${it.key}" })
+            appendLine("City: " + it.city.entries.joinToString { "${it.value} ${it.key}" })
+            appendLine("Road: " + it.road.entries.joinToString { "${it.value} ${it.key}" })
+            appendLine("Development Card: " + it.developmentCard.entries.joinToString { "${it.value} ${it.key}" })
+        } ?: append("Loading building costs...")
+    }
     val selectedPlayer = remember { mutableStateOf<PlayerInfo?>(null) }
     val selectedPlayerIndex = remember { mutableStateOf<Int?>(null) }
     val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
@@ -66,6 +76,7 @@ fun GameScreen(
         if (gameBoardState == null) {
             gameViewModel.initializeBoardState(application.latestBoardJson)
         }
+        gameViewModel.requestBuildingCosts(lobbyId)
     }
 
     if (player?.isActivePlayer == true && player.isSetupRound == false && player.canRollDice == true) {
@@ -190,6 +201,22 @@ fun GameScreen(
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
                                 }
+
+                            }
+                            Column(
+                                horizontalAlignment = Alignment.Start,
+                                modifier = Modifier
+                                    .align(Alignment.TopStart)
+                                    .padding(12.dp)
+                                    .background(catanClay, shape = RoundedCornerShape(12.dp))
+                                    .padding(12.dp)
+                            ) {
+                                Text(
+                                    text = buildingCostsText,
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSecondary,
+                                    lineHeight = 16.sp
+                                )
                             }
 
                             if (selectedPlayer.value != null && selectedPlayerIndex.value != null) {
@@ -279,3 +306,4 @@ fun GameScreen(
         }
     }
 }
+

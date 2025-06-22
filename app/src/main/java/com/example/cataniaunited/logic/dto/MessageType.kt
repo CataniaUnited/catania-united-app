@@ -14,6 +14,7 @@ enum class MessageType {
     GAME_STARTED,
     NEXT_TURN,
     PLAYER_RESOURCE_UPDATE,
+    BUILDING_COST,
 
     //Client Messages
     CREATE_LOBBY,

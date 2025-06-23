@@ -190,8 +190,9 @@ fun GameScreen(
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
                                     RobberButton (
-                                        enabled = gameViewModel.isDiceSumSeven() == true,
-                                        onClick = { gameViewModel.setRobMenuOpen(true) }
+                                        enabled = isRobMenuOpen,
+                                        isRobOpen = isRobMenuOpen == false,
+                                        onClick = { isRobOpen -> gameViewModel.setRobMenuOpen(isRobOpen) }
                                     )
 
                                 }

@@ -14,11 +14,12 @@ import com.example.cataniaunited.R
 @Composable
 fun RobberButton (
     enabled : Boolean,
+    isRobOpen : Boolean,
     onClick: (Boolean) -> Unit = {}
 ) {
     Button(
         enabled = enabled,
-        onClick = { onClick(false) },
+        onClick = { onClick(!isRobOpen) },
         modifier = Modifier
             .padding(8.dp)
             .zIndex(1f)

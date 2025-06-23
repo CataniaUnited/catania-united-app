@@ -99,7 +99,7 @@ fun HexagonTile(
             contentScale = ContentScale.Crop
         )
 
-        val actualBorderColor = if (isClickable && isActivePlayer) Color.DarkGray else Color.Transparent
+        val actualBorderColor = if (isClickable == true && isActivePlayer == true) Color.Black else Color.Transparent
 
         if (tile.isRobbed){
             val circleSizeFraction = 0.45f

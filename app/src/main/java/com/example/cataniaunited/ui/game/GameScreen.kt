@@ -154,7 +154,7 @@ fun GameScreen(
                                 isBuildMode = isBuildMenuOpen,
                                 isRobMode = isRobMenuOpen,
                                 playerId = gameViewModel.playerId,
-                                isActivePlayer = player?.isActivePlayer == true,
+                                isActivePlayer = player!!.isActivePlayer,
                                 onTileClicked = { tile ->
                                     Log.d("GameScreen", "Tile Clicked: ${tile.id}")
                                     gameViewModel.handleTileClick(tile, lobbyId)
@@ -179,7 +179,7 @@ fun GameScreen(
                                     .padding(top = 32.dp, end = 16.dp)
                                     .zIndex(2f)
                             ) {
-                                if (player?.isActivePlayer == true) {
+                                if (player.isActivePlayer == true) {
                                     BuildButton(
                                         enabled = player.canRollDice == false || player.isSetupRound == true,
                                         isOpen = isBuildMenuOpen,
@@ -191,7 +191,7 @@ fun GameScreen(
                                     )
                                     RobberButton (
                                         enabled = isRobMenuOpen,
-                                        isRobOpen = isRobMenuOpen == false,
+                                        isRobOpen = isRobMenuOpen,
                                         onClick = { isRobOpen -> gameViewModel.setRobMenuOpen(isRobOpen) }
                                     )
 

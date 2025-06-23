@@ -670,6 +670,38 @@ class GameViewModelTest {
             advanceUntilIdle()
             verify { Log.d("GameViewModel", "handleTileClick: Tile ID=${testTile.id}") }
         }
+
+        @Test
+        fun handleTileClick_movesRobber_whenRobMenuIsOpen() = runTest {
+            val testLobbyId = "test-lobby"
+            val originalRobberTile = Tile(id = 1, type = TileType.CLAY, value = 0, coordinates = listOf(0.0, 0.0))
+                .apply { isRobbed = true }
+
+            val newRobberTile = Tile(id = 2, type = TileType.CLAY, value = 0, coordinates = listOf(0.0, 0.0))
+                .apply { isRobbed = false }
+
+            val tiles = listOf(originalRobberTile, newRobberTile)
+
+            val boardModel = GameBoardModel(
+                tiles = tiles,
+                settlementPositions = emptyList(),
+                roads = emptyList(),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 5)
+
+            gameBoardMutableStateFlow.value = boardModel
+            viewModel.setRobMenuOpen(true)
+            advanceUntilIdle()
+
+            viewModel.handleTileClick(newRobberTile, testLobbyId)
+            advanceUntilIdle()
+
+            assertFalse(originalRobberTile.isRobbed, "Original robber tile should no longer be robbed")
+            assertTrue(newRobberTile.isRobbed, "New robber tile should now be robbed")
+            verify(exactly = 1) { mockGameBoardLogic.placeRobber(testLobbyId, newRobberTile.id) }
+            assertFalse(viewModel.isRobMenuOpen.value, "Rob menu should be closed after tile click")
+        }
     }
 
     @Nested

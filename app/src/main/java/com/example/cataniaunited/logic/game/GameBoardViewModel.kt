@@ -122,11 +122,11 @@ class GameViewModel @Inject constructor(
 
     fun handleTileClick(tile: Tile, lobbyId: String) {
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
-        // TODO: Implement logic for tile click (e.g., move robber phase)
         Log.d("GameViewModel", "handleTileClick: _isRobMenuOpen=${_isRobMenuOpen.value}")
+
         if (_isRobMenuOpen.value){
             Log.d("GameViewModel", "handleTileClick: Rob menu is open")
-            //Alte Robber-Tile auf false zurücksetzen
+
             val currentBoard = gameBoardState.value ?: return
             val oldRobberTile = currentBoard.tiles.find { it.isRobbed }
             Log.d("GameViewModel", "handleTileClick: Old robber tile: tile.id=${oldRobberTile?.id}, isRobbed=${oldRobberTile?.isRobbed}")
@@ -134,14 +134,11 @@ class GameViewModel @Inject constructor(
             Log.d("GameViewModel", "handleTileClick: Old robber tile: tile.id=${oldRobberTile?.id}, isRobbed=${oldRobberTile?.isRobbed}")
 
             Log.d("GameViewModel", "handleTileClick: New robber tile: tile.id=${tile.id}, isRobbed=${tile.isRobbed}")
-            //Neue Tile als "robbed" markieren
             tile.isRobbed = true
             Log.d("GameViewModel", "handleTileClick: New robber tile: tile.id=${tile.id}, isRobbed=${tile.isRobbed}")
 
-            //Robber-Placement an Backend senden
             gameBoardLogic.placeRobber(lobbyId, tile.id)
             setRobMenuOpen(false)
-            //Menu und Würfelstatus schließen
         }
     }
 

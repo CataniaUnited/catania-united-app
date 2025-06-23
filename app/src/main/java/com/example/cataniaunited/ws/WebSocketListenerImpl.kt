@@ -87,7 +87,6 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.ROLL_DICE -> handleDiceRolling(messageDTO)
                 MessageType.GAME_WON -> handleGameWon(messageDTO)
-                // TODO: Other Messages
 
                 MessageType.ERROR -> {
                     Log.e(

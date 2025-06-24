@@ -154,6 +154,9 @@ fun GameScreen(
                                 roads = board.roads,
                                 ports = board.ports,
                                 isBuildMode = isBuildMenuOpen,
+                                highlightedSettlementIds = gameViewModel.highlightedSettlementIds.collectAsState().value,
+                                highlightedRoadIds = gameViewModel.highlightedRoadIds.collectAsState().value,
+
                                 playerId = gameViewModel.playerId,
                                 onTileClicked = { tile ->
                                     Log.d("GameScreen", "Tile Clicked: ${tile.id}")

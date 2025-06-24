@@ -99,8 +99,8 @@ fun GameScreen(
                 hostState = snackbarHostState
             ) { data ->
                 val backgroundColor = when (snackbarMessage?.second) {
-                    "success" -> Color(0xFF4CAF50) // green
-                    "error" -> Color(0xFFF44336)   // red
+                    "success" -> Color(0xFF4CAF50)
+                    "error" -> Color(0xFFF44336)
                     else -> MaterialTheme.colorScheme.surfaceVariant
                 }
 
@@ -110,7 +110,6 @@ fun GameScreen(
                 )
             }
         }
-
 
         Box(
             modifier = Modifier

@@ -18,7 +18,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.FontWeight.Companion.Bold
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -32,18 +32,21 @@ import com.example.cataniaunited.ui.theme.catanGold
 import com.example.cataniaunited.ui.theme.catanGoldLight
 
 @Composable
-fun GameWinScreen(
+fun GameEndScreen(
+    currentPlayerInfo: PlayerInfo,
     winner: PlayerInfo,
     leaderboard: List<PlayerInfo>,
     onReturnToMenu: () -> Unit,
 ) {
+
+    val isWinner = currentPlayerInfo.id == winner.id
+
     Box(
         modifier = Modifier
             .widthIn(max = 800.dp)
             .heightIn(max = 370.dp)
             .border(4.5.dp, catanClayDark, RoundedCornerShape(12.dp))
             .background(catanClayLight, RoundedCornerShape(12.dp)),
-
     ) {
         Column(
             modifier = Modifier
@@ -52,13 +55,39 @@ fun GameWinScreen(
                 .padding(start = 24.dp, end = 24.dp, top = 24.dp, bottom = 72.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "${winner.username?.uppercase()} WON!",
-                style = appTypography.titleLarge,
-                fontSize = 35.sp,
-                fontWeight = FontWeight.Bold,
-                color = catanGoldLight
-            )
+            if (isWinner) {
+                Text(
+                    text = "VICTORY!",
+                    style = appTypography.titleLarge,
+                    fontSize = 35.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = catanGoldLight
+                )
+                Text(
+                    text = "Congratulations, ${currentPlayerInfo.username}!",
+                    style = appTypography.bodyLarge,
+                    color = catanGold
+                )
+            } else {
+                Text(
+                    text = "DEFEAT",
+                    style = appTypography.titleLarge,
+                    fontSize = 35.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Gray
+                )
+                val funnyMessage = when {
+                    currentPlayerInfo.victoryPoints >= 8 -> "So close! You were just a step away."
+                    currentPlayerInfo.victoryPoints >= 5 -> "A respectable performance."
+                    else -> "At least you tried, better luck next time?"
+                }
+                Text(
+                    text = funnyMessage,
+                    style = appTypography.bodyLarge,
+                    textAlign = TextAlign.Center,
+                    color = catanClayDark
+                )
+            }
 
             Spacer(modifier = Modifier.height(24.dp))
 
@@ -79,7 +108,6 @@ fun GameWinScreen(
                     2 -> "3rd"
                     else -> ""
                 }
-
                 Row(
                     modifier = Modifier
                         .padding(vertical = 6.dp)
@@ -103,7 +131,6 @@ fun GameWinScreen(
                             color = Color.Black
                         )
                     }
-
                     Box(
                         modifier = Modifier
                             .weight(1f)
@@ -117,14 +144,12 @@ fun GameWinScreen(
                             color = catanGoldLight
                         )
                     }
-
                     Box(
                         modifier = Modifier
                             .width(2.dp)
                             .fillMaxHeight()
                             .background(catanGold)
                     )
-
                     Box(
                         modifier = Modifier
                             .width(60.dp)
@@ -154,25 +179,41 @@ fun GameWinScreen(
         ) {
             Text(
                 text = "Return to menu",
-                style = appTypography.bodyLarge.copy(fontWeight = Bold),
+                style = appTypography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                 color = Color.Black
             )
         }
-
-
-
     }
 }
 
-@Preview(showBackground = true)
+@Preview(name = "Winner's View", showBackground = true)
 @Composable
-fun PreviewGameWinScreen() {
-    GameWinScreen(
-        winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, victoryPoints = 10),
+fun PreviewGameEndScreenWinner() {
+    val winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, victoryPoints = 10)
+    GameEndScreen(
+        currentPlayerInfo = winner,
+        winner = winner,
         leaderboard = listOf(
-            PlayerInfo("2", "Nassir", "#0000FF",false, false, victoryPoints = 10),
-            PlayerInfo("1", "Mia", "#FF0000",false, false, victoryPoints = 9),
-            PlayerInfo("3", "Jean", "#D4AF37",false, false, victoryPoints =  7)
+            winner,
+            PlayerInfo("1", "Mia", "#FF0000", false, false, victoryPoints = 9),
+            PlayerInfo("3", "Jean", "#D4AF37", false, false, victoryPoints = 7)
+        ),
+        onReturnToMenu = {},
+    )
+}
+
+@Preview(name = "Loser's View", showBackground = true)
+@Composable
+fun PreviewGameEndScreenLoser() {
+    val currentPlayer = PlayerInfo("1", "Mia", "#FF0000", false, false, victoryPoints = 9)
+    val winner = PlayerInfo("2", "Nassir", "#0000FF", false, false, victoryPoints = 10)
+    GameEndScreen(
+        currentPlayerInfo = currentPlayer,
+        winner = winner,
+        leaderboard = listOf(
+            winner,
+            currentPlayer,
+            PlayerInfo("3", "Jean", "#D4AF37", false, false, victoryPoints = 7)
         ),
         onReturnToMenu = {},
     )

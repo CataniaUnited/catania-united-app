@@ -79,7 +79,7 @@ fun ReportPlayerListPopup(
                     ) {
                         Checkbox(
                             checked = selectedIndex == idx,
-                            onCheckedChange = null, // Not clickable, handled by Row
+                            onCheckedChange = null,
                             colors = CheckboxDefaults.colors(
                                 checkedColor = catanRessourceBar,
                                 uncheckedColor = Color.White,

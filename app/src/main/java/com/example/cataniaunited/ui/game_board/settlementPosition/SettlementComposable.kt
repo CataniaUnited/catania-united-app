@@ -29,7 +29,8 @@ fun SettlementComposable(
     size: Dp,
     isClickable: Boolean,
     playerId: String,
-    onSettlementClick: (Pair<SettlementPosition, Boolean>) -> Unit = {}
+    onSettlementClick: (Pair<SettlementPosition, Boolean>) -> Unit = {},
+    isHighlighted: Boolean = false
 ) {
 
     val building: Building? = settlementPosition.building
@@ -55,8 +56,11 @@ fun SettlementComposable(
     val isUpgrade: Boolean =
         building != null && building.owner == playerId && building.type == "Settlement"
 
-    val actualBorderColor =
-        if (isClickable || (building != null)) Color.DarkGray else Color.Transparent
+    val borderColor = when {
+        isHighlighted -> Color.Green
+        isClickable || (building != null) -> Color.DarkGray
+        else -> Color.Transparent
+    }
     val borderWidth = 1.dp
 
     Box(
@@ -73,7 +77,11 @@ fun SettlementComposable(
             .size(size)
             .clip(CircleShape)
             .background(buildingColor)
-            .border(borderWidth, actualBorderColor, CircleShape)
+            .border(
+                width = borderWidth,
+                color = borderColor,
+                shape = CircleShape
+            )
     ) {
         if (icon != null) {
             Icon(

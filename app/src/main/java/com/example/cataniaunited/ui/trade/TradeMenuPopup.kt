@@ -20,8 +20,6 @@ fun TradeMenuPopup(
     onUpdateTarget: (TileType, Int) -> Unit,
     onSubmit: () -> Unit
 ) {
-    var tradeStep by remember { mutableIntStateOf(1) }
-
     Dialog(onDismissRequest = onDismiss) {
         Box(
             modifier = Modifier
@@ -31,19 +29,13 @@ fun TradeMenuPopup(
                 .border(2.dp, catanClayDark, RoundedCornerShape(16.dp))
                 .padding(24.dp)
         ) {
-            when (tradeStep) {
-                1 -> TradeSelectionStep(
-                    onTradeWithBank = { tradeStep = 2 },
-                    onTradeWithPlayer = { /* Disabled for now */ }
-                )
-                2 -> BankTradeStep(
-                    tradeOffer = tradeOffer,
-                    onUpdateOffer = onUpdateOffer,
-                    onUpdateTarget = onUpdateTarget,
-                    onSubmit = onSubmit,
-                    onBack = { tradeStep = 1 }
-                )
-            }
+            BankTradeStep(
+                tradeOffer = tradeOffer,
+                onUpdateOffer = onUpdateOffer,
+                onUpdateTarget = onUpdateTarget,
+                onSubmit = onSubmit,
+                onCancel = onDismiss
+            )
         }
     }
 }

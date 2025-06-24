@@ -119,7 +119,6 @@ class GameViewModel @Inject constructor(
 
     fun handleTileClick(tile: Tile, lobbyId: String) {
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
-        // TODO: Implement logic for tile click (e.g., move robber phase)
     }
 
     fun handleSettlementClick(

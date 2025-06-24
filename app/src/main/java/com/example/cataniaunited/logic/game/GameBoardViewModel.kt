@@ -125,19 +125,8 @@ class GameViewModel @Inject constructor(
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
         Log.d("GameViewModel", "handleTileClick: _isRobMenuOpen=${_isRobMenuOpen.value}")
 
-        if (_isRobMenuOpen.value){
+        if (_isRobMenuOpen.value) {
             Log.d("GameViewModel", "handleTileClick: Rob menu is open")
-
-            val currentBoard = gameBoardState.value ?: return
-            val oldRobberTile = currentBoard.tiles.find { it.isRobbed }
-            Log.d("GameViewModel", "handleTileClick: Old robber tile: tile.id=${oldRobberTile?.id}, isRobbed=${oldRobberTile?.isRobbed}")
-            oldRobberTile?.isRobbed = false
-            Log.d("GameViewModel", "handleTileClick: Old robber tile: tile.id=${oldRobberTile?.id}, isRobbed=${oldRobberTile?.isRobbed}")
-
-            Log.d("GameViewModel", "handleTileClick: New robber tile: tile.id=${tile.id}, isRobbed=${tile.isRobbed}")
-            tile.isRobbed = true
-            Log.d("GameViewModel", "handleTileClick: New robber tile: tile.id=${tile.id}, isRobbed=${tile.isRobbed}")
-
             gameBoardLogic.placeRobber(lobbyId, tile.id)
             setRobMenuOpen(false)
         }

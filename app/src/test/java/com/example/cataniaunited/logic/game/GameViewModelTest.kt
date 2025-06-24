@@ -658,7 +658,8 @@ class GameViewModelTest {
 
         @Test
         fun handleSettlementClickCallsGameBoardLogicPlaceSettlement() = runTest {
-            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testPosition =
+                SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
             val testLobbyId = "click-lobby-1"
 
             viewModel.handleSettlementClick(testPosition, false, testLobbyId)
@@ -668,17 +669,29 @@ class GameViewModelTest {
 
         @Test
         fun handleSettlementClickCallsGameBoardLogicUpgradeSettlement() = runTest {
-            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testPosition =
+                SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
             val testLobbyId = "click-lobby-1"
 
             viewModel.handleSettlementClick(testPosition, true, testLobbyId)
             advanceUntilIdle()
-            verify(exactly = 1) { mockGameBoardLogic.upgradeSettlement(testPosition.id, testLobbyId) }
+            verify(exactly = 1) {
+                mockGameBoardLogic.upgradeSettlement(
+                    testPosition.id,
+                    testLobbyId
+                )
+            }
         }
 
         @Test
         fun handleRoadClickCallsGameBoardLogicPlaceRoad() = runTest {
-            val testRoad = Road(id = 10, owner = null, coordinates = listOf(3.0, 4.0), rotationAngle = 0.5, color = null)
+            val testRoad = Road(
+                id = 10,
+                owner = null,
+                coordinates = listOf(3.0, 4.0),
+                rotationAngle = 0.5,
+                color = null
+            )
             val testLobbyId = "click-lobby-2"
 
             viewModel.handleRoadClick(testRoad, testLobbyId)
@@ -688,44 +701,13 @@ class GameViewModelTest {
 
         @Test
         fun handleTileClickLogsMessage() = runTest {
-            val testTile = Tile(id = 1, type = TileType.WOOD, value = 0, coordinates = listOf(0.0, 0.0))
+            val testTile =
+                Tile(id = 1, type = TileType.WOOD, value = 0, coordinates = listOf(0.0, 0.0))
             val testLobbyId = "tile-lobby-1"
 
             viewModel.handleTileClick(testTile, testLobbyId)
             advanceUntilIdle()
             verify { Log.d("GameViewModel", "handleTileClick: Tile ID=${testTile.id}") }
-        }
-
-        @Test
-        fun handleTileClick_movesRobber_whenRobMenuIsOpen() = runTest {
-            val testLobbyId = "test-lobby"
-            val originalRobberTile = Tile(id = 1, type = TileType.CLAY, value = 0, coordinates = listOf(0.0, 0.0))
-                .apply { isRobbed = true }
-
-            val newRobberTile = Tile(id = 2, type = TileType.CLAY, value = 0, coordinates = listOf(0.0, 0.0))
-                .apply { isRobbed = false }
-
-            val tiles = listOf(originalRobberTile, newRobberTile)
-
-            val boardModel = GameBoardModel(
-                tiles = tiles,
-                settlementPositions = emptyList(),
-                roads = emptyList(),
-                ports = emptyList(),
-                ringsOfBoard = 1,
-                sizeOfHex = 5)
-
-            gameBoardMutableStateFlow.value = boardModel
-            viewModel.setRobMenuOpen(true)
-            advanceUntilIdle()
-
-            viewModel.handleTileClick(newRobberTile, testLobbyId)
-            advanceUntilIdle()
-
-            assertFalse(originalRobberTile.isRobbed, "Original robber tile should no longer be robbed")
-            assertTrue(newRobberTile.isRobbed, "New robber tile should now be robbed")
-            verify(exactly = 1) { mockGameBoardLogic.placeRobber(testLobbyId, newRobberTile.id) }
-            assertFalse(viewModel.isRobMenuOpen.value, "Rob menu should be closed after tile click")
         }
     }
 
@@ -875,7 +857,7 @@ class GameViewModelTest {
              assertEquals(true, viewModel.isBuildMenuOpen.value, "Build menu should remain open")
          }
     }
-    
+
     @Nested
     @DisplayName("Trade Menu and Offer State")
     inner class TradeMenuAndOfferStateTests {

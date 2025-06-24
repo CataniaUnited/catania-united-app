@@ -230,7 +230,7 @@ open class MainApplication : Application(),
             }
             else {
                 gameViewModel?.setRobMenuOpen(true)
-                Log.d("MainApplication", "Dice result is 7, rob menu opened")
+                Log.d("MainApplication", "Dice result is 7, rob menu is open")
             }
 
             gameViewModel?.showResult(playerName, dice1, dice2)

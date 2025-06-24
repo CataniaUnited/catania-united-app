@@ -66,7 +66,9 @@ fun CatanBoard(
     playerId: String,
     onTileClicked: (Tile) -> Unit = {},
     onSettlementClicked: (Pair<SettlementPosition, Boolean>) -> Unit = {},
-    onRoadClicked: (Road) -> Unit = {}
+    onRoadClicked: (Road) -> Unit = {},
+    highlightedSettlementIds: Set<Int> = emptySet(),
+    highlightedRoadIds: Set<Int> = emptySet()
 ) {
     // Check if essential data is present
     if (tiles.isEmpty() || settlementPositions.isEmpty()) {
@@ -238,7 +240,8 @@ fun CatanBoard(
                         size = baseParams.initialSettlementSizeDp, // Use initial size
                         isClickable = isBuildMode,
                         playerId = playerId,
-                        onSettlementClick = onSettlementClicked // Pass down the handler
+                        onSettlementClick = onSettlementClicked, // Pass down the handler
+                        isHighlighted = highlightedSettlementIds.contains(position.id)
                     )
                 }
 
@@ -262,7 +265,8 @@ fun CatanBoard(
                         thickness = roadThicknessDp,
                         isClickable = isBuildMode,
                         playerId = playerId,
-                        onRoadClick = onRoadClicked
+                        onRoadClick = onRoadClicked,
+                        isHighlighted = highlightedRoadIds.contains(road.id)
                     )
                 }
 

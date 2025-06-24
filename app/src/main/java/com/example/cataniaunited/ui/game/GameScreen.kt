@@ -113,7 +113,10 @@ fun GameScreen(
             ) {
                 ReportPlayerListPopup(
                     players = players.values.filter { it.id != gameViewModel.playerId },
-                    onReport = { isReportPopupOpen.value = false },
+                    onReport = { playerToReport ->
+                        gameViewModel.onReportPlayer(playerToReport.id, lobbyId)
+                        isReportPopupOpen.value = false
+                    },
                     onDismiss = { isReportPopupOpen.value = false }
                 )
             }

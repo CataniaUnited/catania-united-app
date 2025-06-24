@@ -1,5 +1,6 @@
 package com.example.cataniaunited.ui.game
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
@@ -54,29 +55,30 @@ fun GameScreen(
     val players by gameViewModel.players.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarMessage by gameViewModel.snackbarMessage.collectAsState()
+
     val selectedPlayer = remember { mutableStateOf<PlayerInfo?>(null) }
     val selectedPlayerIndex = remember { mutableStateOf<Int?>(null) }
     val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
+
     val isReportPopupOpen = remember { mutableStateOf(false) }
 
     val density = LocalDensity.current
     val popupOffsetX = with(density) { selectedPlayerOffsetX.floatValue.toDp().roundToPx() }
     val popupOffsetY = with(density) { 3.dp.toPx().roundToInt() }
 
-    val snackbarHostState = remember { SnackbarHostState() }
-    val snackbarMessage by gameViewModel.snackbarMessage.collectAsState()
+    LaunchedEffect(Unit) {
+        application.gameViewModel = gameViewModel
+        if (gameBoardState == null) {
+            gameViewModel.initializeBoardState(application.latestBoardJson)
+        }
+    }
 
     LaunchedEffect(snackbarMessage) {
         snackbarMessage?.let { (text, _) ->
             snackbarHostState.showSnackbar(text)
             gameViewModel.clearSnackbarMessage()
-        }
-    }
-
-    LaunchedEffect(Unit) {
-        application.gameViewModel = gameViewModel
-        if (gameBoardState == null) {
-            gameViewModel.initializeBoardState(application.latestBoardJson)
         }
     }
 
@@ -91,33 +93,13 @@ fun GameScreen(
     Box(Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(bottom = 80.dp),
-            contentAlignment = Alignment.BottomCenter
-        ) {
-            SnackbarHost(
-                hostState = snackbarHostState
-            ) { data ->
-                val backgroundColor = when (snackbarMessage?.second) {
-                    "success" -> Color(0xFF4CAF50)
-                    "error" -> Color(0xFFF44336)
-                    else -> MaterialTheme.colorScheme.surfaceVariant
-                }
-
-                Snackbar(
-                    snackbarData = data,
-                    containerColor = backgroundColor
-                )
-            }
-        }
-
-        Box(
-            modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 20.dp, bottom = 275.dp)
                 .zIndex(12f)
         ) {
-            ReportButton(onClick = { isReportPopupOpen.value = true })
+            ReportButton(
+                onClick = { isReportPopupOpen.value = true }
+            )
         }
 
         if (isReportPopupOpen.value) {
@@ -177,7 +159,7 @@ fun GameScreen(
             },
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
-                    if (!player.isSetupRound && player.canRollDice == true) {
+                    if (player.isSetupRound == false && player.canRollDice == true) {
                         FloatingActionButton(
                             onClick = { gameViewModel.rollDice(lobbyId) },
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -227,12 +209,19 @@ fun GameScreen(
                                 isBuildMode = isBuildMenuOpen,
                                 playerId = gameViewModel.playerId,
                                 onTileClicked = { tile ->
+                                    Log.d("GameScreen", "Tile Clicked: ${tile.id}")
                                     gameViewModel.handleTileClick(tile, lobbyId)
                                 },
                                 onSettlementClicked = { (settlementPos, isUpgrade) ->
-                                    gameViewModel.handleSettlementClick(settlementPos, isUpgrade, lobbyId)
+                                    Log.d("GameScreen", "Settlement Clicked: ${settlementPos.id}")
+                                    gameViewModel.handleSettlementClick(
+                                        settlementPos,
+                                        isUpgrade,
+                                        lobbyId
+                                    )
                                 },
                                 onRoadClicked = { road ->
+                                    Log.d("GameScreen", "Road Clicked: ${road.id}")
                                     gameViewModel.handleRoadClick(road, lobbyId)
                                 }
                             )
@@ -245,12 +234,12 @@ fun GameScreen(
                             ) {
                                 if (player?.isActivePlayer == true) {
                                     BuildButton(
-                                        enabled = !player.canRollDice || player.isSetupRound,
+                                        enabled = player.canRollDice == false || player.isSetupRound == true,
                                         isOpen = isBuildMenuOpen,
                                         onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
                                     )
                                     TradeButton(
-                                        enabled = !player.canRollDice,
+                                        enabled = player.canRollDice == false,
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
                                 }
@@ -337,6 +326,27 @@ fun GameScreen(
                         )
                     }
                 }
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            SnackbarHost(
+                hostState = snackbarHostState
+            ) { data ->
+                val backgroundColor = when (snackbarMessage?.second) {
+                    "success" -> Color(0xFF4CAF50)
+                    "error" -> Color(0xFFF44336)
+                    else -> MaterialTheme.colorScheme.surfaceVariant
+                }
+
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = backgroundColor
+                )
             }
         }
     }

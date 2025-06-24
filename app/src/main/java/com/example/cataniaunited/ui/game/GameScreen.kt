@@ -6,6 +6,8 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DoubleArrow
@@ -58,6 +60,8 @@ fun GameScreen(
     val selectedPlayerIndex = remember { mutableStateOf<Int?>(null) }
     val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
 
+    val isReportPopupOpen = remember { mutableStateOf(false) }
+
     val density = LocalDensity.current
     val popupOffsetX = with(density) { selectedPlayerOffsetX.floatValue.toDp().roundToPx() }
     val popupOffsetY = with(density) { 3.dp.toPx().roundToInt() }
@@ -78,6 +82,47 @@ fun GameScreen(
     }
 
     Box(Modifier.fillMaxSize()) {
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 20.dp, bottom = 275.dp)
+                .zIndex(12f)
+        ) {
+            ReportButton(
+                onClick = { isReportPopupOpen.value = true }
+            )
+        }
+
+        if (isReportPopupOpen.value) {
+            Box(
+                Modifier
+                    .fillMaxSize()
+                    .background(Color.Black.copy(alpha = 0.3f))
+                    .zIndex(15f)
+                    .clickable(
+                        onClick = { isReportPopupOpen.value = false },
+                        indication = null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    )
+            )
+            Box(
+                Modifier
+                    .absoluteOffset(x = 70.dp, y = (-90).dp)
+                    .align(Alignment.BottomStart)
+                    .padding(bottom = 28.dp)
+                    .zIndex(16f)
+            ) {
+                ReportPlayerListPopup(
+                    players = players.values.filter { it.id != gameViewModel.playerId },
+                    onReport = { playerToReport ->
+                        gameViewModel.onReportPlayer(playerToReport.id, lobbyId)
+                        isReportPopupOpen.value = false
+                    },
+                    onDismiss = { isReportPopupOpen.value = false }
+                )
+            }
+        }
+
         Scaffold(
             containerColor = Color(0xff177fde),
             bottomBar = {
@@ -95,10 +140,8 @@ fun GameScreen(
                 LivePlayerVictoryBar(
                     selectedPlayerId = selectedPlayer.value?.id,
                     onPlayerClicked = { playerInfo, index ->
-                        selectedPlayer.value =
-                            if (selectedPlayer.value?.id == playerInfo.id) null else playerInfo
-                        selectedPlayerIndex.value =
-                            if (selectedPlayer.value?.id == playerInfo.id) index else null
+                        selectedPlayer.value = if (selectedPlayer.value?.id == playerInfo.id) null else playerInfo
+                        selectedPlayerIndex.value = if (selectedPlayer.value?.id == playerInfo.id) index else null
                     },
                     onPlayerOffsetChanged = { offsetX ->
                         selectedPlayerOffsetX.floatValue = offsetX
@@ -213,7 +256,6 @@ fun GameScreen(
                                         playerId = selectedPlayer.value!!.id,
                                         players = players,
                                         onCheatAttempt = { tileType ->
-                                            // Only allow cheating if the popup is from the current user
                                             if (selectedPlayer.value?.id == gameViewModel.playerId) {
                                                 gameViewModel.onCheatAttempt(tileType, lobbyId)
                                             }
@@ -257,7 +299,6 @@ fun GameScreen(
                 }
             }
         }
-
 
         AnimatedVisibility(
             visible = gameWonState != null,

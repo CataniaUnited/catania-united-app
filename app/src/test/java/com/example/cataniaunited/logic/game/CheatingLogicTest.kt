@@ -73,4 +73,54 @@ class CheatingLogicTest {
             )
         }
     }
+
+    @Test
+    fun sendReportPlayerSendsCorrectMessageIfWebSocketConnected() {
+        every { mockSessionManager.getPlayerId() } returns "reporter123"
+
+        cheatingLogic.sendReportPlayer(reportedId = "reported456", lobbyId = "lobby42")
+
+        val slot = slot<MessageDTO>()
+        verify { mockWsClient.sendMessage(capture(slot)) }
+
+        val sent = slot.captured
+        assert(sent.type == MessageType.REPORT_PLAYER)
+        assert(sent.player == "reporter123")
+        assert(sent.lobbyId == "lobby42")
+        assert(sent.message?.get("reportedId")?.jsonPrimitive?.content == "reported456")
+    }
+
+    @Test
+    fun sendReportPlayerDoesNotSendIfWebSocketNotConnected() {
+        every { mockWsClient.isConnected() } returns false
+        every { mockSessionManager.getPlayerId() } returns "reporter123"
+
+        cheatingLogic.sendReportPlayer(reportedId = "reported456", lobbyId = "lobby42")
+
+        verify(exactly = 0) { mockWsClient.sendMessage(any()) }
+    }
+
+    @Test
+    fun sendReportPlayerDoesNothingIfPlayerIdThrows() {
+        every { mockSessionManager.getPlayerId() } throws IllegalStateException("No player ID")
+
+        cheatingLogic.sendReportPlayer(reportedId = "reported456", lobbyId = "lobby42")
+
+        verify(exactly = 0) { mockWsClient.sendMessage(any()) }
+
+        verify {
+            Log.e(
+                eq("CheatingLogic"),
+                match { it.contains("Failed to get player ID for report") },
+                any<IllegalStateException>()
+            )
+        }
+    }
+
+
+
+
+
+
+
 }

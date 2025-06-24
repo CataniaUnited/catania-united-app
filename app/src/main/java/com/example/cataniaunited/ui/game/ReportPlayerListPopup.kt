@@ -27,7 +27,7 @@ fun ReportPlayerListPopup(
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var selectedIndex by remember { mutableStateOf(-1) }
+    var selectedIndex by remember { mutableIntStateOf(-1) }
 
     Card(
         colors = CardDefaults.cardColors(containerColor = catanClayLight),
@@ -49,12 +49,12 @@ fun ReportPlayerListPopup(
                 textAlign = androidx.compose.ui.text.style.TextAlign.Center
             )
 
-            Divider(
-                color = catanRessourceBar.copy(alpha = 0.5f),
-                thickness = 2.dp,
+            HorizontalDivider(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 8.dp)
+                    .padding(bottom = 8.dp),
+                thickness = 2.dp,
+                color = catanRessourceBar.copy(alpha = 0.5f)
             )
 
             // scroll for more than 3 players

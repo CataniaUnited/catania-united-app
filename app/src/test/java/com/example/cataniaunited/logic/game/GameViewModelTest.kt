@@ -789,6 +789,78 @@ class GameViewModelTest {
         }
 
         @Test
+        fun testIsValidSettlementLocationReturnsFalseWhenNotOwner() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                resources = mapOf(TileType.WHEAT to 2, TileType.ORE to 3)
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(
+                1,
+                Building("otherPlayer", "Settlement", "#0000FF"),
+                listOf(0.0, 0.0)
+            )
+
+            val result = viewModel.isValidSettlementLocation(
+                settlement,
+                emptyList(),
+                emptyList()
+            )
+
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsValidSettlementLocationReturnsFalseWhenNotSettlementType() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                resources = mapOf(TileType.WHEAT to 2, TileType.ORE to 3)
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(
+                1,
+                Building(testPlayerId, "City", "#FF0000"),
+                listOf(0.0, 0.0)
+            )
+
+            val result = viewModel.isValidSettlementLocation(
+                settlement,
+                emptyList(),
+                emptyList()
+            )
+
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsValidSettlementLocationReturnsFalseWhenCannotBuildCity() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                resources = mapOf(TileType.WHEAT to 1, TileType.ORE to 2)
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(
+                1,
+                Building(testPlayerId, "Settlement", "#FF0000"),
+                listOf(0.0, 0.0)
+            )
+
+            val result = viewModel.isValidSettlementLocation(
+                settlement,
+                emptyList(),
+                emptyList()
+            )
+
+            assertFalse(result)
+        }
+
+        @Test
         fun testIsValidRoadLocationReturnsTrueWhenConnectedToOwnedSettlement() = runTest {
             val road = Road(1, null, listOf(0.0, 5.0), 0.0, null)
             val settlement = SettlementPosition(
@@ -808,6 +880,26 @@ class GameViewModelTest {
             viewModel.updatePlayerResources(mapOf(TileType.WOOD to 1, TileType.CLAY to 1))
 
             val result = viewModel.isValidRoadLocation(road, emptyList(), listOf(road))
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsValidRoadLocationReturnsFalseWhenCannotBuildRoad() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                resources = emptyMap()
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+
+            val result = viewModel.isValidRoadLocation(
+                road,
+                emptyList(),
+                emptyList()
+            )
+
             assertFalse(result)
         }
     }
@@ -883,6 +975,47 @@ class GameViewModelTest {
 
             assertFalse(viewModel.canBuildRoad())
         }
+
+        @Test
+        fun testCanBuildSettlementReturnsFalseWhenMissingResources() = runTest {
+            val testCases = listOf(
+                mapOf(TileType.CLAY to 1, TileType.WHEAT to 1, TileType.SHEEP to 1),
+                mapOf(TileType.WOOD to 1, TileType.WHEAT to 1, TileType.SHEEP to 1),
+                mapOf(TileType.WOOD to 1, TileType.CLAY to 1, TileType.SHEEP to 1),
+                mapOf(TileType.WOOD to 1, TileType.CLAY to 1, TileType.WHEAT to 1)
+            )
+
+            testCases.forEach { resources ->
+                viewModel.updatePlayerResources(resources)
+                assertFalse(viewModel.canBuildSettlement())
+            }
+        }
+
+        @Test
+        fun testCanBuildCityReturnsFalseWhenMissingResources() = runTest {
+            val testCases = listOf(
+                mapOf(TileType.WHEAT to 1, TileType.ORE to 3),
+                mapOf(TileType.WHEAT to 2, TileType.ORE to 2)
+            )
+
+            testCases.forEach { resources ->
+                viewModel.updatePlayerResources(resources)
+                assertFalse(viewModel.canBuildCity())
+            }
+        }
+
+        @Test
+        fun testCanBuildRoadReturnsFalseWhenMissingResources() = runTest {
+            val testCases = listOf(
+                mapOf(TileType.WOOD to 1),
+                mapOf(TileType.CLAY to 1)
+            )
+
+            testCases.forEach { resources ->
+                viewModel.updatePlayerResources(resources)
+                assertFalse(viewModel.canBuildRoad())
+            }
+        }
     }
 
     @Nested
@@ -907,11 +1040,31 @@ class GameViewModelTest {
         }
 
         @Test
+        fun testIsConnectedReturnsFalseForInvalidPoints() = runTest {
+            val point1 = listOf(0.0)
+            val point2 = listOf(5.0, 5.0)
+
+            val result = viewModel.isConnected(point1, point2)
+
+            assertFalse(result)
+        }
+
+        @Test
         fun testIsAdjacentReturnsTrueForClosePoints() = runTest {
             val point1 = listOf(0.0, 0.0)
             val point2 = listOf(10.0, 10.0)
 
             assertTrue(viewModel.isAdjacent(point1, point2))
+        }
+
+        @Test
+        fun testIsAdjacentReturnsFalseForInvalidPoints() = runTest {
+            val point1 = listOf(0.0) 
+            val point2 = listOf(10.0, 10.0)
+
+            val result = viewModel.isAdjacent(point1, point2)
+
+            assertFalse(result)
         }
 
         @Test

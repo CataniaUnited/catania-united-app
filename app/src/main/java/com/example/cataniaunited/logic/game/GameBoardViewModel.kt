@@ -67,7 +67,6 @@ class GameViewModel @Inject constructor(
     private val _highlightedRoadIds = MutableStateFlow<Set<Int>>(emptySet())
     val highlightedRoadIds: StateFlow<Set<Int>> = _highlightedRoadIds
 
-
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
 
@@ -137,7 +136,6 @@ class GameViewModel @Inject constructor(
 
     fun handleTileClick(tile: Tile, lobbyId: String) {
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
-        // TODO: Implement logic for tile click (e.g., move robber phase)
     }
 
     fun handleSettlementClick(
@@ -303,6 +301,10 @@ class GameViewModel @Inject constructor(
 
     fun onCheatAttempt(tileType: TileType, lobbyId: String) {
         cheatingLogic.sendCheatAttempt(tileType, lobbyId)
+    }
+
+    fun onReportPlayer(reportedId: String, lobbyId: String) {
+        cheatingLogic.sendReportPlayer(reportedId, lobbyId)
     }
 
     fun clearHighlights() {

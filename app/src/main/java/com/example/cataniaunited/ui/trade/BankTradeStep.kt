@@ -21,7 +21,7 @@ fun BankTradeStep(
     onUpdateOffer: (TileType, Int) -> Unit,
     onUpdateTarget: (TileType, Int) -> Unit,
     onSubmit: () -> Unit,
-    onBack: () -> Unit
+    onCancel: () -> Unit
 ) {
     val (offered, target) = tradeOffer
     val displayOrder = listOf(TileType.WOOD, TileType.CLAY, TileType.SHEEP, TileType.WHEAT, TileType.ORE)
@@ -91,7 +91,7 @@ fun BankTradeStep(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButton(onClick = onBack) { Text("Back", color = Color.White) }
+            TextButton(onClick = onCancel) { Text("Back", color = Color.White) }
             Button(onClick = onSubmit, enabled = isTradeValid) {
                 Text("Confirm Trade")
             }

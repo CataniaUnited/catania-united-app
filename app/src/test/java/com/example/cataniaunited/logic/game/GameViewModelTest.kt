@@ -573,6 +573,28 @@ class GameViewModelTest {
         verify { mockCheatingLogic.sendCheatAttempt(tileType, lobbyId) }
     }
 
+    @Test
+    fun onReportPlayerDelegatesToCheatingLogic() = runTest {
+        val mockCheatingLogic = mockk<CheatingLogic>(relaxed = true)
+        val viewModel = GameViewModel(
+            mockGameBoardLogic,
+            mockLobbyLogic,
+            mockGameDataHandler,
+            mockPlayerSessionManager,
+            mockTradeLogic,
+            mockCheatingLogic,
+        )
+
+        val reportedId = "reported456"
+        val lobbyId = "lobbyXYZ"
+
+        viewModel.onReportPlayer(reportedId, lobbyId)
+
+        verify(exactly = 1) {
+            mockCheatingLogic.sendReportPlayer(reportedId, lobbyId)
+        }
+    }
+
     @Nested
     @DisplayName("Highlighting Logic")
 
@@ -879,6 +901,7 @@ class GameViewModelTest {
         fun testIsConnectedReturnsFalseForDistantPoints() = runTest {
             val point1 = listOf(0.0, 0.0)
             val point2 = listOf(100.0, 100.0)
+
 
             assertFalse(viewModel.isConnected(point1, point2))
         }

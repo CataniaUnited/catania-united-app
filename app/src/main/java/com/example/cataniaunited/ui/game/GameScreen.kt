@@ -1,6 +1,5 @@
 package com.example.cataniaunited.ui.game
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.scaleIn
@@ -90,17 +89,29 @@ fun GameScreen(
     }
 
     Box(Modifier.fillMaxSize()) {
-        // Snackbar display
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(bottom = 80.dp),
             contentAlignment = Alignment.BottomCenter
         ) {
-            SnackbarHost(hostState = snackbarHostState)
+            SnackbarHost(
+                hostState = snackbarHostState
+            ) { data ->
+                val backgroundColor = when (snackbarMessage?.second) {
+                    "success" -> Color(0xFF4CAF50) // green
+                    "error" -> Color(0xFFF44336)   // red
+                    else -> MaterialTheme.colorScheme.surfaceVariant
+                }
+
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = backgroundColor
+                )
+            }
         }
 
-        // Report button and popup
+
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)

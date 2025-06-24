@@ -96,6 +96,19 @@ open class WebSocketListenerImpl @Inject constructor(
                     onError.onError(GameException(messageDTO.message?.getValue("error").toString()))
                 }
 
+                MessageType.ALERT -> {
+                    val alertMessage = messageDTO.message?.get("message")?.jsonPrimitive?.contentOrNull
+                    val severity = messageDTO.message?.get("severity")?.jsonPrimitive?.contentOrNull
+
+                    if (alertMessage != null) {
+                        MainApplication.getInstance().applicationScope.launch {
+                            gameDataHandler.showSnackbar(alertMessage, severity ?: "info")
+                        }
+                    }
+                }
+
+
+
                 else -> Log.w(
                     "WebSocketListener",
                     "Received unhandled message type: ${messageDTO.type}"

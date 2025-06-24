@@ -24,6 +24,9 @@ class GameDataHandler @Inject constructor() {
     private val _diceState = MutableStateFlow<GameViewModel.DiceState?>(null)
     val diceState: StateFlow<GameViewModel.DiceState?> = _diceState.asStateFlow()
 
+    private val _snackbarMessage = MutableStateFlow<Pair<String, String>?>(null)
+    val snackbarMessage: StateFlow<Pair<String, String>?> = _snackbarMessage.asStateFlow()
+
 
     private val jsonParser = Json { ignoreUnknownKeys = true }
 
@@ -69,5 +72,9 @@ class GameDataHandler @Inject constructor() {
 
     fun updateDiceState(state: GameViewModel.DiceState?) {
         _diceState.value = state
+    }
+
+    suspend fun showSnackbar(message: String, severity: String = "info") {
+        _snackbarMessage.emit(Pair(message, severity))
     }
 }

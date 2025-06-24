@@ -77,4 +77,9 @@ class GameDataHandler @Inject constructor() {
     suspend fun showSnackbar(message: String, severity: String = "info") {
         _snackbarMessage.emit(Pair(message, severity))
     }
+
+    suspend fun clearSnackbar() {
+        _snackbarMessage.emit(null)
+    }
+
 }

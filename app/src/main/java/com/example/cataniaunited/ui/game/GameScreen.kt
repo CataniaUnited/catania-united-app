@@ -58,12 +58,21 @@ fun GameScreen(
     val selectedPlayer = remember { mutableStateOf<PlayerInfo?>(null) }
     val selectedPlayerIndex = remember { mutableStateOf<Int?>(null) }
     val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
-
     val isReportPopupOpen = remember { mutableStateOf(false) }
 
     val density = LocalDensity.current
     val popupOffsetX = with(density) { selectedPlayerOffsetX.floatValue.toDp().roundToPx() }
     val popupOffsetY = with(density) { 3.dp.toPx().roundToInt() }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarMessage by gameViewModel.snackbarMessage.collectAsState()
+
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let { (text, _) ->
+            snackbarHostState.showSnackbar(text)
+            gameViewModel.clearSnackbarMessage()
+        }
+    }
 
     LaunchedEffect(Unit) {
         application.gameViewModel = gameViewModel
@@ -81,15 +90,24 @@ fun GameScreen(
     }
 
     Box(Modifier.fillMaxSize()) {
+        // Snackbar display
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+
+        // Report button and popup
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .padding(start = 20.dp, bottom = 275.dp)
                 .zIndex(12f)
         ) {
-            ReportButton(
-                onClick = { isReportPopupOpen.value = true }
-            )
+            ReportButton(onClick = { isReportPopupOpen.value = true })
         }
 
         if (isReportPopupOpen.value) {
@@ -149,7 +167,7 @@ fun GameScreen(
             },
             floatingActionButton = {
                 if (player?.isActivePlayer == true) {
-                    if (player.isSetupRound == false && player.canRollDice == true) {
+                    if (!player.isSetupRound && player.canRollDice == true) {
                         FloatingActionButton(
                             onClick = { gameViewModel.rollDice(lobbyId) },
                             containerColor = MaterialTheme.colorScheme.primary,
@@ -199,19 +217,12 @@ fun GameScreen(
                                 isBuildMode = isBuildMenuOpen,
                                 playerId = gameViewModel.playerId,
                                 onTileClicked = { tile ->
-                                    Log.d("GameScreen", "Tile Clicked: ${tile.id}")
                                     gameViewModel.handleTileClick(tile, lobbyId)
                                 },
                                 onSettlementClicked = { (settlementPos, isUpgrade) ->
-                                    Log.d("GameScreen", "Settlement Clicked: ${settlementPos.id}")
-                                    gameViewModel.handleSettlementClick(
-                                        settlementPos,
-                                        isUpgrade,
-                                        lobbyId
-                                    )
+                                    gameViewModel.handleSettlementClick(settlementPos, isUpgrade, lobbyId)
                                 },
                                 onRoadClicked = { road ->
-                                    Log.d("GameScreen", "Road Clicked: ${road.id}")
                                     gameViewModel.handleRoadClick(road, lobbyId)
                                 }
                             )
@@ -224,12 +235,12 @@ fun GameScreen(
                             ) {
                                 if (player?.isActivePlayer == true) {
                                     BuildButton(
-                                        enabled = player.canRollDice == false || player.isSetupRound == true,
+                                        enabled = !player.canRollDice || player.isSetupRound,
                                         isOpen = isBuildMenuOpen,
                                         onClick = { isOpen -> gameViewModel.setBuildMenuOpen(isOpen) }
                                     )
                                     TradeButton(
-                                        enabled = player.canRollDice == false,
+                                        enabled = !player.canRollDice,
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
                                 }

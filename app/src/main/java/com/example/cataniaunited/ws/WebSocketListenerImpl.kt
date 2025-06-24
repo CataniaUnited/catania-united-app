@@ -108,7 +108,6 @@ open class WebSocketListenerImpl @Inject constructor(
                 }
 
 
-
                 else -> Log.w(
                     "WebSocketListener",
                     "Received unhandled message type: ${messageDTO.type}"

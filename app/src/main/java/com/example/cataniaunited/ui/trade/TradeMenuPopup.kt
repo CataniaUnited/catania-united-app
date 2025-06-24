@@ -34,7 +34,7 @@ fun TradeMenuPopup(
                 onUpdateOffer = onUpdateOffer,
                 onUpdateTarget = onUpdateTarget,
                 onSubmit = onSubmit,
-                onCancel = {}
+                onCancel = onDismiss
             )
         }
     }

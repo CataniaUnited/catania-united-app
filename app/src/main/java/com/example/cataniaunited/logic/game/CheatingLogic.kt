@@ -35,4 +35,28 @@ class CheatingLogic @Inject constructor(
             Log.e("CheatingLogic", "WS not connected for sendCheatAttempt")
         }
     }
+
+    fun sendReportPlayer(reportedId: String, lobbyId: String) {
+        val reporterId = try {
+            playerSessionManager.getPlayerId()
+        } catch (e: IllegalStateException) {
+            Log.e("CheatingLogic", "Failed to get player ID for report", e)
+            return
+        }
+
+        val wsClient = MainApplication.getInstance().getWebSocketClient()
+        if (wsClient.isConnected()) {
+            val message = MessageDTO(
+                type = MessageType.REPORT_PLAYER,
+                player = reporterId,
+                lobbyId = lobbyId,
+                message = buildJsonObject {
+                    put("reportedId", reportedId)
+                }
+            )
+            wsClient.sendMessage(message)
+        } else {
+            Log.e("CheatingLogic", "WebSocket not connected (sendReportPlayer)")
+        }
+    }
 }

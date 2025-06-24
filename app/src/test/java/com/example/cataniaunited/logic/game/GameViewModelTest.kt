@@ -553,7 +553,27 @@ class GameViewModelTest {
         verify { mockCheatingLogic.sendCheatAttempt(tileType, lobbyId) }
     }
 
+    @Test
+    fun onReportPlayerDelegatesToCheatingLogic() = runTest {
+        val mockCheatingLogic = mockk<CheatingLogic>(relaxed = true)
+        val viewModel = GameViewModel(
+            mockGameBoardLogic,
+            mockLobbyLogic,
+            mockGameDataHandler,
+            mockPlayerSessionManager,
+            mockTradeLogic,
+            mockCheatingLogic,
+        )
 
+        val reportedId = "reported456"
+        val lobbyId = "lobbyXYZ"
+
+        viewModel.onReportPlayer(reportedId, lobbyId)
+
+        verify(exactly = 1) {
+            mockCheatingLogic.sendReportPlayer(reportedId, lobbyId)
+        }
+    }
 
 
     @Nested

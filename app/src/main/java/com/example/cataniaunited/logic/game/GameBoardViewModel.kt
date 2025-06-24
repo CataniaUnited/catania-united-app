@@ -284,4 +284,9 @@ class GameViewModel @Inject constructor(
     fun onCheatAttempt(tileType: TileType, lobbyId: String) {
         cheatingLogic.sendCheatAttempt(tileType, lobbyId)
     }
+
+    fun onReportPlayer(reportedId: String, lobbyId: String) {
+        cheatingLogic.sendReportPlayer(reportedId, lobbyId)
+    }
+
 }

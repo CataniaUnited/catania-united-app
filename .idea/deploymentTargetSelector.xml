@@ -29,6 +29,15 @@
           </targets>
         </DialogSelection>
       </SelectionState>
+      <SelectionState runConfigName="doesNotProcessUpdateWhenLobbyIdIsMissing()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="onMessage_handlesAlert_withMessageAndSeverity()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
+      <SelectionState runConfigName="onMessage_handlesAlert_withMessageOnly_defaultsSeverityToInfo()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
     </selectionStates>
   </component>
 </project>

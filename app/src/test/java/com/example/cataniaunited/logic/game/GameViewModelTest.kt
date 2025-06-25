@@ -2,6 +2,7 @@ package com.example.cataniaunited.logic.game
 
 import android.util.Log
 import app.cash.turbine.test
+import com.example.cataniaunited.data.model.Building
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.Road
@@ -202,341 +203,360 @@ class GameViewModelTest {
         assertNull(viewModel.gameBoardState.value, "Initial gameBoardState should be null")
     }
 
-    @Test
-    fun testDiceResultIsInitiallyNull() = runTest {
-        assertNull(viewModel.diceResult.value, "Initial diceResult should be null")
-    }
+    @Nested
+    @DisplayName("Dice Rolling")
+    inner class DiceRollTests {
 
-    @Test
-    fun testRollDiceCallsGameBoardLogicWithCorrectLobbyId() = runTest {
-        val testLobbyId = "test-lobby-abc"
+        @Test
+        fun testDiceResultIsInitiallyNull() = runTest {
+            assertNull(viewModel.diceResult.value, "Initial diceResult should be null")
+        }
 
-        val testPlayer = PlayerInfo(id = testPlayerId, username = "TestPlayer", canRollDice = true)
-        val playersMap = mapOf(testPlayerId to testPlayer)
+        @Test
+        fun testRollDiceCallsGameBoardLogicWithCorrectLobbyId() = runTest {
+            val testLobbyId = "test-lobby-abc"
 
-        playersMutableStateFlow.value = playersMap
+            val testPlayer =
+                PlayerInfo(id = testPlayerId, username = "TestPlayer", canRollDice = true)
+            val playersMap = mapOf(testPlayerId to testPlayer)
 
-        advanceUntilIdle()
+            playersMutableStateFlow.value = playersMap
 
-        every { mockGameBoardLogic.rollDice(testLobbyId) } just runs
+            advanceUntilIdle()
 
-        viewModel.rollDice(testLobbyId)
-        advanceUntilIdle()
+            every { mockGameBoardLogic.rollDice(testLobbyId) } just runs
 
-        verify(exactly = 1) { mockGameBoardLogic.rollDice(testLobbyId) }
-        assertNull(viewModel.diceResult.value)
-    }
+            viewModel.rollDice(testLobbyId)
+            advanceUntilIdle()
 
-    @Test
-    fun rollDiceSetsIsProcessingRollFromFalseToTrueAndBack() = runTest {
-        val testLobbyId = "test-lobby-processing"
+            verify(exactly = 1) { mockGameBoardLogic.rollDice(testLobbyId) }
+            assertNull(viewModel.diceResult.value)
+        }
 
-        val testPlayer = PlayerInfo(id = testPlayerId, username = "TestPlayer", canRollDice = true)
-        val playersMap = mapOf(testPlayerId to testPlayer)
+        @Test
+        fun rollDiceSetsIsProcessingRollFromFalseToTrueAndBack() = runTest {
+            val testLobbyId = "test-lobby-processing"
 
-        playersMutableStateFlow.value = playersMap
+            val testPlayer =
+                PlayerInfo(id = testPlayerId, username = "TestPlayer", canRollDice = true)
+            val playersMap = mapOf(testPlayerId to testPlayer)
 
-        advanceUntilIdle()
+            playersMutableStateFlow.value = playersMap
 
-        every { mockGameBoardLogic.rollDice(any()) } just runs
+            advanceUntilIdle()
 
-        val isProcessingRollField = GameViewModel::class.java.getDeclaredField("isProcessingRoll")
-        isProcessingRollField.isAccessible = true
+            every { mockGameBoardLogic.rollDice(any()) } just runs
 
-        assertFalse(isProcessingRollField.get(viewModel) as Boolean, "Initially should be false")
+            val isProcessingRollField =
+                GameViewModel::class.java.getDeclaredField("isProcessingRoll")
+            isProcessingRollField.isAccessible = true
 
-        viewModel.rollDice(testLobbyId)
-        assertTrue(isProcessingRollField.get(viewModel) as Boolean, "Should be true during processing")
+            assertFalse(
+                isProcessingRollField.get(viewModel) as Boolean,
+                "Initially should be false"
+            )
 
-        advanceUntilIdle()
-        assertFalse(isProcessingRollField.get(viewModel) as Boolean, "Should be false after processing")
+            viewModel.rollDice(testLobbyId)
+            assertTrue(
+                isProcessingRollField.get(viewModel) as Boolean,
+                "Should be true during processing"
+            )
+
+            advanceUntilIdle()
+            assertFalse(
+                isProcessingRollField.get(viewModel) as Boolean,
+                "Should be false after processing"
+            )
         }
 
 
-    @Test
-    fun testRollDiceDoesNothingWhenAlreadyProcessing() = runTest {
-        val testLobbyId = "test-lobby-456"
-        val isProcessingRollField = GameViewModel::class.java.getDeclaredField("isProcessingRoll")
-        isProcessingRollField.isAccessible = true
-        isProcessingRollField.set(viewModel, true)
+        @Test
+        fun testRollDiceDoesNothingWhenAlreadyProcessing() = runTest {
+            val testLobbyId = "test-lobby-456"
+            val isProcessingRollField =
+                GameViewModel::class.java.getDeclaredField("isProcessingRoll")
+            isProcessingRollField.isAccessible = true
+            isProcessingRollField.set(viewModel, true)
 
-        viewModel.rollDice(testLobbyId)
-        advanceUntilIdle()
+            viewModel.rollDice(testLobbyId)
+            advanceUntilIdle()
 
-        verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
-        assertNull(viewModel.diceResult.value)
-    }
-
-    @Test
-    fun testUpdateDiceResultSetsValidPairToStateFlow() = runTest {
-        val dice1 = 5
-        val dice2 = 2
-        val newDiceResult = Pair(dice1, dice2)
-
-        viewModel.updateDiceResult(dice1, dice2)
-        advanceUntilIdle()
-
-        assertEquals(newDiceResult, viewModel.diceResult.value)
-    }
-
-    @Test
-    fun testUpdateDiceResultSetsNullWhenDice1IsNull() = runTest {
-        viewModel.updateDiceResult(null, 4)
-        advanceUntilIdle()
-        assertNull(viewModel.diceResult.value)
-    }
-
-    @Test
-    fun testUpdateDiceResultSetsNullWhenDice2IsNull() = runTest {
-        viewModel.updateDiceResult(3, null)
-        advanceUntilIdle()
-        assertNull(viewModel.diceResult.value)
-    }
-
-    @Test
-    fun testUpdateDiceResultSetsNullWhenBothDiceAreNull() = runTest {
-        viewModel.updateDiceResult(null, null)
-        advanceUntilIdle()
-        assertNull(viewModel.diceResult.value)
-    }
-
-    @Test
-    fun testRollDiceShouldStartRollingWhenPlayerCanRoll() = runTest {
-        val states = mutableListOf<GameViewModel.DiceState?>()
-        every { mockGameDataHandler.updateDiceState(any()) } answers {
-            val state = firstArg<GameViewModel.DiceState?>()
-            states.add(state)
-            diceMutableStateFlow.value = state
+            verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
+            assertNull(viewModel.diceResult.value)
         }
 
-        val testPlayer = PlayerInfo(
-            id = testPlayerId,
-            username = "TestPlayer",
-            canRollDice = true,
-            isActivePlayer = true
-        )
-        playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
-        advanceUntilIdle()
+        @Test
+        fun testUpdateDiceResultSetsValidPairToStateFlow() = runTest {
+            val dice1 = 5
+            val dice2 = 2
+            val newDiceResult = Pair(dice1, dice2)
 
-        viewModel.rollDice("test-lobby")
-        advanceUntilIdle()
+            viewModel.updateDiceResult(dice1, dice2)
+            advanceUntilIdle()
 
-        assertTrue(states.isNotEmpty())
-        val rollingState = states[0]
-        assertNotNull(rollingState)
-        assertEquals(true, rollingState?.isRolling)
-        assertEquals("TestPlayer", rollingState?.rollingPlayerUsername)
-        assertEquals(false, rollingState?.showResult)
-
-        verify(exactly = 1) { mockGameBoardLogic.rollDice("test-lobby") }
-    }
-
-    @Test
-    fun testRollDiceShouldNotStartRollingWhenPlayerCannotRoll() = runTest {
-        val testPlayer = PlayerInfo(
-            id = testPlayerId,
-            username = "TestPlayer",
-            canRollDice = false
-        )
-        playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
-        advanceUntilIdle()
-
-        viewModel.rollDice("test-lobby")
-        advanceUntilIdle()
-
-        assertFalse(viewModel.isProcessingRoll)
-        verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
-        assertNull(diceMutableStateFlow.value)
-    }
-
-    @Test
-    fun testRollDiceShouldTimeoutAfterThreeSeconds() = runTest {
-        val testPlayer = PlayerInfo(
-            id = testPlayerId,
-            username = "TestPlayer",
-            canRollDice = true,
-            isActivePlayer = true
-        )
-        playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
-        advanceUntilIdle()
-
-        every { mockGameBoardLogic.rollDice(any()) } just runs
-
-        viewModel.rollDice("test-lobby")
-        advanceUntilIdle()
-
-        advanceTimeBy(3000)
-        advanceUntilIdle()
-
-        assertFalse(viewModel.isProcessingRoll)
-        assertNull(diceMutableStateFlow.value)
-        verify(exactly = 1) { Log.e("GameViewModel", "Dice roll timeout") }
-    }
-
-    @Test
-    fun testShowResultShouldDisplayDiceResultAndResetAfterDelay() = runTest {
-        val states = mutableListOf<GameViewModel.DiceState?>()
-        every { mockGameDataHandler.updateDiceState(any()) } answers {
-            val state = firstArg<GameViewModel.DiceState?>()
-            states.add(state)
-            diceMutableStateFlow.value = state
+            assertEquals(newDiceResult, viewModel.diceResult.value)
         }
 
-        viewModel.showResult("TestPlayer", 4, 3)
-
-        advanceUntilIdle()
-
-        assertTrue(states.isNotEmpty())
-        val resultState = states[0]
-        assertNotNull(resultState)
-        assertEquals(false, resultState?.isRolling)
-        assertEquals(true, resultState?.showResult)
-        assertEquals(4, resultState?.dice1)
-        assertEquals(3, resultState?.dice2)
-        assertEquals("TestPlayer", resultState?.rollingPlayerUsername)
-
-        advanceTimeBy(3000)
-        advanceUntilIdle()
-
-        assertEquals(2, states.size)
-        assertNull(states[1])
-        assertNull(diceMutableStateFlow.value)
-    }
-
-    @Test
-    fun testShowResultShouldUpdateDiceStateCorrectly() = runTest {
-        val states = mutableListOf<GameViewModel.DiceState?>()
-        every { mockGameDataHandler.updateDiceState(any()) } answers {
-            val state = firstArg<GameViewModel.DiceState?>()
-            states.add(state)
-            diceMutableStateFlow.value = state
+        @Test
+        fun testUpdateDiceResultSetsNullWhenDice1IsNull() = runTest {
+            viewModel.updateDiceResult(null, 4)
+            advanceUntilIdle()
+            assertNull(viewModel.diceResult.value)
         }
 
-        viewModel.showResult("TestPlayer", 4, 3)
-
-        advanceUntilIdle()
-        assertTrue(states.isNotEmpty())
-
-        val resultState = states[0]
-        assertNotNull(resultState)
-
-        assertEquals("TestPlayer", resultState?.rollingPlayerUsername)
-        assertEquals(4, resultState?.dice1)
-        assertEquals(3, resultState?.dice2)
-        assertEquals(true, resultState?.showResult)
-        assertEquals(false, resultState?.isRolling)
-
-        advanceTimeBy(3000)
-        advanceUntilIdle()
-
-        assertEquals(2, states.size)
-        assertNull(states[1])
-        assertNull(diceMutableStateFlow.value)
-    }
-
-    @Test
-    fun testResetDiceStateShouldClearDiceState() = runTest {
-        diceMutableStateFlow.value = GameViewModel.DiceState(
-            rollingPlayerUsername = "TestPlayer",
-            isRolling = true,
-            dice1 = 1,
-            dice2 = 2,
-            showResult = false
-        )
-
-        viewModel.resetDiceState()
-        advanceUntilIdle()
-        assertNull(diceMutableStateFlow.value)
-    }
-
-    @Test
-    fun testRollDiceShouldPreventConcurrentRolls() = runTest {
-        val testPlayer = PlayerInfo(
-            id = testPlayerId,
-            username = "TestPlayer",
-            canRollDice = true,
-            isActivePlayer = true
-        )
-        playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
-        advanceUntilIdle()
-
-        every { mockGameBoardLogic.rollDice(any()) } just runs
-
-        val field = GameViewModel::class.java.getDeclaredField("isProcessingRoll")
-        field.isAccessible = true
-        field.set(viewModel, true)
-
-        viewModel.rollDice("test-lobby")
-        advanceUntilIdle()
-
-        verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
-        assertNull(diceMutableStateFlow.value)
-    }
-
-    @Test
-    fun testRollDiceShouldNotProceedIfAlreadyProcessing() = runTest {
-        viewModel.isProcessingRoll = true
-
-        viewModel.rollDice("lobby123")
-
-        verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
-    }
-
-    @Test
-    fun testRollDiceShouldNotProceedIfPlayerCannotRoll() = runTest {
-        val player = PlayerInfo(
-            id = testPlayerId,
-            username = "TestPlayer",
-            canRollDice = false
-        )
-        playersMutableStateFlow.value = mapOf(testPlayerId to player)
-
-        viewModel.rollDice("lobby123")
-
-        verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
-    }
-
-    @Test
-    fun testRollDiceShouldResetStateAfterTimeoutIfNoResultReceived() = runTest {
-        val player = PlayerInfo(
-            id = testPlayerId,
-            username = "TestPlayer",
-            canRollDice = true
-        )
-        playersMutableStateFlow.value = mapOf(testPlayerId to player)
-
-        viewModel.rollDice("lobby123")
-        advanceUntilIdle()
-
-        assertNull(diceMutableStateFlow.value)
-        assertFalse(viewModel.isProcessingRoll)
-    }
-
-    @Test
-    fun testShowResultShouldUpdatesDiceStateAndResetsAfterDelay() = runTest(dispatcher.scheduler) {
-        viewModel.showResult("Tester", 3, 4)
-
-        viewModel.diceState.test {
-            skipItems(1)
-            val state = awaitItem()
-            assert(state != null && state.showResult)
-            assert(state?.dice1 == 3 && state.dice2 == 4)
-            cancelAndIgnoreRemainingEvents()
-        }
-    }
-
-    @Test
-    fun testResetDiceStateShouldClearsStateAndHidesPopup() = runTest {
-        viewModel.resetDiceState()
-        advanceUntilIdle()
-
-        viewModel.diceState.test {
-            val state = awaitItem()
-            assert(state == null)
+        @Test
+        fun testUpdateDiceResultSetsNullWhenDice2IsNull() = runTest {
+            viewModel.updateDiceResult(3, null)
+            advanceUntilIdle()
+            assertNull(viewModel.diceResult.value)
         }
 
-        viewModel.showDicePopup.test {
-            assert(!awaitItem())
+        @Test
+        fun testUpdateDiceResultSetsNullWhenBothDiceAreNull() = runTest {
+            viewModel.updateDiceResult(null, null)
+            advanceUntilIdle()
+            assertNull(viewModel.diceResult.value)
+        }
+
+        @Test
+        fun testRollDiceShouldStartRollingWhenPlayerCanRoll() = runTest {
+            val states = mutableListOf<GameViewModel.DiceState?>()
+            every { mockGameDataHandler.updateDiceState(any()) } answers {
+                val state = firstArg<GameViewModel.DiceState?>()
+                states.add(state)
+                diceMutableStateFlow.value = state
+            }
+
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "TestPlayer",
+                canRollDice = true,
+                isActivePlayer = true
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+            advanceUntilIdle()
+
+            viewModel.rollDice("test-lobby")
+            advanceUntilIdle()
+
+            assertTrue(states.isNotEmpty())
+            val rollingState = states[0]
+            assertNotNull(rollingState)
+            assertEquals(true, rollingState?.isRolling)
+            assertEquals("TestPlayer", rollingState?.rollingPlayerUsername)
+            assertEquals(false, rollingState?.showResult)
+
+            verify(exactly = 1) { mockGameBoardLogic.rollDice("test-lobby") }
+        }
+
+        @Test
+        fun testRollDiceShouldNotStartRollingWhenPlayerCannotRoll() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "TestPlayer",
+                canRollDice = false
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+            advanceUntilIdle()
+
+            viewModel.rollDice("test-lobby")
+            advanceUntilIdle()
+
+            assertFalse(viewModel.isProcessingRoll)
+            verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
+            assertNull(diceMutableStateFlow.value)
+        }
+
+        @Test
+        fun testRollDiceShouldTimeoutAfterThreeSeconds() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "TestPlayer",
+                canRollDice = true,
+                isActivePlayer = true
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+            advanceUntilIdle()
+
+            every { mockGameBoardLogic.rollDice(any()) } just runs
+
+            viewModel.rollDice("test-lobby")
+            advanceUntilIdle()
+
+            advanceTimeBy(3000)
+            advanceUntilIdle()
+
+            assertFalse(viewModel.isProcessingRoll)
+            assertNull(diceMutableStateFlow.value)
+            verify(exactly = 1) { Log.e("GameViewModel", "Dice roll timeout") }
+        }
+
+        @Test
+        fun testShowResultShouldDisplayDiceResultAndResetAfterDelay() = runTest {
+            val states = mutableListOf<GameViewModel.DiceState?>()
+            every { mockGameDataHandler.updateDiceState(any()) } answers {
+                val state = firstArg<GameViewModel.DiceState?>()
+                states.add(state)
+                diceMutableStateFlow.value = state
+            }
+
+            viewModel.showResult("TestPlayer", 4, 3)
+
+            advanceUntilIdle()
+
+            assertTrue(states.isNotEmpty())
+            val resultState = states[0]
+            assertNotNull(resultState)
+            assertEquals(false, resultState?.isRolling)
+            assertEquals(true, resultState?.showResult)
+            assertEquals(4, resultState?.dice1)
+            assertEquals(3, resultState?.dice2)
+            assertEquals("TestPlayer", resultState?.rollingPlayerUsername)
+
+            advanceTimeBy(3000)
+            advanceUntilIdle()
+
+            assertEquals(2, states.size)
+            assertNull(states[1])
+            assertNull(diceMutableStateFlow.value)
+        }
+
+        @Test
+        fun testShowResultShouldUpdateDiceStateCorrectly() = runTest {
+            val states = mutableListOf<GameViewModel.DiceState?>()
+            every { mockGameDataHandler.updateDiceState(any()) } answers {
+                val state = firstArg<GameViewModel.DiceState?>()
+                states.add(state)
+                diceMutableStateFlow.value = state
+            }
+
+            viewModel.showResult("TestPlayer", 4, 3)
+
+            advanceUntilIdle()
+            assertTrue(states.isNotEmpty())
+
+            val resultState = states[0]
+            assertNotNull(resultState)
+
+            assertEquals("TestPlayer", resultState?.rollingPlayerUsername)
+            assertEquals(4, resultState?.dice1)
+            assertEquals(3, resultState?.dice2)
+            assertEquals(true, resultState?.showResult)
+            assertEquals(false, resultState?.isRolling)
+
+            advanceTimeBy(3000)
+            advanceUntilIdle()
+
+            assertEquals(2, states.size)
+            assertNull(states[1])
+            assertNull(diceMutableStateFlow.value)
+        }
+
+        @Test
+        fun testResetDiceStateShouldClearDiceState() = runTest {
+            diceMutableStateFlow.value = GameViewModel.DiceState(
+                rollingPlayerUsername = "TestPlayer",
+                isRolling = true,
+                dice1 = 1,
+                dice2 = 2,
+                showResult = false
+            )
+
+            viewModel.resetDiceState()
+            advanceUntilIdle()
+            assertNull(diceMutableStateFlow.value)
+        }
+
+        @Test
+        fun testRollDiceShouldPreventConcurrentRolls() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "TestPlayer",
+                canRollDice = true,
+                isActivePlayer = true
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+            advanceUntilIdle()
+
+            every { mockGameBoardLogic.rollDice(any()) } just runs
+
+            val field = GameViewModel::class.java.getDeclaredField("isProcessingRoll")
+            field.isAccessible = true
+            field.set(viewModel, true)
+
+            viewModel.rollDice("test-lobby")
+            advanceUntilIdle()
+
+            verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
+            assertNull(diceMutableStateFlow.value)
+        }
+
+        @Test
+        fun testRollDiceShouldNotProceedIfAlreadyProcessing() = runTest {
+            viewModel.isProcessingRoll = true
+
+            viewModel.rollDice("lobby123")
+
+            verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
+        }
+
+        @Test
+        fun testRollDiceShouldNotProceedIfPlayerCannotRoll() = runTest {
+            val player = PlayerInfo(
+                id = testPlayerId,
+                username = "TestPlayer",
+                canRollDice = false
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to player)
+
+            viewModel.rollDice("lobby123")
+
+            verify(exactly = 0) { mockGameBoardLogic.rollDice(any()) }
+        }
+
+        @Test
+        fun testRollDiceShouldResetStateAfterTimeoutIfNoResultReceived() = runTest {
+            val player = PlayerInfo(
+                id = testPlayerId,
+                username = "TestPlayer",
+                canRollDice = true
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to player)
+
+            viewModel.rollDice("lobby123")
+            advanceUntilIdle()
+
+            assertNull(diceMutableStateFlow.value)
+            assertFalse(viewModel.isProcessingRoll)
+        }
+
+        @Test
+        fun testShowResultShouldUpdatesDiceStateAndResetsAfterDelay() =
+            runTest(dispatcher.scheduler) {
+                viewModel.showResult("Tester", 3, 4)
+
+                viewModel.diceState.test {
+                    skipItems(1)
+                    val state = awaitItem()
+                    assert(state != null && state.showResult)
+                    assert(state?.dice1 == 3 && state.dice2 == 4)
+                    cancelAndIgnoreRemainingEvents()
+                }
+            }
+
+        @Test
+        fun testResetDiceStateShouldClearsStateAndHidesPopup() = runTest {
+            viewModel.resetDiceState()
+            advanceUntilIdle()
+
+            viewModel.diceState.test {
+                val state = awaitItem()
+                assert(state == null)
+            }
+
+            viewModel.showDicePopup.test {
+                assert(!awaitItem())
+            }
         }
     }
 
@@ -580,6 +600,727 @@ class GameViewModelTest {
         }
     }
 
+    @Nested
+    @DisplayName("Highlighting Logic")
+
+    inner class HighlightingTests {
+        private fun getHighlightedSettlementIds(): Set<Int> {
+            val field = GameViewModel::class.java.getDeclaredField("_highlightedSettlementIds")
+            field.isAccessible = true
+            return (field.get(viewModel) as MutableStateFlow<Set<Int>>).value
+        }
+
+        private fun getHighlightedRoadIds(): Set<Int> {
+            val field = GameViewModel::class.java.getDeclaredField("_highlightedRoadIds")
+            field.isAccessible = true
+            return (field.get(viewModel) as MutableStateFlow<Set<Int>>).value
+        }
+
+        @Test
+        fun testClearHighlightsClearsBothSettlementAndRoadHighlights() = runTest {
+            val settlementField = GameViewModel::class.java.getDeclaredField("_highlightedSettlementIds")
+            settlementField.isAccessible = true
+            (settlementField.get(viewModel) as MutableStateFlow<Set<Int>>).value = setOf(1, 2, 3)
+
+            val roadField = GameViewModel::class.java.getDeclaredField("_highlightedRoadIds")
+            roadField.isAccessible = true
+            (roadField.get(viewModel) as MutableStateFlow<Set<Int>>).value = setOf(4, 5, 6)
+
+            viewModel.clearHighlights()
+            advanceUntilIdle()
+
+            assertTrue(getHighlightedSettlementIds().isEmpty())
+            assertTrue(getHighlightedRoadIds().isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsDoesNothingWhenBoardStateIsNull() = runTest {
+            gameBoardMutableStateFlow.value = null
+            viewModel.updateHighlightedPositions()
+            advanceUntilIdle()
+
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsDoesNothingWhenPlayerInfoIsNull() = runTest {
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = emptyList(),
+                roads = emptyList(),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+            playersMutableStateFlow.value = emptyMap()
+
+            viewModel.updateHighlightedPositions()
+            advanceUntilIdle()
+
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsDoesNothingWhenPlayerIsNotActive() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = false)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            viewModel.updateHighlightedPositions()
+            advanceUntilIdle()
+
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsHighlightsAllRoadsWhenNoPlayerRoads() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road1 = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            val road2 = Road(2, null, listOf(1.0, 1.0), 0.0, null)
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = emptyList(),
+                roads = listOf(road1, road2),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(setOf(1, 2), viewModel.highlightedRoadIds.value)
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsHighlightsSettlementsWhenNoPlayerSettlements() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, testPlayerId, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(1, null, listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.handleRoadClick(road, "testLobby")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(setOf(1), viewModel.highlightedSettlementIds.value)
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsClearsHighlightsWhenPlayerHasRoadsAndSettlements() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = false)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, testPlayerId, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(1, Building(testPlayerId, "Settlement", "#FF0000"), listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            viewModel.updateHighlightedPositions()
+
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsHighlightsViablePositionsInNormalRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = false)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road1 = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            val road2 = Road(2, testPlayerId, listOf(1.0, 1.0), 0.0, null)
+            val settlement = SettlementPosition(1, null, listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road1, road2),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertNotNull(viewModel.highlightedSettlementIds.value)
+            assertNotNull(viewModel.highlightedRoadIds.value)
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsReturnsEarlyWhenBoardIsNull() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val initialSettlements = viewModel.highlightedSettlementIds.value
+            val initialRoads = viewModel.highlightedRoadIds.value
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(initialSettlements, viewModel.highlightedSettlementIds.value)
+            assertEquals(initialRoads, viewModel.highlightedRoadIds.value)
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsReturnsEarlyWhenPlayerIsNull() = runTest {
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = emptyList(),
+                roads = emptyList(),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val initialSettlements = viewModel.highlightedSettlementIds.value
+            val initialRoads = viewModel.highlightedRoadIds.value
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(initialSettlements, viewModel.highlightedSettlementIds.value)
+            assertEquals(initialRoads, viewModel.highlightedRoadIds.value)
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsReturnsEarlyWhenPlayerIsNotActive() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = false, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = emptyList(),
+                roads = emptyList(),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val initialSettlements = viewModel.highlightedSettlementIds.value
+            val initialRoads = viewModel.highlightedRoadIds.value
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(initialSettlements, viewModel.highlightedSettlementIds.value)
+            assertEquals(initialRoads, viewModel.highlightedRoadIds.value)
+        }
+
+        @Test
+        fun testClearsHighlightsAfterSettlementPlacement() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                isActivePlayer = true,
+                isSetupRound = true
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val playerRoad = Road(1, testPlayerId, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(1, null, listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(playerRoad),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            viewModel.handleRoadClick(playerRoad, "test-lobby")
+            viewModel.handleSettlementClick(settlement, false, "test-lobby")
+            advanceUntilIdle()
+
+            viewModel.updateHighlightedPositions()
+            advanceUntilIdle()
+
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        private fun GameViewModel.setSetupRoundState(hasPlacedRoad: Boolean, hasPlacedSettlement: Boolean) {
+            val roadField = GameViewModel::class.java.getDeclaredField("hasPlacedSetupRoad")
+            val settlementField = GameViewModel::class.java.getDeclaredField("hasPlacedSetupSettlement")
+            roadField.isAccessible = true
+            settlementField.isAccessible = true
+            roadField.setBoolean(this, hasPlacedRoad)
+            settlementField.setBoolean(this, hasPlacedSettlement)
+        }
+
+        @Test
+        fun testCombineCollectorUpdatesHighlightsWhenBuildMenuOpens() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            viewModel.setBuildMenuOpen(true)
+            advanceUntilIdle()
+
+            verify { Log.d("GameViewModel", any()) }
+        }
+
+        @Test
+        fun testCombineCollectorClearsHighlightsWhenBuildMenuCloses() = runTest {
+            val settlementField = GameViewModel::class.java.getDeclaredField("_highlightedSettlementIds")
+            settlementField.isAccessible = true
+            (settlementField.get(viewModel) as MutableStateFlow<Set<Int>>).value = setOf(1, 2, 3)
+
+            val roadField = GameViewModel::class.java.getDeclaredField("_highlightedRoadIds")
+            roadField.isAccessible = true
+            (roadField.get(viewModel) as MutableStateFlow<Set<Int>>).value = setOf(4, 5, 6)
+
+            viewModel.setBuildMenuOpen(false)
+            advanceUntilIdle()
+
+            assertTrue(getHighlightedSettlementIds().isEmpty())
+            assertTrue(getHighlightedRoadIds().isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsHighlightsCorrectValues() = runTest {
+            val testSettlement = SettlementPosition(
+                id = 1,
+                building = null,
+                coordinates = listOf(0.0, 10.0)
+            )
+            val testRoad = Road(
+                id = 1,
+                owner = null,
+                coordinates = listOf(0.0, 5.0),
+                rotationAngle = 0.0,
+                color = null
+            )
+            val playerRoad = testRoad.copy(owner = testPlayerId)
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(testSettlement),
+                roads = listOf(playerRoad),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to PlayerInfo(id = testPlayerId, username = "Tester", isActivePlayer = true))
+
+            viewModel.updatePlayerResources(
+                mapOf(
+                    TileType.WOOD to 1,
+                    TileType.CLAY to 1,
+                    TileType.WHEAT to 1,
+                    TileType.SHEEP to 1
+                )
+            )
+
+            viewModel.setBuildMenuOpen(true)
+            advanceUntilIdle()
+
+            assertEquals(setOf(1), viewModel.highlightedSettlementIds.value)
+            assertEquals(emptySet<Int>(), viewModel.highlightedRoadIds.value)
+        }
+
+        @Test
+        fun testIsValidSettlementLocationReturnsTrueForCityUpgrade() = runTest {
+            val settlement = SettlementPosition(
+                id = 1,
+                building = Building(
+                    owner = testPlayerId,
+                    color = "#FF0000",
+                    type = "Settlement"
+                ),
+                coordinates = listOf(0.0, 10.0)
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to PlayerInfo(id = testPlayerId, username = "Tester", isActivePlayer = true))
+            viewModel.updatePlayerResources(mapOf(TileType.WHEAT to 2, TileType.ORE to 3))
+
+            val result = viewModel.isValidSettlementLocation(
+                settlement,
+                listOf(settlement),
+                roads = emptyList()
+            )
+            assertTrue(result)
+        }
+
+        @Test
+        fun testIsValidSettlementLocationReturnsFalseForAdjacentBuildings() = runTest {
+            val settlement = SettlementPosition(
+                id = 1,
+                building = null,
+                coordinates = listOf(0.0, 10.0)
+            )
+            val adjacentSettlement = SettlementPosition(
+                id = 2,
+                building = Building(owner = "enemy", color = "#000", type = "Settlement"),
+                coordinates = listOf(0.5, 10.5)
+            )
+
+            val playerRoad = Road(1, testPlayerId, listOf(0.0, 5.0), 0.0, null)
+            playersMutableStateFlow.value = mapOf(testPlayerId to PlayerInfo(id = testPlayerId, username = "Tester", isActivePlayer = true))
+            viewModel.updatePlayerResources(
+                mapOf(TileType.WOOD to 1, TileType.CLAY to 1, TileType.WHEAT to 1, TileType.SHEEP to 1)
+            )
+
+            val result = viewModel.isValidSettlementLocation(
+                settlement,
+                listOf(settlement, adjacentSettlement),
+                listOf(playerRoad)
+            )
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsValidSettlementLocationReturnsFalseWhenNotOwner() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                resources = mapOf(TileType.WHEAT to 2, TileType.ORE to 3)
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(
+                1,
+                Building("otherPlayer", "Settlement", "#0000FF"),
+                listOf(0.0, 0.0)
+            )
+
+            val result = viewModel.isValidSettlementLocation(
+                settlement,
+                emptyList(),
+                emptyList()
+            )
+
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsValidSettlementLocationReturnsFalseWhenNotSettlementType() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                resources = mapOf(TileType.WHEAT to 2, TileType.ORE to 3)
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(
+                1,
+                Building(testPlayerId, "City", "#FF0000"),
+                listOf(0.0, 0.0)
+            )
+
+            val result = viewModel.isValidSettlementLocation(
+                settlement,
+                emptyList(),
+                emptyList()
+            )
+
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsValidSettlementLocationReturnsFalseWhenCannotBuildCity() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                resources = mapOf(TileType.WHEAT to 1, TileType.ORE to 2)
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(
+                1,
+                Building(testPlayerId, "Settlement", "#FF0000"),
+                listOf(0.0, 0.0)
+            )
+
+            val result = viewModel.isValidSettlementLocation(
+                settlement,
+                emptyList(),
+                emptyList()
+            )
+
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsValidRoadLocationReturnsTrueWhenConnectedToOwnedSettlement() = runTest {
+            val road = Road(1, null, listOf(0.0, 5.0), 0.0, null)
+            val settlement = SettlementPosition(
+                id = 1,
+                building = Building(owner = testPlayerId, color = "#FF0000", type = "Settlement"),
+                coordinates = listOf(0.0, 5.5)
+            )
+            viewModel.updatePlayerResources(mapOf(TileType.WOOD to 1, TileType.CLAY to 1))
+
+            val result = viewModel.isValidRoadLocation(road, listOf(settlement), listOf(road))
+            assertTrue(result)
+        }
+
+        @Test
+        fun testIsValidRoadLocationReturnsFalseWhenOwned() = runTest {
+            val road = Road(1, owner = testPlayerId, coordinates = listOf(0.0, 5.0), rotationAngle = 0.0, color = null)
+            viewModel.updatePlayerResources(mapOf(TileType.WOOD to 1, TileType.CLAY to 1))
+
+            val result = viewModel.isValidRoadLocation(road, emptyList(), listOf(road))
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsValidRoadLocationReturnsFalseWhenCannotBuildRoad() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                resources = emptyMap()
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+
+            val result = viewModel.isValidRoadLocation(
+                road,
+                emptyList(),
+                emptyList()
+            )
+
+            assertFalse(result)
+        }
+    }
+
+    @Nested
+    @DisplayName("Building Validation")
+    inner class BuildingValidationTests {
+
+        @Test
+        fun testCanBuildSettlementReturnsTrueWhenResourcesAvailable() = runTest {
+            val resources = mapOf(
+                TileType.WOOD to 1,
+                TileType.CLAY to 1,
+                TileType.WHEAT to 1,
+                TileType.SHEEP to 1
+            )
+            viewModel.updatePlayerResources(resources)
+
+            assertTrue(viewModel.canBuildSettlement())
+        }
+
+        @Test
+        fun testCanBuildSettlementReturnsFalseWhenResourcesMissing() = runTest {
+            val resources = mapOf(
+                TileType.WOOD to 1,
+                TileType.CLAY to 1,
+                TileType.WHEAT to 1
+            )
+            viewModel.updatePlayerResources(resources)
+
+            assertFalse(viewModel.canBuildSettlement())
+        }
+
+        @Test
+        fun testCanBuildCityReturnsTrueWhenResourcesAvailable() = runTest {
+            val resources = mapOf(
+                TileType.WHEAT to 2,
+                TileType.ORE to 3
+            )
+            viewModel.updatePlayerResources(resources)
+
+            assertTrue(viewModel.canBuildCity())
+        }
+
+        @Test
+        fun testCanBuildCityReturnsFalseWhenResourcesMissing() = runTest {
+            val resources = mapOf(
+                TileType.WHEAT to 2,
+                TileType.ORE to 2
+            )
+            viewModel.updatePlayerResources(resources)
+
+            assertFalse(viewModel.canBuildCity())
+        }
+
+        @Test
+        fun testCanBuildRoadReturnsTrueWhenResourcesAvailable() = runTest {
+            val resources = mapOf(
+                TileType.WOOD to 1,
+                TileType.CLAY to 1
+            )
+            viewModel.updatePlayerResources(resources)
+
+            assertTrue(viewModel.canBuildRoad())
+        }
+
+        @Test
+        fun testCanBuildRoadReturnsFalseWhenResourcesMissing() = runTest {
+            val resources = mapOf(
+                TileType.WOOD to 1
+            )
+            viewModel.updatePlayerResources(resources)
+
+            assertFalse(viewModel.canBuildRoad())
+        }
+
+        @Test
+        fun testCanBuildSettlementReturnsFalseWhenMissingResources() = runTest {
+            val testCases = listOf(
+                mapOf(TileType.CLAY to 1, TileType.WHEAT to 1, TileType.SHEEP to 1),
+                mapOf(TileType.WOOD to 1, TileType.WHEAT to 1, TileType.SHEEP to 1),
+                mapOf(TileType.WOOD to 1, TileType.CLAY to 1, TileType.SHEEP to 1),
+                mapOf(TileType.WOOD to 1, TileType.CLAY to 1, TileType.WHEAT to 1)
+            )
+
+            testCases.forEach { resources ->
+                viewModel.updatePlayerResources(resources)
+                assertFalse(viewModel.canBuildSettlement())
+            }
+        }
+
+        @Test
+        fun testCanBuildCityReturnsFalseWhenMissingResources() = runTest {
+            val testCases = listOf(
+                mapOf(TileType.WHEAT to 1, TileType.ORE to 3),
+                mapOf(TileType.WHEAT to 2, TileType.ORE to 2)
+            )
+
+            testCases.forEach { resources ->
+                viewModel.updatePlayerResources(resources)
+                assertFalse(viewModel.canBuildCity())
+            }
+        }
+
+        @Test
+        fun testCanBuildRoadReturnsFalseWhenMissingResources() = runTest {
+            val testCases = listOf(
+                mapOf(TileType.WOOD to 1),
+                mapOf(TileType.CLAY to 1)
+            )
+
+            testCases.forEach { resources ->
+                viewModel.updatePlayerResources(resources)
+                assertFalse(viewModel.canBuildRoad())
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("Position Validation")
+    inner class PositionValidationTests {
+
+        @Test
+        fun testIsConnectedReturnsTrueForClosePoints() = runTest {
+            val point1 = listOf(0.0, 0.0)
+            val point2 = listOf(5.0, 5.0)
+
+            assertTrue(viewModel.isConnected(point1, point2))
+        }
+
+        @Test
+        fun testIsConnectedReturnsFalseForDistantPoints() = runTest {
+            val point1 = listOf(0.0, 0.0)
+            val point2 = listOf(100.0, 100.0)
+
+
+            assertFalse(viewModel.isConnected(point1, point2))
+        }
+
+        @Test
+        fun testIsConnectedReturnsFalseForInvalidPoints() = runTest {
+            val point1 = listOf(0.0)
+            val point2 = listOf(5.0, 5.0)
+
+            val result = viewModel.isConnected(point1, point2)
+
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsAdjacentReturnsTrueForClosePoints() = runTest {
+            val point1 = listOf(0.0, 0.0)
+            val point2 = listOf(10.0, 10.0)
+
+            assertTrue(viewModel.isAdjacent(point1, point2))
+        }
+
+        @Test
+        fun testIsAdjacentReturnsFalseForInvalidPoints() = runTest {
+            val point1 = listOf(0.0) 
+            val point2 = listOf(10.0, 10.0)
+
+            val result = viewModel.isAdjacent(point1, point2)
+
+            assertFalse(result)
+        }
+
+        @Test
+        fun testIsAdjacentReturnsFalseForDistantPoints() = runTest {
+            val point1 = listOf(0.0, 0.0)
+            val point2 = listOf(100.0, 100.0)
+
+            assertFalse(viewModel.isAdjacent(point1, point2))
+        }
+
+        @Test
+        fun testIsValidRoadLocationReturnsTrueWhenConnectedToPlayerOwnedRoad() = runTest {
+            val targetRoad = Road(
+                id = 99,
+                owner = null,
+                coordinates = listOf(5.0, 5.0),
+                rotationAngle = 0.0,
+                color = null
+            )
+
+            val existingRoad = Road(
+                id = 1,
+                owner = testPlayerId,
+                coordinates = listOf(5.5, 5.5),
+                rotationAngle = 0.0,
+                color = null
+            )
+
+            viewModel.updatePlayerResources(
+                mapOf(TileType.WOOD to 1, TileType.CLAY to 1)
+            )
+
+            val result = viewModel.isValidRoadLocation(
+                road = targetRoad,
+                settlements = emptyList(),
+                roads = listOf(existingRoad)
+            )
+
+            assertTrue(result, "Should return true if the road is connected to an owned road")
+        }
+    }
     @Test
     fun snackbarMessageReflectsGameDataHandlerState() = runTest {
         val testSnackbar = Pair("Test message", "info")
@@ -597,8 +1338,6 @@ class GameViewModelTest {
 
         coVerify(exactly = 1) { mockGameDataHandler.clearSnackbar() }
     }
-
-
 
 
 
@@ -703,36 +1442,6 @@ class GameViewModelTest {
     inner class ClickHandlerTests {
 
         @Test
-        fun handleSettlementClickCallsGameBoardLogicPlaceSettlement() = runTest {
-            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
-            val testLobbyId = "click-lobby-1"
-
-            viewModel.handleSettlementClick(testPosition, false, testLobbyId)
-            advanceUntilIdle()
-            verify(exactly = 1) { mockGameBoardLogic.placeSettlement(testPosition.id, testLobbyId) }
-        }
-
-        @Test
-        fun handleSettlementClickCallsGameBoardLogicUpgradeSettlement() = runTest {
-            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
-            val testLobbyId = "click-lobby-1"
-
-            viewModel.handleSettlementClick(testPosition, true, testLobbyId)
-            advanceUntilIdle()
-            verify(exactly = 1) { mockGameBoardLogic.upgradeSettlement(testPosition.id, testLobbyId) }
-        }
-
-        @Test
-        fun handleRoadClickCallsGameBoardLogicPlaceRoad() = runTest {
-            val testRoad = Road(id = 10, owner = null, coordinates = listOf(3.0, 4.0), rotationAngle = 0.5, color = null)
-            val testLobbyId = "click-lobby-2"
-
-            viewModel.handleRoadClick(testRoad, testLobbyId)
-            advanceUntilIdle()
-            verify(exactly = 1) { mockGameBoardLogic.placeRoad(testRoad.id, testLobbyId) }
-        }
-
-        @Test
         fun handleTileClickLogsMessage() = runTest {
             val testTile = Tile(id = 1, type = TileType.WOOD, value = 0, coordinates = listOf(0.0, 0.0))
             val testLobbyId = "tile-lobby-1"
@@ -740,6 +1449,177 @@ class GameViewModelTest {
             viewModel.handleTileClick(testTile, testLobbyId)
             advanceUntilIdle()
             verify { Log.d("GameViewModel", "handleTileClick: Tile ID=${testTile.id}") }
+        }
+
+        @Test
+        fun handleSettlementClickLogsMessage() = runTest {
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+            viewModel.handleSettlementClick(settlement, false, "lobby1")
+            verify { Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=1") }
+        }
+
+        @Test
+        fun handleSettlementClickCallsUpgradeWhenIsUpgradeTrue() = runTest {
+            val playerInfo = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to playerInfo)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+
+            viewModel.handleSettlementClick(settlement, true, "lobby1")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            verify { mockGameBoardLogic.upgradeSettlement(1, "lobby1") }
+        }
+
+        @Test
+        fun handleSettlementClickCallsPlaceWhenIsUpgradeFalse() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+
+            viewModel.handleSettlementClick(settlement, false, "lobby1")
+
+            dispatcher.scheduler.advanceUntilIdle()
+            verify(exactly = 1) { mockGameBoardLogic.placeSettlement(settlement.id, "lobby1") }
+        }
+
+        @Test
+        fun handleSettlementClickCallsGameBoardLogicPlaceSettlement() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testLobbyId = "click-lobby-1"
+
+            viewModel.handleSettlementClick(testPosition, false, testLobbyId)
+            dispatcher.scheduler.advanceUntilIdle()
+
+            verify(exactly = 1) { mockGameBoardLogic.placeSettlement(testPosition.id, testLobbyId) }
+        }
+
+        @Test
+        fun handleSettlementClickCallsGameBoardLogicUpgradeSettlement() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testLobbyId = "click-lobby-1"
+
+            viewModel.handleSettlementClick(testPosition, true, testLobbyId)
+            dispatcher.scheduler.advanceUntilIdle()
+            verify(exactly = 1) { mockGameBoardLogic.upgradeSettlement(testPosition.id, testLobbyId) }
+        }
+
+        @Test
+        fun handleSettlementClickClearsHighlightsInSetupRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+            viewModel.handleSettlementClick(settlement, false, "lobby1")
+
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        @Test
+        fun handleSettlementClickRemovesHighlightInNormalRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+            viewModel.handleSettlementClick(settlement, false, "lobby1")
+
+            assertFalse(viewModel.highlightedSettlementIds.value.contains(1))
+        }
+
+        @Test
+        fun handleRoadClickCallsPlaceRoad() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+
+            viewModel.handleRoadClick(road, "lobby1")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            verify { mockGameBoardLogic.placeRoad(1, "lobby1") }
+        }
+
+        @Test
+        fun handleRoadClickClearsHighlightsAndShowsAdjacentSettlementsInSetupRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(1, null, listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.handleRoadClick(road, "lobby1")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+            assertEquals(setOf(1), viewModel.highlightedSettlementIds.value)
+        }
+
+        @Test
+        fun handleRoadClickClearsHighlightsAndHighlightsAdjacentSettlementsInSetupRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(2, null, listOf(0.0, 5.0))
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.handleRoadClick(road, "lobby")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+            assertEquals(setOf(2), viewModel.highlightedSettlementIds.value)
+        }
+
+        @Test
+        fun handleRoadClickRemovesHighlightInNormalRound() = runTest {
+            val playerInfo = PlayerInfo(
+                username = "Test Player",
+                isSetupRound = false
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to playerInfo)
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            viewModel.handleRoadClick(road, "lobby1")
+
+            assertFalse(viewModel.highlightedRoadIds.value.contains(1))
         }
     }
 

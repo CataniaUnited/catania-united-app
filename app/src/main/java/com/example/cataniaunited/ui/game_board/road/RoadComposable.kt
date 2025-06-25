@@ -28,17 +28,24 @@ fun RoadComposable(
     thickness: Dp,
     isClickable: Boolean,
     playerId: String,
-    onRoadClick: (Road) -> Unit = {}
+    onRoadClick: (Road) -> Unit = {},
+    isHighlighted: Boolean = false
 ) {
     val roadColor = when (road.color) {
-        null -> Color.Transparent // Placeholder - just show border
+        null -> if (isHighlighted) Color.Green.copy(alpha = 0.3f) else Color.Transparent
         else -> Color(road.color.toColorInt())
     }
 
-    val borderColor = if(isClickable || road.owner != null) Color.DarkGray else Color.Transparent
 
     val isOccupied = road.owner != null && road.owner != playerId
     val canBuild: Boolean = isClickable && (road.owner == null)
+
+    val borderColor = when {
+        isHighlighted -> Color.Green
+        isClickable || road.owner != null -> Color.DarkGray
+        else -> Color.Transparent
+    }
+    val borderWidth = 1.dp
 
     Box(
         modifier = modifier
@@ -49,7 +56,10 @@ fun RoadComposable(
                 rotationZ = road.rotationAngle.toDegrees() // Convert radians to degrees
             )
             .background(roadColor)
-            .border(1.dp, borderColor)
+            .border(
+                width = borderWidth,
+                color = borderColor
+            )
             .alpha(if (isClickable && isOccupied) 0.3f else 1f)
     )
 }

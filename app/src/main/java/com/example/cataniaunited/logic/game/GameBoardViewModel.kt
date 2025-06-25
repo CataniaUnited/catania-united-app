@@ -18,6 +18,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -60,6 +62,15 @@ class GameViewModel @Inject constructor(
     private val _tradeOffer = MutableStateFlow<Pair<Map<TileType, Int>, Map<TileType, Int>>>(Pair(emptyMap(), emptyMap()))
     val tradeOffer: StateFlow<Pair<Map<TileType, Int>, Map<TileType, Int>>> = _tradeOffer.asStateFlow()
 
+    private val _highlightedSettlementIds = MutableStateFlow<Set<Int>>(emptySet())
+    val highlightedSettlementIds: StateFlow<Set<Int>> = _highlightedSettlementIds
+
+    private val _highlightedRoadIds = MutableStateFlow<Set<Int>>(emptySet())
+    val highlightedRoadIds: StateFlow<Set<Int>> = _highlightedRoadIds
+
+    private var hasPlacedSetupRoad = false
+    private var hasPlacedSetupSettlement = false
+
     val snackbarMessage: StateFlow<Pair<String, String>?> = gameDataHandler.snackbarMessage
 
     init {
@@ -93,8 +104,21 @@ class GameViewModel @Inject constructor(
                     //Close build menu when player is not active player
                     setBuildMenuOpen(false)
                 }
+                if (playerInfo?.isActivePlayer == true && playerInfo.isSetupRound) {
+                    hasPlacedSetupRoad = false
+                    hasPlacedSetupSettlement = false
+                }
             }
             Log.d("GameViewModel_Collect", "playersState collect FINISHED in ViewModelScope.")
+        }
+
+        viewModelScope.launch {
+            combine(playerResources, isBuildMenuOpen) { _, isOpen ->
+                isOpen
+            }.collect { isOpen ->
+                if (isOpen) updateHighlightedPositions()
+                else clearHighlights()
+            }
         }
     }
 
@@ -133,27 +157,61 @@ class GameViewModel @Inject constructor(
             "GameViewModel",
             "handleSettlementClick: SettlementPosition ID=${settlementPosition.id}"
         )
+
+        val playerInfo = players.value[playerId] ?: return
+
         if (isUpgrade) {
             gameBoardLogic.upgradeSettlement(settlementPosition.id, lobbyId)
         } else {
             gameBoardLogic.placeSettlement(settlementPosition.id, lobbyId)
         }
 
+        if (playerInfo.isSetupRound) {
+            hasPlacedSetupSettlement = true
+            clearHighlights()
+        } else {
+            _highlightedSettlementIds.update { it - settlementPosition.id }
+        }
     }
 
     fun handleRoadClick(road: Road, lobbyId: String) {
-        Log.d("GameViewModel", "handleRoadClick: Road ID=${road.id}")
+        val playerInfo = players.value[playerId] ?: return
+
         gameBoardLogic.placeRoad(road.id, lobbyId)
+
+        if (playerInfo.isSetupRound) {
+            hasPlacedSetupRoad = true
+
+            val board = gameBoardState.value ?: return
+            val settlements = board.settlementPositions
+
+            val adjacentSettlements = settlements.filter { settlement ->
+                settlement.building == null &&
+                        isConnected(road.coordinates, settlement.coordinates) &&
+                        settlements.none { other ->
+                            other.id != settlement.id &&
+                                    other.building != null &&
+                                    isAdjacent(settlement.coordinates, other.coordinates)
+                        }
+            }.map { it.id }.toSet()
+
+            _highlightedSettlementIds.value = adjacentSettlements
+            _highlightedRoadIds.value = emptySet()
+        } else {
+            _highlightedRoadIds.update { it - road.id }
+        }
     }
 
     fun handleEndTurnClick(lobbyId: String){
         Log.d("GameViewModel", "handleEndTurnClick: Player ended turn")
         lobbyLogic.endTurn(lobbyId)
+        setBuildMenuOpen(false)
     }
 
     fun setBuildMenuOpen(isOpen: Boolean) {
         Log.d("GameViewModel", "handleBuildMenuClick: isOpen=$isOpen")
         _isBuildMenuOpen.value = isOpen
+        if (isOpen) updateHighlightedPositions() else clearHighlights()
     }
 
     var isProcessingRoll = false
@@ -291,11 +349,139 @@ class GameViewModel @Inject constructor(
         cheatingLogic.sendReportPlayer(reportedId, lobbyId)
     }
 
+    fun clearHighlights() {
+        _highlightedSettlementIds.value = emptySet()
+        _highlightedRoadIds.value = emptySet()
+    }
+
+    fun updateHighlightedPositions() {
+        val board = gameBoardState.value ?: return
+        val playerInfo = players.value[playerId] ?: return
+        if (!playerInfo.isActivePlayer) return
+
+        val settlements = board.settlementPositions
+        val roads = board.roads
+
+        if (playerInfo.isSetupRound) {
+            val playerRoads = roads.filter { it.owner == playerId }
+            val playerSettlements = settlements.filter { it.building?.owner == playerId }
+
+            if (!hasPlacedSetupRoad) {
+                _highlightedRoadIds.value = roads.filter { it.owner == null }.map { it.id }.toSet()
+                _highlightedSettlementIds.value = emptySet()
+                return
+            }
+
+            if (!hasPlacedSetupSettlement) {
+                val lastPlacedRoad = playerRoads.lastOrNull()
+                if (lastPlacedRoad != null) {
+                    val validSettlements = settlements.filter { settlement ->
+                        settlement.building == null &&
+                                isConnected(lastPlacedRoad.coordinates, settlement.coordinates) &&
+                                settlements.none { other ->
+                                    other.id != settlement.id &&
+                                            other.building != null &&
+                                            isAdjacent(settlement.coordinates, other.coordinates)
+                                }
+                    }.map { it.id }.toSet()
+
+                    _highlightedSettlementIds.value = validSettlements
+                    _highlightedRoadIds.value = emptySet()
+                    return
+                }
+            }
+
+            _highlightedSettlementIds.value = emptySet()
+            _highlightedRoadIds.value = emptySet()
+            return
+        }
+
+        val viableSettlements = settlements
+            .filter { isValidSettlementLocation(it, settlements, roads) }
+            .map { it.id }
+            .toSet()
+
+        val viableRoads = roads
+            .filter { isValidRoadLocation(it, settlements, roads) }
+            .map { it.id }
+            .toSet()
+
+        _highlightedSettlementIds.value = viableSettlements
+        _highlightedRoadIds.value = viableRoads
+    }
+
+    fun isValidSettlementLocation(
+        pos: SettlementPosition,
+        all: List<SettlementPosition>,
+        roads: List<Road>
+    ): Boolean {
+        val building = pos.building
+        if (building != null) {
+            return building.owner == playerId &&
+                    building.type == "Settlement" &&
+                    canBuildCity()
+        }
+        if (!canBuildSettlement()) return false
+
+        val tooClose = all.any {
+            it.id != pos.id && it.building != null && isAdjacent(pos.coordinates, it.coordinates)
+        }
+        if (tooClose) return false
+
+        return roads.any {
+            it.owner == playerId && isConnected(it.coordinates, pos.coordinates)
+        }
+    }
+
+    fun isValidRoadLocation(
+        road: Road,
+        settlements: List<SettlementPosition>,
+        roads: List<Road>
+    ): Boolean {
+        if (road.owner != null) return false
+        if (!canBuildRoad()) return false
+
+        return settlements.any {
+            it.building?.owner == playerId && isConnected(it.coordinates, road.coordinates)
+        } || roads.any {
+            it.owner == playerId && isConnected(it.coordinates, road.coordinates)
+        }
+    }
+
+    fun isConnected(point1: List<Double>, point2: List<Double>): Boolean {
+        if (point1.size < 2 || point2.size < 2) return false
+        val dx = point1[0] - point2[0]
+        val dy = point1[1] - point2[1]
+        val distance = Math.sqrt(dx * dx + dy * dy)
+        return distance <= 10.0
+    }
+
+    fun isAdjacent(point1: List<Double>, point2: List<Double>): Boolean {
+        if (point1.size < 2 || point2.size < 2) return false
+        val dx = point1[0] - point2[0]
+        val dy = point1[1] - point2[1]
+        val distance = Math.sqrt(dx * dx + dy * dy)
+        return distance <= 15.0
+    }
+
+    fun canBuildSettlement(): Boolean {
+        val r = playerResources.value
+        return (r[TileType.WOOD] ?: 0) >= 1 && (r[TileType.CLAY] ?: 0) >= 1 &&
+                (r[TileType.WHEAT] ?: 0) >= 1 && (r[TileType.SHEEP] ?: 0) >= 1
+    }
+
+    fun canBuildCity(): Boolean {
+        val r = playerResources.value
+        return (r[TileType.WHEAT] ?: 0) >= 2 && (r[TileType.ORE] ?: 0) >= 3
+    }
+
+    fun canBuildRoad(): Boolean {
+        val r = playerResources.value
+        return (r[TileType.WOOD] ?: 0) >= 1 && (r[TileType.CLAY] ?: 0) >= 1
+    }
     fun clearSnackbarMessage() {
         viewModelScope.launch {
             gameDataHandler.clearSnackbar()
         }
     }
-
-
 }

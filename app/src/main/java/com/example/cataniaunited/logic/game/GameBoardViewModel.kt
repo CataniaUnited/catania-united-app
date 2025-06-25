@@ -46,6 +46,7 @@ class GameViewModel @Inject constructor(
 
     private val _showDicePopup = MutableStateFlow(false)
     val showDicePopup: StateFlow<Boolean> = _showDicePopup
+
     private val _victoryPoints = MutableStateFlow<Map<String, Int>>(emptyMap())
     val victoryPoints: StateFlow<Map<String, Int>> = _victoryPoints
 
@@ -69,6 +70,8 @@ class GameViewModel @Inject constructor(
 
     private var hasPlacedSetupRoad = false
     private var hasPlacedSetupSettlement = false
+
+    val snackbarMessage: StateFlow<Pair<String, String>?> = gameDataHandler.snackbarMessage
 
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
@@ -475,5 +478,10 @@ class GameViewModel @Inject constructor(
     fun canBuildRoad(): Boolean {
         val r = playerResources.value
         return (r[TileType.WOOD] ?: 0) >= 1 && (r[TileType.CLAY] ?: 0) >= 1
+    }
+    fun clearSnackbarMessage() {
+        viewModelScope.launch {
+            gameDataHandler.clearSnackbar()
+        }
     }
 }

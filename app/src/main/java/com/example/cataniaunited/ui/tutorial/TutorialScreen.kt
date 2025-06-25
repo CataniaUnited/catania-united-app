@@ -42,7 +42,7 @@ fun TutorialScreen(onBackClick: () -> Unit) {
         Box(
             modifier = Modifier
                 .align(Alignment.Center)
-                .width(430.dp)
+                .width(500.dp)
                 .height(400.dp)
                 .border(
                     width = 9.dp,
@@ -66,10 +66,9 @@ fun TutorialScreen(onBackClick: () -> Unit) {
                 TutorialHeading("TUTORIAL")
                 GeneralParagraph(
                     "In Catan, each player aims to become the most successful settler by reaching 10 Victory Points (VPs)." +
-                            " You start with 2 points by placing 2 settlements, and you gain more VPs by building additional settlements, upgrading them to cities, or acquiring special cards / achievements. " +
+                            " You start with 2 points by placing 2 settlements, and you gain more VPs by building additional settlements, upgrading them to cities, or acquiring achievements. " +
                             "The first player to reach 10 VPs on their turn immediately wins the game."
                 )
-
                 GeneralHeading("BASIC CONCEPTS")
                 FirstSubheading("1.\tSettlements & Cities")
                 GeneralParagraph(
@@ -88,61 +87,44 @@ fun TutorialScreen(onBackClick: () -> Unit) {
                 GeneralSubheading("4.\tResource Cards")
                 GeneralParagraph(
                     "o\tThere are 5 types of resources: Brick, Lumber, Wool, Grain, and Ore.\n" + "\n" +
-                            "o\tYou use these to build roads, settlements, or cities, or to buy development cards (special cards that might give you knights, progress powers, or extra VP)."
+                            "o\tYou use these to build roads, settlements, or cities. "
                 )
                 GeneralSubheading("5.\tNumber Tokens & Dice")
                 GeneralParagraph("o	Each terrain tile has a number (2 through 12, skipping 7). On a player’s turn, they roll 2 dice. The sum indicates which terrains produce resources. If you have a settlement or city bordering a terrain with that number, you gain the corresponding resources. (Settlements gain 1 resource; cities gain 2 resources.)")
-                GeneralSubheading("6.\tThe Robber & Rolling a 7")
-                GeneralParagraph(
-                    "o\tIf a 7 is rolled, no terrain produces resources that turn. Instead, every player with more than 7 resource cards must discard half (rounded down).\n" +
-                            "\n" +
-                            "o\tThe player who rolled the 7 then moves the Robber onto any terrain tile (or the desert) and steals 1 random resource card from one player with a settlement/city next to that tile. Tiles under the Robber do not produce resources until the Robber is moved again."
-                )
-                GeneralSubheading("7.\tDevelopment Cards")
-                GeneralParagraph(
-                    "o\tYou can buy development cards (like Knight, Progress, or Victory Point) with resources (1 Wool, 1 Grain, 1 Ore).\n" +
-                            "\n" +
-                            "o\tKnights allow you to move the Robber (like rolling a 7). If you play 3 Knight cards, you earn the Largest Army award (+2 VPs), which can be taken by a player who later has more knights (at least n+1 knights) than you.\n" +
-                            "\n" +
-                            "o\tProgress cards provide immediate special effects (e.g., build free roads, monopolize a resource, etc.).\n" +
-                            "\n" +
-                            "o\tVictory Point cards stay hidden until they help you reach 10 VPs, at which point you reveal them and win."
-                )
                 GeneralHeading("TURN SEQUENCE")
                 GeneralParagraph("Each player’s turn has 3 main phases:")
                 GeneralSubheading("1.\tRoll for Production")
                 GeneralParagraph(
                     "o\tRoll 2 dice, sum them, and check the terrain tiles with that number.\n" +
                             "\n" +
-                            "o\tEach settlement/city bordering that tile yields resource cards for its owner (unless blocked by the Robber)."
+                            "o\tEach settlement/city bordering that tile yields resource cards for its owner."
                 )
                 GeneralSubheading("2.\tTrade")
                 GeneralParagraph(
-                    "o\tDomestic Trade: Negotiate with other players, swapping resources. (Only the current player can trade with others, not the other players among themselves.)\n" +
+                    "o\tMaritime Trade: Trade directly with the “bank” at a fixed rate of 4:1 (four matching resource cards for one of your choice).\n" +
                             "\n" +
-                            "o\tMaritime Trade: Trade directly with the “bank” at a fixed rate of 4:1 (four matching resource cards for one of your choice).\n" +
-                            "\n" +
-                            "\n" +
-                            "\uF0A7\tIf you have a settlement/city on a “harbor,” you can trade more favorably (e.g., 3:1 for any resource or even 2:1 for a specific resource, depending on the harbor)."
+                            "o\tIf you have a settlement/city on a “harbor,” you can trade more favorably (e.g., 3:1 for any resource or even 2:1 for a specific resource, depending on the harbor)."
                 )
                 GeneralSubheading("3.\tBuild")
                 GeneralParagraph(
-                    "o\tSpend resource cards to build new roads or settlements, upgrade a settlement to a city, or buy a development card.\n" +
-                            "o\tRoad = Brick + Lumber\n" +
-                            "o\tSettlement = Brick + Lumber + Wool + Grain\n" +
-                            "o\tCity (upgrade) = 2 Grain + 3 Ore\n" +
-                            "o\tDevelopment Card = Wool + Grain + Ore\n" +
-                            "o\tYou may build as many items as your resources allow."
+                    "o\tSpend resource cards to build new roads and settlements or upgrade a existing settlement to a city\n" +
+                            "\to\tRoad = 1x Brick +  1x Lumber\n" +
+                            "\to\tSettlement = 1x Brick +  1x Lumber + 1x Wool + 1x Grain\n" +
+                            "\to\tCity (upgrade) = 2x Grain + 3x Ore\n" +
+                            "\n" +
+                    "o\tYou may build as many items as your resources allow or until you hit structure limit of:\n" +
+                            "\to\tMaximum 15 roads\n" +
+                            "\to\tMaximum 5 Settlement\n" +
+                            "\to\tMaximum 4 Cities"
                 )
                 GeneralHeading("WINNING THE GAME")
                 GeneralParagraph(
                     "o\tYou start with 2 VPs from your initial 2 settlements.\n" +
                             "\n" +
                             "o\tYou can gain more VPs by:\n" +
-                            "1.\tBuilding more settlements (each +1 VP).\n" +
-                            "2.\tUpgrading to cities (each city +2 VPs, but it replaces a settlement).\n" +
-                            "3.\tHolding Longest Road (2 VPs) or Largest Army (2 VPs).\n" +
-                            "4.\tRevealing any Victory Point cards you’ve purchased.\n" +
+                            "\t1.\tBuilding more settlements (each +1 VP).\n" +
+                            "\t2.\tUpgrading to cities (each city +1 additional VP, but it replaces a settlement).\n" +
+                            "\t3.\tHolding Longest Road (2 VPs) or Largest Army (2 VPs).\n" +
                             "\n" +
                             "o\tThe moment you reach 10 VPs on your turn, you claim victory and the game ends immediately."
                 )
@@ -150,12 +132,9 @@ fun TutorialScreen(onBackClick: () -> Unit) {
                 GeneralParagraph(
                     "o\tHigh Numbers: Tiles labeled 6 or 8 (marked in red) are rolled most often. Settlements bordering these tiles often yield resources more frequently.\n" +
                             "\n" +
-                            "o\tTrading: Active trading speeds up your progress. Offer deals that help both parties.\n" +
-                            "\n" +
+                            "o\tTrading: Active trading speeds up your progress. Look out for open spots on harbor tiles for more favorable trading ratios.\n" +
                             "\n" +
                             "o\tBlocking: Placing a road or settlement can block an opponent’s route for the Longest Road or hamper them from reaching a key spot.\n" +
-                            "\n" +
-                            "o\tRobber Strategy: Use the Robber to block high-producing tiles of your opponents, especially those near 6 or 8.\n" +
                             "\n" +
                             "o\tBalancing Resources: If you have too many of one resource, try to trade or place a settlement on a special harbor."
                 )

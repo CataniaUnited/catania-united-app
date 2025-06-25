@@ -13,6 +13,8 @@ import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
 import com.example.cataniaunited.logic.trade.TradeLogic
+import io.mockk.coEvery
+import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -103,6 +105,7 @@ class GameViewModelTest {
     private lateinit var victoryPointsMutableStateFlow: MutableStateFlow<Map<String, Int>>
     private lateinit var playersMutableStateFlow: MutableStateFlow<Map<String, PlayerInfo>>
     private lateinit var diceMutableStateFlow: MutableStateFlow<GameViewModel.DiceState?>
+    private lateinit var snackbarMessageFlow: MutableStateFlow<Pair<String, String>?>
     private val dispatcher = StandardTestDispatcher(TestCoroutineScheduler())
     private val testPlayerId = "testPlayerId"
 
@@ -115,6 +118,7 @@ class GameViewModelTest {
         victoryPointsMutableStateFlow = MutableStateFlow(emptyMap())
         playersMutableStateFlow = MutableStateFlow(emptyMap()) // Initialize players flow
         diceMutableStateFlow = MutableStateFlow(null)
+        snackbarMessageFlow = MutableStateFlow(null)
 
         // Mock Log
         mockkStatic(Log::class)
@@ -139,6 +143,7 @@ class GameViewModelTest {
         every { mockGameDataHandler.victoryPointsState } returns victoryPointsMutableStateFlow.asStateFlow()
         every { mockGameDataHandler.playersState } returns playersMutableStateFlow.asStateFlow()
         every { mockGameDataHandler.diceState } returns diceMutableStateFlow.asStateFlow()
+        every { mockGameDataHandler.snackbarMessage } returns snackbarMessageFlow.asStateFlow()
 
 
         every { mockGameDataHandler.updateDiceState(any()) } answers {
@@ -1316,6 +1321,25 @@ class GameViewModelTest {
             assertTrue(result, "Should return true if the road is connected to an owned road")
         }
     }
+    @Test
+    fun snackbarMessageReflectsGameDataHandlerState() = runTest {
+        val testSnackbar = Pair("Test message", "info")
+        snackbarMessageFlow.value = testSnackbar
+
+        assertEquals(testSnackbar, viewModel.snackbarMessage.value)
+    }
+
+    @Test
+    fun clearSnackbarMessageCallsGameDataHandler() = runTest {
+        coEvery { mockGameDataHandler.clearSnackbar() } just runs
+
+        viewModel.clearSnackbarMessage()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { mockGameDataHandler.clearSnackbar() }
+    }
+
+
 
     @Nested
     @DisplayName("Initialization via initializeBoardState")

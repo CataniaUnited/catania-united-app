@@ -69,7 +69,6 @@ fun TutorialScreen(onBackClick: () -> Unit) {
                             " You start with 2 points by placing 2 settlements, and you gain more VPs by building additional settlements, upgrading them to cities, or acquiring achievements. " +
                             "The first player to reach 10 VPs on their turn immediately wins the game."
                 )
-
                 GeneralHeading("BASIC CONCEPTS")
                 FirstSubheading("1.\tSettlements & Cities")
                 GeneralParagraph(
@@ -88,7 +87,7 @@ fun TutorialScreen(onBackClick: () -> Unit) {
                 GeneralSubheading("4.\tResource Cards")
                 GeneralParagraph(
                     "o\tThere are 5 types of resources: Brick, Lumber, Wool, Grain, and Ore.\n" + "\n" +
-                            "o\tYou use these to build roads, settlements, or cities.\n "
+                            "o\tYou use these to build roads, settlements, or cities. "
                 )
                 GeneralSubheading("5.\tNumber Tokens & Dice")
                 GeneralParagraph("o	Each terrain tile has a number (2 through 12, skipping 7). On a player’s turn, they roll 2 dice. The sum indicates which terrains produce resources. If you have a settlement or city bordering a terrain with that number, you gain the corresponding resources. (Settlements gain 1 resource; cities gain 2 resources.)")
@@ -116,7 +115,7 @@ fun TutorialScreen(onBackClick: () -> Unit) {
                     "o\tYou may build as many items as your resources allow or until you hit structure limit of:\n" +
                             "\to\tMaximum 15 roads\n" +
                             "\to\tMaximum 5 Settlement\n" +
-                            "\to\tMaximum 4 Cities\n"
+                            "\to\tMaximum 4 Cities"
                 )
                 GeneralHeading("WINNING THE GAME")
                 GeneralParagraph(

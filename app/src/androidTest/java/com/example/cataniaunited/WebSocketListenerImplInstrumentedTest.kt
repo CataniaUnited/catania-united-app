@@ -37,6 +37,14 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlinx.coroutines.test.advanceUntilIdle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.runBlocking
+
 
 
 @RunWith(AndroidJUnit4::class)
@@ -57,6 +65,10 @@ class WebSocketListenerImplInstrumentedTest {
     private lateinit var mockResponse: Response
     private lateinit var mockOnPlayerResoucesRecieved: OnPlayerResourcesReceived
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val testDispatcher = StandardTestDispatcher()
+
+
 
     private val minimalBoardContent =
         """{"tiles":[],"settlementPositions":[],"roads":[],"ports":[],"ringsOfBoard":0,"sizeOfHex":0}"""
@@ -64,6 +76,8 @@ class WebSocketListenerImplInstrumentedTest {
 
     @Before
     fun setUp() {
+        Dispatchers.setMain(testDispatcher)
+
         mockConnectionSuccess = mockk(relaxed = true)
         mockLobbyCreated = mockk(relaxed = true)
         mockPlayerJoined = mockk(relaxed = true)
@@ -76,8 +90,7 @@ class WebSocketListenerImplInstrumentedTest {
         mockWebSocket = mockk(relaxed = true)
         mockResponse = mockk(relaxed = true)
         mockOnPlayerResoucesRecieved = mockk(relaxed = true)
-
-        mockGameDataHandler = GameDataHandler()
+        mockGameDataHandler = mockk(relaxed = true)
 
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = mockConnectionSuccess,
@@ -96,6 +109,7 @@ class WebSocketListenerImplInstrumentedTest {
 
     @After
     fun tearDown() {
+        Dispatchers.resetMain()
         unmockkAll()
     }
 
@@ -834,7 +848,7 @@ class WebSocketListenerImplInstrumentedTest {
     }
 
     @Test
-    fun onMessage_handlesAlert_withMessageAndSeverity() = kotlinx.coroutines.test.runTest {
+    fun onMessage_handlesAlert_withMessageAndSeverity() = runBlocking {
         val alertMessage = "Player Bob caught cheating!"
         val severity = "success"
 
@@ -846,31 +860,18 @@ class WebSocketListenerImplInstrumentedTest {
             })
         }.toString()
 
-        val mockHandler = mockk<GameDataHandler>()
-        coEvery { mockHandler.showSnackbar(alertMessage, severity) } just Runs
-
-        val webSocketListener = WebSocketListenerImpl(
-            onConnectionSuccess = mockConnectionSuccess,
-            onLobbyCreated = mockLobbyCreated,
-            onPlayerJoined = mockPlayerJoined,
-            onLobbyUpdated = mockLobbyUpdated,
-            onGameBoardReceived = mockGameBoardReceived,
-            onError = mockError,
-            onClosed = mockClosed,
-            onDiceResult = mockDiceResult,
-            onDiceRolling = mockDiceRolling,
-            onPlayerResourcesReceived = mockOnPlayerResoucesRecieved,
-            gameDataHandler = mockHandler
-        )
+        coEvery { mockGameDataHandler.showSnackbar(alertMessage, severity) } just Runs
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        advanceUntilIdle()
-        coVerify(exactly = 1) { mockHandler.showSnackbar(alertMessage, severity) }
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        coVerify(exactly = 1) { mockGameDataHandler.showSnackbar(alertMessage, severity) }
     }
 
+
     @Test
-    fun onMessage_handlesAlert_withMessageOnly_defaultsSeverityToInfo() = kotlinx.coroutines.test.runTest {
+    fun onMessage_handlesAlert_withMessageOnly_defaultsSeverityToInfo() = runBlocking {
         val alertMessage = "You have been warned!"
 
         val messageJson = buildJsonObject {
@@ -880,31 +881,60 @@ class WebSocketListenerImplInstrumentedTest {
             })
         }.toString()
 
-        val mockHandler = mockk<GameDataHandler>()
-        coEvery { mockHandler.showSnackbar(alertMessage, "info") } just Runs
-
-        val webSocketListener = WebSocketListenerImpl(
-            onConnectionSuccess = mockConnectionSuccess,
-            onLobbyCreated = mockLobbyCreated,
-            onPlayerJoined = mockPlayerJoined,
-            onLobbyUpdated = mockLobbyUpdated,
-            onGameBoardReceived = mockGameBoardReceived,
-            onError = mockError,
-            onClosed = mockClosed,
-            onDiceResult = mockDiceResult,
-            onDiceRolling = mockDiceRolling,
-            onPlayerResourcesReceived = mockOnPlayerResoucesRecieved,
-            gameDataHandler = mockHandler
-        )
+        coEvery { mockGameDataHandler.showSnackbar(alertMessage, "info") } just Runs
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        advanceUntilIdle()
-        coVerify(exactly = 1) { mockHandler.showSnackbar(alertMessage, "info") }
+        testDispatcher.scheduler.advanceUntilIdle()
+        coVerify(exactly = 1) { mockGameDataHandler.showSnackbar(alertMessage, "info") }
     }
 
+    @Test
+    fun onMessage_handlesAlert_withNullMessage_doesNothing() = runBlocking {
+        val messageJson = buildJsonObject {
+            put("type", MessageType.ALERT.name)
+            put("message", buildJsonObject {
+                put("severity", "warning")
+            })
+        }.toString()
 
+        webSocketListener.onMessage(mockWebSocket, messageJson)
 
+        testDispatcher.scheduler.advanceUntilIdle()
+        coVerify(exactly = 0) { mockGameDataHandler.showSnackbar(any(), any()) }
+    }
+
+    @Test
+    fun onMessage_handlesAlert_withNullMessageObject_doesNothing() = runBlocking {
+        val messageJson = buildJsonObject {
+            put("type", MessageType.ALERT.name)
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        coVerify(exactly = 0) { mockGameDataHandler.showSnackbar(any(), any()) }
+    }
+
+    @Test
+    fun onMessage_handlesAlert_withNullSeverity_defaultsToInfo() = runBlocking {
+        val alertMessage = "Something happened"
+
+        val messageJson = buildJsonObject {
+            put("type", MessageType.ALERT.name)
+            put("message", buildJsonObject {
+                put("message", alertMessage)
+                put("severity", kotlinx.serialization.json.JsonNull)
+            })
+        }.toString()
+
+        coEvery { mockGameDataHandler.showSnackbar(alertMessage, "info") } just Runs
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        testDispatcher.scheduler.advanceUntilIdle()
+        coVerify(exactly = 1) { mockGameDataHandler.showSnackbar(alertMessage, "info") }
+    }
 
 
 }

@@ -39,6 +39,7 @@ import org.junit.runner.RunWith
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runBlockingTest
@@ -105,6 +106,9 @@ class WebSocketListenerImplInstrumentedTest {
             gameDataHandler = mockGameDataHandler,
             onPlayerResourcesReceived = mockOnPlayerResoucesRecieved
         )
+
+        coEvery { mockGameDataHandler.updateVictoryPoints(any()) } just Runs
+
     }
 
     @After
@@ -864,11 +868,9 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        testDispatcher.scheduler.advanceUntilIdle()
-
+        delay(200)
         coVerify(exactly = 1) { mockGameDataHandler.showSnackbar(alertMessage, severity) }
     }
-
 
     @Test
     fun onMessage_handlesAlert_withMessageOnly_defaultsSeverityToInfo() = runBlocking {
@@ -885,7 +887,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        testDispatcher.scheduler.advanceUntilIdle()
+        delay(200)
         coVerify(exactly = 1) { mockGameDataHandler.showSnackbar(alertMessage, "info") }
     }
 
@@ -900,7 +902,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        testDispatcher.scheduler.advanceUntilIdle()
+        delay(200)
         coVerify(exactly = 0) { mockGameDataHandler.showSnackbar(any(), any()) }
     }
 
@@ -912,7 +914,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        testDispatcher.scheduler.advanceUntilIdle()
+        delay(200)
         coVerify(exactly = 0) { mockGameDataHandler.showSnackbar(any(), any()) }
     }
 
@@ -932,9 +934,31 @@ class WebSocketListenerImplInstrumentedTest {
 
         webSocketListener.onMessage(mockWebSocket, messageJson)
 
-        testDispatcher.scheduler.advanceUntilIdle()
+        delay(200)
         coVerify(exactly = 1) { mockGameDataHandler.showSnackbar(alertMessage, "info") }
     }
+
+    @Test
+    fun onMessage_handlesAlert_withNonStringSeverity_treatsItAsString() = runBlocking {
+        val alertMessage = "Invalid severity format"
+
+        val messageJson = buildJsonObject {
+            put("type", MessageType.ALERT.name)
+            put("message", buildJsonObject {
+                put("message", alertMessage)
+                put("severity", 123)
+            })
+        }.toString()
+
+        coEvery { mockGameDataHandler.showSnackbar(alertMessage, "123") } just Runs
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        delay(200)
+        coVerify(exactly = 1) { mockGameDataHandler.showSnackbar(alertMessage, "123") }
+    }
+
+
 
 
 }

@@ -87,4 +87,16 @@ class GameBoardLogic @Inject constructor(
             Log.e("GameBoard", "Error rolling dice", e)
         }
     }
+
+    fun buyDevelopmentCard(lobbyId: String) {
+        val playerId = MainApplication.getInstance().getPlayerId()
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        if (webSocketClient.isConnected()) {
+            val message = buildJsonObject {}
+            webSocketClient.sendMessage(
+                MessageDTO(MessageType.BUY_DEVELOPMENT_CARD, playerId, lobbyId, null, message)
+            )
+        }
+    }
+
 }

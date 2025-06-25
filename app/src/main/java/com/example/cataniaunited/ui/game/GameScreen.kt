@@ -28,6 +28,8 @@ import com.example.cataniaunited.MainApplication
 import com.example.cataniaunited.R
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.game.GameViewModel
+import com.example.cataniaunited.ui.components.DevelopmentCardPopup
+import com.example.cataniaunited.ui.components.DevelopmentCardRowPopup
 import com.example.cataniaunited.ui.dice.DiceRollerPopup
 import com.example.cataniaunited.ui.dice.ShakeDetector
 import com.example.cataniaunited.ui.game_board.board.CatanBoard
@@ -54,7 +56,8 @@ fun GameScreen(
     val gameWonState by application.gameWonState.collectAsState()
     val players by gameViewModel.players.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
-
+    val drawnCardType by gameViewModel.drawnCardType.collectAsState()
+    var showCardPopup by remember { mutableStateOf(false) }
     val selectedPlayer = remember { mutableStateOf<PlayerInfo?>(null) }
     val selectedPlayerIndex = remember { mutableStateOf<Int?>(null) }
     val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
@@ -70,6 +73,20 @@ fun GameScreen(
         if (gameBoardState == null) {
             gameViewModel.initializeBoardState(application.latestBoardJson)
         }
+    }
+
+    if (drawnCardType != null) {
+        DevelopmentCardPopup(
+            cardType = drawnCardType!!,
+            onDismiss = { gameViewModel.clearDrawnCard() }
+        )
+    }
+
+    if (showCardPopup) {
+        DevelopmentCardRowPopup(
+            cards = gameViewModel.myDevelopmentCards,
+            onDismiss = { showCardPopup = false }
+        )
     }
 
     if (player?.isActivePlayer == true && player.isSetupRound == false && player.canRollDice == true) {
@@ -232,7 +249,13 @@ fun GameScreen(
                                         enabled = player.canRollDice == false,
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
+                                    Button(onClick = {
+                                        gameViewModel.handleBuyDevCardClick(lobbyId)
+                                    }) {
+                                        Text("Buy Dev Card")
+                                    }
                                 }
+
                             }
 
                             if (selectedPlayer.value != null && selectedPlayerIndex.value != null) {

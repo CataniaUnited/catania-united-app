@@ -8,6 +8,7 @@ import com.example.cataniaunited.logic.dto.MessageDTO
 import com.example.cataniaunited.logic.dto.MessageType
 import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDevelopmentCardReceived
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
@@ -41,7 +42,8 @@ open class WebSocketListenerImpl @Inject constructor(
     private val onDiceResult: OnDiceResult,
     private val onDiceRolling: OnDiceRolling,
     private val onPlayerResourcesReceived: OnPlayerResourcesReceived,
-    private val gameDataHandler: GameDataHandler
+    private val gameDataHandler: GameDataHandler,
+    private val onDevelopmentCardReceived: OnDevelopmentCardReceived
 ) : WebSocketListener() {
 
     private val jsonParser = Json { ignoreUnknownKeys = true; isLenient = true }
@@ -74,6 +76,7 @@ open class WebSocketListenerImpl @Inject constructor(
             when (messageDTO.type) {
                 MessageType.CONNECTION_SUCCESSFUL -> handleConnectionSuccessful(messageDTO)
                 MessageType.LOBBY_CREATED -> handleLobbyCreated(messageDTO)
+                MessageType.BUY_DEVELOPMENT_CARD -> handleDevelopmentCardDraw(messageDTO)
                 MessageType.PLAYER_JOINED -> handlePlayerJoined(messageDTO)
                 MessageType.LOBBY_UPDATED -> handleLobbyUpdated(messageDTO)
                 MessageType.PLAYER_RESOURCE_UPDATE -> handlePlayersUpdate(messageDTO)
@@ -209,6 +212,16 @@ open class WebSocketListenerImpl @Inject constructor(
         val responseMsg = response?.message ?: "No response"
         Log.e("WebSocketListener", "Failure: ${t.message}, Response: $responseMsg", t)
         onError.onError(t) // Use callback
+    }
+
+    private fun handleDevelopmentCardDraw(messageDTO: MessageDTO) {
+        val cardTypeString = messageDTO.message?.get("cardType")?.jsonPrimitive?.contentOrNull
+        if (cardTypeString != null) {
+            Log.i("WebSocketListener", "Development card drawn: $cardTypeString")
+            onDevelopmentCardReceived.onDevelopmentCardReceived(cardTypeString)
+        } else {
+            Log.e("WebSocketListener", "BUY_DEVELOPMENT_CARD message missing cardType")
+        }
     }
 
     private fun handleLobbyCreated(messageDTO: MessageDTO) {

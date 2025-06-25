@@ -5,10 +5,12 @@ import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.game.GameDataHandler
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ws.WebSocketClient
 import com.example.cataniaunited.ws.WebSocketListenerImpl
 import com.example.cataniaunited.ws.callback.OnConnectionSuccess
+import com.example.cataniaunited.ws.callback.OnDevelopmentCardReceived
 import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
@@ -44,12 +46,15 @@ open class MainApplication : Application(),
     OnDiceResult,
     OnDiceRolling,
     OnPlayerResourcesReceived,
-    WebSocketErrorProvider {
+    WebSocketErrorProvider,
+    OnDevelopmentCardReceived {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
 
     @Inject
     lateinit var webSocketListener: WebSocketListenerImpl
+
+    @Inject lateinit var gameDataHandler: GameDataHandler
 
     internal lateinit var webSocketClient: WebSocketClient
     private var _playerId: String? = null
@@ -255,5 +260,10 @@ open class MainApplication : Application(),
             } ?: Log.w("MainApplication", "gameViewModel was null — skipping update.")
         }
     }
-
+    override fun onDevelopmentCardReceived(cardType: String) {
+        Log.d("MainApplication", "Development card received (interface override): $cardType")
+        applicationScope.launch {
+            com.example.cataniaunited.logic.CardReceiver.sendCard(cardType)
+        }
+    }
 }

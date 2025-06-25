@@ -1,6 +1,7 @@
 package com.example.cataniaunited.logic.game
 
 import android.util.Log
+import com.example.cataniaunited.data.model.BuildingCostModel
 import com.example.cataniaunited.data.model.GameBoardModel
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.util.parseGameBoard
@@ -23,6 +24,10 @@ class GameDataHandler @Inject constructor() {
 
     private val _diceState = MutableStateFlow<GameViewModel.DiceState?>(null)
     val diceState: StateFlow<GameViewModel.DiceState?> = _diceState.asStateFlow()
+
+    private val _buildingCosts = MutableStateFlow<BuildingCostModel?>(null)
+    val buildingCosts: StateFlow<BuildingCostModel?> = _buildingCosts.asStateFlow()
+
 
 
     private val jsonParser = Json { ignoreUnknownKeys = true }
@@ -51,6 +56,10 @@ class GameDataHandler @Inject constructor() {
         } catch (e: Exception) {
             Log.e("GameDataHandler", "Error parsing game board JSON", e)
         }
+    }
+
+    fun updateBuildingCosts(costs: BuildingCostModel) {
+        _buildingCosts.value = costs
     }
 
     fun updateVictoryPoints(vpMap: Map<String, Int>) {

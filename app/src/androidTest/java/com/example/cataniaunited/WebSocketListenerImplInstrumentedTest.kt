@@ -23,6 +23,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.unmockkAll
 import io.mockk.verify
 import kotlinx.serialization.json.Json
@@ -91,7 +92,8 @@ class WebSocketListenerImplInstrumentedTest {
         mockWebSocket = mockk(relaxed = true)
         mockResponse = mockk(relaxed = true)
         mockOnPlayerResoucesRecieved = mockk(relaxed = true)
-        mockGameDataHandler = mockk(relaxed = true)
+        mockGameDataHandler = spyk(GameDataHandler())
+
 
         webSocketListener = WebSocketListenerImpl(
             onConnectionSuccess = mockConnectionSuccess,
@@ -106,8 +108,6 @@ class WebSocketListenerImplInstrumentedTest {
             gameDataHandler = mockGameDataHandler,
             onPlayerResourcesReceived = mockOnPlayerResoucesRecieved
         )
-
-        coEvery { mockGameDataHandler.updateVictoryPoints(any()) } just Runs
 
     }
 

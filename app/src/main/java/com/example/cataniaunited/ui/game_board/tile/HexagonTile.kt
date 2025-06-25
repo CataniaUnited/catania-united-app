@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -21,6 +22,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cataniaunited.R
 import com.example.cataniaunited.data.model.Tile
@@ -76,6 +78,8 @@ fun HexagonTile(
     modifier: Modifier = Modifier,
     tile: Tile,
     size: Dp,
+    isClickable: Boolean,
+    isActivePlayer: Boolean,
     onTileClick: (Tile) -> Unit = {}
 ) {
     Box(
@@ -95,11 +99,10 @@ fun HexagonTile(
             contentScale = ContentScale.Crop
         )
 
-        // Draw the number circle and text (only if not desert/waste)
-        if (tile.type != TileType.WASTE && tile.value != 0) {
-            val circleSizeFraction = 0.45f
-            val fontSizeFraction = 0.22f
+        val actualBorderColor = if (isClickable == true && isActivePlayer == true) Color.Black else Color.Transparent
 
+        if (tile.isRobbed){
+            val circleSizeFraction = 0.45f
             Box(
                 modifier = Modifier
                     .size(size * circleSizeFraction)
@@ -107,21 +110,48 @@ fun HexagonTile(
                         clip = true
                         shape = CircleShape
                     }
+                    .border(2.dp, actualBorderColor, CircleShape)
                     .background(Color(0xFFFFFDD0)),
                 contentAlignment = Alignment.Center
             ) {
-                val numberColor = if (tile.value == 6 || tile.value == 8) Color.Red else Color.Black
+                Image(
+                    painter = painterResource(id = R.drawable.robber_icon),
+                    contentDescription = "robber",
+                    modifier = Modifier.size((size.value * 0.8f).dp)
 
-
-                val calculatedFontSize = (size.value * fontSizeFraction).sp
-
-                Text(
-                    text = tile.value.toString(),
-                    color = numberColor,
-                    fontSize = calculatedFontSize,
-                    fontWeight = FontWeight.Bold,
-                    maxLines = 1
                 )
+            }
+        }
+        else {
+            // Draw the number circle and text (only if not desert/waste)
+            if (tile.type != TileType.WASTE && tile.value != 0) {
+                val circleSizeFraction = 0.45f
+                val fontSizeFraction = 0.22f
+
+                Box(
+                    modifier = Modifier
+                        .size(size * circleSizeFraction)
+                        .graphicsLayer {
+                            clip = true
+                            shape = CircleShape
+                        }
+                        .border(2.dp, actualBorderColor, CircleShape)
+                        .background(Color(0xFFFFFDD0)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    val numberColor = if (tile.value == 6 || tile.value == 8) Color.Red else Color.Black
+
+
+                    val calculatedFontSize = (size.value * fontSizeFraction).sp
+
+                    Text(
+                        text = tile.value.toString(),
+                        color = numberColor,
+                        fontSize = calculatedFontSize,
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                }
             }
         }
     }

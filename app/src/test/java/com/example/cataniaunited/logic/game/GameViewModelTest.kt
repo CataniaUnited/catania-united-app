@@ -80,7 +80,7 @@ class GameViewModelTest {
 
     private val validBoardJson = """
         {
-           "tiles":[{"id":1,"type":"CLAY","value":5,"coordinates":[0.0,0.0]}],
+           "tiles":[{"id":1,"type":"CLAY","value":5,"coordinates":[0.0,0.0], "isRobbed": false}],
            "settlementPositions":[{"id":1,"building":null,"coordinates":[0.0,10.0]}],
            "roads":[{"id":1,"owner":null,"color":null,"coordinates":[0.0,5.0],"rotationAngle":0.0}],
            "ports": [],
@@ -90,7 +90,7 @@ class GameViewModelTest {
     """
     private val anotherValidBoardJson = """
         {
-           "tiles":[{"id":2,"type":"WOOD","value":6,"coordinates":[1.0,1.0]}],
+           "tiles":[{"id":2,"type":"WOOD","value":6,"coordinates":[1.0,1.0], "isRobbed": false}],
            "settlementPositions":[{"id":2,"building":null,"coordinates":[1.0,11.0]}],
            "roads":[{"id":2,"owner":null,"color":null,"coordinates":[1.0,6.0],"rotationAngle":0.0}],
            "ports": [],
@@ -704,7 +704,8 @@ class GameViewModelTest {
 
         @Test
         fun handleSettlementClickCallsGameBoardLogicPlaceSettlement() = runTest {
-            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testPosition =
+                SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
             val testLobbyId = "click-lobby-1"
 
             viewModel.handleSettlementClick(testPosition, false, testLobbyId)
@@ -714,17 +715,29 @@ class GameViewModelTest {
 
         @Test
         fun handleSettlementClickCallsGameBoardLogicUpgradeSettlement() = runTest {
-            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testPosition =
+                SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
             val testLobbyId = "click-lobby-1"
 
             viewModel.handleSettlementClick(testPosition, true, testLobbyId)
             advanceUntilIdle()
-            verify(exactly = 1) { mockGameBoardLogic.upgradeSettlement(testPosition.id, testLobbyId) }
+            verify(exactly = 1) {
+                mockGameBoardLogic.upgradeSettlement(
+                    testPosition.id,
+                    testLobbyId
+                )
+            }
         }
 
         @Test
         fun handleRoadClickCallsGameBoardLogicPlaceRoad() = runTest {
-            val testRoad = Road(id = 10, owner = null, coordinates = listOf(3.0, 4.0), rotationAngle = 0.5, color = null)
+            val testRoad = Road(
+                id = 10,
+                owner = null,
+                coordinates = listOf(3.0, 4.0),
+                rotationAngle = 0.5,
+                color = null
+            )
             val testLobbyId = "click-lobby-2"
 
             viewModel.handleRoadClick(testRoad, testLobbyId)
@@ -734,7 +747,8 @@ class GameViewModelTest {
 
         @Test
         fun handleTileClickLogsMessage() = runTest {
-            val testTile = Tile(id = 1, type = TileType.WOOD, value = 0, coordinates = listOf(0.0, 0.0))
+            val testTile =
+                Tile(id = 1, type = TileType.WOOD, value = 0, coordinates = listOf(0.0, 0.0))
             val testLobbyId = "tile-lobby-1"
 
             viewModel.handleTileClick(testTile, testLobbyId)
@@ -889,7 +903,7 @@ class GameViewModelTest {
              assertEquals(true, viewModel.isBuildMenuOpen.value, "Build menu should remain open")
          }
     }
-    
+
     @Nested
     @DisplayName("Trade Menu and Offer State")
     inner class TradeMenuAndOfferStateTests {

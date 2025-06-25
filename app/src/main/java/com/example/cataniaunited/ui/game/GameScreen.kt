@@ -46,6 +46,7 @@ fun GameScreen(
     val gameBoardState by gameViewModel.gameBoardState.collectAsState()
     val isBuildMenuOpen by gameViewModel.isBuildMenuOpen.collectAsState()
     val isTradeMenuOpen by gameViewModel.isTradeMenuOpen.collectAsState()
+    val isRobMenuOpen by gameViewModel.isRobMenuOpen.collectAsState()
     val tradeOffer by gameViewModel.tradeOffer.collectAsState()
     val application = LocalContext.current.applicationContext as MainApplication
     val showDicePopup by gameViewModel.showDicePopup.collectAsState()
@@ -207,7 +208,9 @@ fun GameScreen(
                                 roads = board.roads,
                                 ports = board.ports,
                                 isBuildMode = isBuildMenuOpen,
+                                isRobMode = isRobMenuOpen,
                                 playerId = gameViewModel.playerId,
+                                isActivePlayer = player!!.isActivePlayer,
                                 onTileClicked = { tile ->
                                     Log.d("GameScreen", "Tile Clicked: ${tile.id}")
                                     gameViewModel.handleTileClick(tile, lobbyId)
@@ -232,7 +235,7 @@ fun GameScreen(
                                     .padding(top = 32.dp, end = 16.dp)
                                     .zIndex(2f)
                             ) {
-                                if (player?.isActivePlayer == true) {
+                                if (player.isActivePlayer == true) {
                                     BuildButton(
                                         enabled = player.canRollDice == false || player.isSetupRound == true,
                                         isOpen = isBuildMenuOpen,
@@ -242,6 +245,12 @@ fun GameScreen(
                                         enabled = player.canRollDice == false,
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
+                                    RobberButton (
+                                        enabled = isRobMenuOpen,
+                                        isRobOpen = isRobMenuOpen,
+                                        onClick = { isRobOpen -> gameViewModel.setRobMenuOpen(isRobOpen) }
+                                    )
+
                                 }
                             }
 

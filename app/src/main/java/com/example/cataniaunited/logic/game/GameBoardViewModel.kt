@@ -54,6 +54,9 @@ class GameViewModel @Inject constructor(
     private val _players = MutableStateFlow<Map<String, PlayerInfo>>(emptyMap())
     val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
 
+    private val _isRobMenuOpen = MutableStateFlow(false)
+    val isRobMenuOpen: StateFlow<Boolean> = _isRobMenuOpen
+
     private val _isTradeMenuOpen = MutableStateFlow(false)
     val isTradeMenuOpen: StateFlow<Boolean> = _isTradeMenuOpen.asStateFlow()
 
@@ -88,10 +91,11 @@ class GameViewModel @Inject constructor(
                 Log.d("GameViewModel_Collect", "RECEIVED playersState in collect: $it")
                 _players.value = it
 
-                val playerInfo: PlayerInfo? = it[playerId];
+                val playerInfo: PlayerInfo? = it[playerId]
                 if(playerInfo != null && !playerInfo.isActivePlayer){
-                    //Close build menu when player is not active player
+                    //Close build and rob menu when player is not active player
                     setBuildMenuOpen(false)
+                    setRobMenuOpen(false)
                 }
             }
             Log.d("GameViewModel_Collect", "playersState collect FINISHED in ViewModelScope.")
@@ -122,6 +126,13 @@ class GameViewModel @Inject constructor(
 
     fun handleTileClick(tile: Tile, lobbyId: String) {
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
+        Log.d("GameViewModel", "handleTileClick: _isRobMenuOpen=${_isRobMenuOpen.value}")
+
+        if (_isRobMenuOpen.value) {
+            Log.d("GameViewModel", "handleTileClick: Rob menu is open")
+            gameBoardLogic.placeRobber(lobbyId, tile.id)
+            setRobMenuOpen(false)
+        }
     }
 
     fun handleSettlementClick(
@@ -226,6 +237,7 @@ class GameViewModel @Inject constructor(
                 )
             )
             delay(3000) // Show result for 3 seconds
+            Log.d("GameViewModel", "showResult: dice result %")
             resetDiceState()
         }
     }
@@ -234,6 +246,11 @@ class GameViewModel @Inject constructor(
         viewModelScope.launch {
             gameDataHandler.updateDiceState(null)
         }
+    }
+
+    fun setRobMenuOpen(isRobOpen: Boolean) {
+        Log.d("GameViewModel", "handleRobMenuClick: isRobOpen=$isRobOpen")
+        _isRobMenuOpen.value = isRobOpen
     }
 
     fun setTradeMenuOpen(isOpen: Boolean) {

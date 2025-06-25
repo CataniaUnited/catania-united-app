@@ -670,6 +670,216 @@ class GameViewModelTest {
         }
 
         @Test
+        fun testUpdateHighlightedPositionsHighlightsAllRoadsWhenNoPlayerRoads() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road1 = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            val road2 = Road(2, null, listOf(1.0, 1.0), 0.0, null)
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = emptyList(),
+                roads = listOf(road1, road2),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(setOf(1, 2), viewModel.highlightedRoadIds.value)
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsHighlightsSettlementsWhenNoPlayerSettlements() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, testPlayerId, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(1, null, listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.handleRoadClick(road, "testLobby")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(setOf(1), viewModel.highlightedSettlementIds.value)
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsClearsHighlightsWhenPlayerHasRoadsAndSettlements() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = false)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, testPlayerId, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(1, Building(testPlayerId, "Settlement", "#FF0000"), listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            viewModel.updateHighlightedPositions()
+
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsHighlightsViablePositionsInNormalRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = false)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road1 = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            val road2 = Road(2, testPlayerId, listOf(1.0, 1.0), 0.0, null)
+            val settlement = SettlementPosition(1, null, listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road1, road2),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertNotNull(viewModel.highlightedSettlementIds.value)
+            assertNotNull(viewModel.highlightedRoadIds.value)
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsReturnsEarlyWhenBoardIsNull() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val initialSettlements = viewModel.highlightedSettlementIds.value
+            val initialRoads = viewModel.highlightedRoadIds.value
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(initialSettlements, viewModel.highlightedSettlementIds.value)
+            assertEquals(initialRoads, viewModel.highlightedRoadIds.value)
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsReturnsEarlyWhenPlayerIsNull() = runTest {
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = emptyList(),
+                roads = emptyList(),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val initialSettlements = viewModel.highlightedSettlementIds.value
+            val initialRoads = viewModel.highlightedRoadIds.value
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(initialSettlements, viewModel.highlightedSettlementIds.value)
+            assertEquals(initialRoads, viewModel.highlightedRoadIds.value)
+        }
+
+        @Test
+        fun testUpdateHighlightedPositionsReturnsEarlyWhenPlayerIsNotActive() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = false, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = emptyList(),
+                roads = emptyList(),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val initialSettlements = viewModel.highlightedSettlementIds.value
+            val initialRoads = viewModel.highlightedRoadIds.value
+
+            viewModel.updateHighlightedPositions()
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertEquals(initialSettlements, viewModel.highlightedSettlementIds.value)
+            assertEquals(initialRoads, viewModel.highlightedRoadIds.value)
+        }
+
+        @Test
+        fun testClearsHighlightsAfterSettlementPlacement() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Test",
+                isActivePlayer = true,
+                isSetupRound = true
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val playerRoad = Road(1, testPlayerId, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(1, null, listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(playerRoad),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            viewModel.handleRoadClick(playerRoad, "test-lobby")
+            viewModel.handleSettlementClick(settlement, false, "test-lobby")
+            advanceUntilIdle()
+
+            viewModel.updateHighlightedPositions()
+            advanceUntilIdle()
+
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        private fun GameViewModel.setSetupRoundState(hasPlacedRoad: Boolean, hasPlacedSettlement: Boolean) {
+            val roadField = GameViewModel::class.java.getDeclaredField("hasPlacedSetupRoad")
+            val settlementField = GameViewModel::class.java.getDeclaredField("hasPlacedSetupSettlement")
+            roadField.isAccessible = true
+            settlementField.isAccessible = true
+            roadField.setBoolean(this, hasPlacedRoad)
+            settlementField.setBoolean(this, hasPlacedSettlement)
+        }
+
+        @Test
         fun testCombineCollectorUpdatesHighlightsWhenBuildMenuOpens() = runTest {
             val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
             playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
@@ -1215,6 +1425,177 @@ class GameViewModelTest {
             viewModel.handleTileClick(testTile, testLobbyId)
             advanceUntilIdle()
             verify { Log.d("GameViewModel", "handleTileClick: Tile ID=${testTile.id}") }
+        }
+
+        @Test
+        fun handleSettlementClickLogsMessage() = runTest {
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+            viewModel.handleSettlementClick(settlement, false, "lobby1")
+            verify { Log.d("GameViewModel", "handleSettlementClick: SettlementPosition ID=1") }
+        }
+
+        @Test
+        fun handleSettlementClickCallsUpgradeWhenIsUpgradeTrue() = runTest {
+            val playerInfo = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to playerInfo)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+
+            viewModel.handleSettlementClick(settlement, true, "lobby1")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            verify { mockGameBoardLogic.upgradeSettlement(1, "lobby1") }
+        }
+
+        @Test
+        fun handleSettlementClickCallsPlaceWhenIsUpgradeFalse() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+
+            viewModel.handleSettlementClick(settlement, false, "lobby1")
+
+            dispatcher.scheduler.advanceUntilIdle()
+            verify(exactly = 1) { mockGameBoardLogic.placeSettlement(settlement.id, "lobby1") }
+        }
+
+        @Test
+        fun handleSettlementClickCallsGameBoardLogicPlaceSettlement() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testLobbyId = "click-lobby-1"
+
+            viewModel.handleSettlementClick(testPosition, false, testLobbyId)
+            dispatcher.scheduler.advanceUntilIdle()
+
+            verify(exactly = 1) { mockGameBoardLogic.placeSettlement(testPosition.id, testLobbyId) }
+        }
+
+        @Test
+        fun handleSettlementClickCallsGameBoardLogicUpgradeSettlement() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val testPosition = SettlementPosition(id = 5, building = null, coordinates = listOf(1.0, 2.0))
+            val testLobbyId = "click-lobby-1"
+
+            viewModel.handleSettlementClick(testPosition, true, testLobbyId)
+            dispatcher.scheduler.advanceUntilIdle()
+            verify(exactly = 1) { mockGameBoardLogic.upgradeSettlement(testPosition.id, testLobbyId) }
+        }
+
+        @Test
+        fun handleSettlementClickClearsHighlightsInSetupRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+            viewModel.handleSettlementClick(settlement, false, "lobby1")
+
+            assertTrue(viewModel.highlightedSettlementIds.value.isEmpty())
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+        }
+
+        @Test
+        fun handleSettlementClickRemovesHighlightInNormalRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val settlement = SettlementPosition(1, null, listOf(0.0, 0.0))
+            viewModel.handleSettlementClick(settlement, false, "lobby1")
+
+            assertFalse(viewModel.highlightedSettlementIds.value.contains(1))
+        }
+
+        @Test
+        fun handleRoadClickCallsPlaceRoad() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+
+            viewModel.handleRoadClick(road, "lobby1")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            verify { mockGameBoardLogic.placeRoad(1, "lobby1") }
+        }
+
+        @Test
+        fun handleRoadClickClearsHighlightsAndShowsAdjacentSettlementsInSetupRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(1, null, listOf(0.0, 5.0))
+
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.handleRoadClick(road, "lobby1")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+            assertEquals(setOf(1), viewModel.highlightedSettlementIds.value)
+        }
+
+        @Test
+        fun handleRoadClickClearsHighlightsAndHighlightsAdjacentSettlementsInSetupRound() = runTest {
+            val testPlayer = PlayerInfo(id = testPlayerId, username = "Test", isActivePlayer = true, isSetupRound = true)
+            playersMutableStateFlow.value = mapOf(testPlayerId to testPlayer)
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            val settlement = SettlementPosition(2, null, listOf(0.0, 5.0))
+            gameBoardMutableStateFlow.value = GameBoardModel(
+                tiles = emptyList(),
+                settlementPositions = listOf(settlement),
+                roads = listOf(road),
+                ports = emptyList(),
+                ringsOfBoard = 1,
+                sizeOfHex = 6
+            )
+
+            dispatcher.scheduler.advanceUntilIdle()
+
+            viewModel.handleRoadClick(road, "lobby")
+            dispatcher.scheduler.advanceUntilIdle()
+
+            assertTrue(viewModel.highlightedRoadIds.value.isEmpty())
+            assertEquals(setOf(2), viewModel.highlightedSettlementIds.value)
+        }
+
+        @Test
+        fun handleRoadClickRemovesHighlightInNormalRound() = runTest {
+            val playerInfo = PlayerInfo(
+                username = "Test Player",
+                isSetupRound = false
+            )
+            playersMutableStateFlow.value = mapOf(testPlayerId to playerInfo)
+
+            val road = Road(1, null, listOf(0.0, 0.0), 0.0, null)
+            viewModel.handleRoadClick(road, "lobby1")
+
+            assertFalse(viewModel.highlightedRoadIds.value.contains(1))
         }
     }
 

@@ -164,6 +164,7 @@ class GameViewModel @Inject constructor(
         }
 
         if (playerInfo.isSetupRound) {
+            hasPlacedSetupSettlement = true
             clearHighlights()
         } else {
             _highlightedSettlementIds.update { it - settlementPosition.id }
@@ -176,7 +177,7 @@ class GameViewModel @Inject constructor(
         gameBoardLogic.placeRoad(road.id, lobbyId)
 
         if (playerInfo.isSetupRound) {
-            _highlightedRoadIds.value = emptySet()
+            hasPlacedSetupRoad = true
 
             val board = gameBoardState.value ?: return
             val settlements = board.settlementPositions
@@ -192,6 +193,7 @@ class GameViewModel @Inject constructor(
             }.map { it.id }.toSet()
 
             _highlightedSettlementIds.value = adjacentSettlements
+            _highlightedRoadIds.value = emptySet()
         } else {
             _highlightedRoadIds.update { it - road.id }
         }
@@ -361,13 +363,13 @@ class GameViewModel @Inject constructor(
             val playerRoads = roads.filter { it.owner == playerId }
             val playerSettlements = settlements.filter { it.building?.owner == playerId }
 
-            if (playerRoads.isEmpty()) {
+            if (!hasPlacedSetupRoad) {
                 _highlightedRoadIds.value = roads.filter { it.owner == null }.map { it.id }.toSet()
                 _highlightedSettlementIds.value = emptySet()
                 return
             }
 
-            if (playerSettlements.isEmpty()) {
+            if (!hasPlacedSetupSettlement) {
                 val lastPlacedRoad = playerRoads.lastOrNull()
                 if (lastPlacedRoad != null) {
                     val validSettlements = settlements.filter { settlement ->

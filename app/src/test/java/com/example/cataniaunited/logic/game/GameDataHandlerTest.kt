@@ -224,4 +224,29 @@ class GameDataHandlerTest {
         val currentState = gameDataHandler.diceState.first()
         assertNull(currentState)
     }
+
+    @Test
+    fun showSnackbarEmitsSnackbarMessage() = runTest {
+        val message = "This is a test message"
+        val severity = "warning"
+
+        gameDataHandler.showSnackbar(message, severity)
+
+        val snackbar = gameDataHandler.snackbarMessage.first()
+        assertNotNull(snackbar)
+        assertEquals(message, snackbar?.first)
+        assertEquals(severity, snackbar?.second)
+    }
+
+    @Test
+    fun clearSnackbarEmitsNullSnackbar() = runTest {
+        gameDataHandler.showSnackbar("Temporary message")
+
+        gameDataHandler.clearSnackbar()
+
+        val snackbar = gameDataHandler.snackbarMessage.first()
+        assertNull(snackbar)
+    }
+
+
 }

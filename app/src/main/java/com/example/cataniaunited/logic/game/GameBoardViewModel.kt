@@ -44,6 +44,7 @@ class GameViewModel @Inject constructor(
 
     private val _showDicePopup = MutableStateFlow(false)
     val showDicePopup: StateFlow<Boolean> = _showDicePopup
+
     private val _victoryPoints = MutableStateFlow<Map<String, Int>>(emptyMap())
     val victoryPoints: StateFlow<Map<String, Int>> = _victoryPoints
 
@@ -58,6 +59,8 @@ class GameViewModel @Inject constructor(
 
     private val _tradeOffer = MutableStateFlow<Pair<Map<TileType, Int>, Map<TileType, Int>>>(Pair(emptyMap(), emptyMap()))
     val tradeOffer: StateFlow<Pair<Map<TileType, Int>, Map<TileType, Int>>> = _tradeOffer.asStateFlow()
+
+    val snackbarMessage: StateFlow<Pair<String, String>?> = gameDataHandler.snackbarMessage
 
     init {
         Log.d("GameViewModel", "ViewModel Initialized (Hilt).")
@@ -287,5 +290,12 @@ class GameViewModel @Inject constructor(
     fun onReportPlayer(reportedId: String, lobbyId: String) {
         cheatingLogic.sendReportPlayer(reportedId, lobbyId)
     }
+
+    fun clearSnackbarMessage() {
+        viewModelScope.launch {
+            gameDataHandler.clearSnackbar()
+        }
+    }
+
 
 }

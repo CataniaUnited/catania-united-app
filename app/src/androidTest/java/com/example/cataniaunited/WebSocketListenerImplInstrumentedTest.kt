@@ -827,4 +827,62 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 0) { mockLobbyUpdated.onLobbyUpdated(any(), any()) }
     }
+
+    @Test
+    fun onMessage_handlesAlertMessage_withMessageAndDefaultSeverity() {
+        val alertMessageContent = "This is an alert!"
+        val messageJson = buildJsonObject {
+            put("type", MessageType.ALERT.name)
+            put("message", buildJsonObject {
+                put("message", alertMessageContent)
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+    @Test
+    fun onMessage_handlesAlertMessage_withMessageAndCustomSeverity() {
+        val alertMessageContent = "Critical system warning!"
+        val severityContent = "error"
+        val messageJson = buildJsonObject {
+            put("type", MessageType.ALERT.name)
+            put("message", buildJsonObject {
+                put("message", alertMessageContent)
+                put("severity", severityContent)
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+    @Test
+    fun onMessage_handlesAlertMessage_missingMessage_doesNotCallShowSnackbar() {
+        val messageJson = buildJsonObject {
+            put("type", MessageType.ALERT.name)
+            put("message", buildJsonObject {
+                put("severity", "warning")
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
+
+    @Test
+    fun onMessage_handlesAlertMessage_emptyMessageObject_doesNotCallShowSnackbar() {
+        val messageJson = buildJsonObject {
+            put("type", MessageType.ALERT.name)
+            put("message", buildJsonObject {
+            })
+        }.toString()
+
+        webSocketListener.onMessage(mockWebSocket, messageJson)
+
+        verify(exactly = 0) { mockError.onError(any()) }
+    }
 }

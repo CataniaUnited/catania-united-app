@@ -55,6 +55,9 @@ fun GameScreen(
     val players by gameViewModel.players.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarMessage by gameViewModel.snackbarMessage.collectAsState()
+
     val selectedPlayer = remember { mutableStateOf<PlayerInfo?>(null) }
     val selectedPlayerIndex = remember { mutableStateOf<Int?>(null) }
     val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
@@ -69,6 +72,13 @@ fun GameScreen(
         application.gameViewModel = gameViewModel
         if (gameBoardState == null) {
             gameViewModel.initializeBoardState(application.latestBoardJson)
+        }
+    }
+
+    LaunchedEffect(snackbarMessage) {
+        snackbarMessage?.let { (text, _) ->
+            snackbarHostState.showSnackbar(text)
+            gameViewModel.clearSnackbarMessage()
         }
     }
 
@@ -316,6 +326,27 @@ fun GameScreen(
                         )
                     }
                 }
+            }
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 80.dp),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            SnackbarHost(
+                hostState = snackbarHostState
+            ) { data ->
+                val backgroundColor = when (snackbarMessage?.second) {
+                    "success" -> Color(0xFF4CAF50)
+                    "error" -> Color(0xFFF44336)
+                    else -> MaterialTheme.colorScheme.surfaceVariant
+                }
+
+                Snackbar(
+                    snackbarData = data,
+                    containerColor = backgroundColor
+                )
             }
         }
     }

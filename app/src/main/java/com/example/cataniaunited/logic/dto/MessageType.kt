@@ -31,6 +31,7 @@ enum class MessageType {
     END_TURN,
     TRADE_WITH_BANK,
     TRADE_WITH_PLAYER,
+    DISCARD_RESOURCES,
     CHEAT_ATTEMPT,
     REPORT_PLAYER
 }

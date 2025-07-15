@@ -51,6 +51,7 @@ fun GameScreen(
     val showDicePopup by gameViewModel.showDicePopup.collectAsState()
     val diceState by gameViewModel.diceState.collectAsState()
     val playerResources by gameViewModel.playerResources.collectAsState()
+    val hasToDiscard by gameViewModel.hasToDiscard.collectAsState()
     val gameWonState by application.gameWonState.collectAsState()
     val players by gameViewModel.players.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
@@ -63,6 +64,7 @@ fun GameScreen(
     val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
 
     val isReportPopupOpen = remember { mutableStateOf(false) }
+    val showDiscardPopup = remember { mutableStateOf(false) }
 
     val density = LocalDensity.current
     val popupOffsetX = with(density) { selectedPlayerOffsetX.floatValue.toDp().roundToPx() }
@@ -100,6 +102,14 @@ fun GameScreen(
             ReportButton(
                 onClick = { isReportPopupOpen.value = true }
             )
+
+            if (hasToDiscard) {
+                Button(
+                    onClick = { showDiscardPopup.value = true }
+                ) {
+                    Text("Discard ${gameViewModel.getDiscardCount()} resources")
+                }
+            }
         }
 
         if (isReportPopupOpen.value) {

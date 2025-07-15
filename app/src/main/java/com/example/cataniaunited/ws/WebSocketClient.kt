@@ -23,7 +23,6 @@ open class WebSocketClient(private val serverUrl: String) {
         return webSocket != null
     }
 
-
     fun sendMessage(messageDTO: MessageDTO): Boolean {
         val socket = webSocket // Capture current socket instance
         if (socket == null) {
@@ -39,8 +38,6 @@ open class WebSocketClient(private val serverUrl: String) {
             false
         }
     }
-
-
 
     fun close() {
         webSocket?.close(1000, "Client closed connection")

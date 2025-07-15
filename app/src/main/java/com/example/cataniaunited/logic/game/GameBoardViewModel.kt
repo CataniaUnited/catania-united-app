@@ -9,6 +9,7 @@ import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.discard.DiscardLogic
 import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -30,6 +31,7 @@ class GameViewModel @Inject constructor(
     private val gameDataHandler: GameDataHandler,
     private val sessionManager: PlayerSessionManager,
     private val tradeLogic: TradeLogic,
+    private val discardLogic: DiscardLogic,
     private val cheatingLogic: CheatingLogic,
 ) : ViewModel() {
 
@@ -56,6 +58,9 @@ class GameViewModel @Inject constructor(
     private val _players = MutableStateFlow<Map<String, PlayerInfo>>(emptyMap())
     val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
 
+    private val _hasToDiscard = MutableStateFlow(false)
+    val hasToDiscard: StateFlow<Boolean> = _hasToDiscard.asStateFlow()
+
     private val _isTradeMenuOpen = MutableStateFlow(false)
     val isTradeMenuOpen: StateFlow<Boolean> = _isTradeMenuOpen.asStateFlow()
 
@@ -70,6 +75,7 @@ class GameViewModel @Inject constructor(
 
     private var hasPlacedSetupRoad = false
     private var hasPlacedSetupSettlement = false
+    private var discardCount = 0
 
     val snackbarMessage: StateFlow<Pair<String, String>?> = gameDataHandler.snackbarMessage
 
@@ -99,7 +105,7 @@ class GameViewModel @Inject constructor(
                 Log.d("GameViewModel_Collect", "RECEIVED playersState in collect: $it")
                 _players.value = it
 
-                val playerInfo: PlayerInfo? = it[playerId];
+                val playerInfo: PlayerInfo? = it[playerId]
                 if(playerInfo != null && !playerInfo.isActivePlayer){
                     //Close build menu when player is not active player
                     setBuildMenuOpen(false)
@@ -339,6 +345,21 @@ class GameViewModel @Inject constructor(
         val tradeRequest = TradeRequest(offered, target)
         tradeLogic.sendBankTrade(lobbyId, tradeRequest)
         setTradeMenuOpen(false) // Close menu after submitting
+    }
+
+    fun triggerDiscardResources(player: PlayerInfo) {
+        val totalResources = player.resources.values.sum()
+        if(totalResources > 7){
+            discardCount = totalResources / 2
+            _hasToDiscard.value = true
+        }
+    }
+
+    fun getDiscardCount(): Int = discardCount
+
+    fun submitDiscardResources() {
+        _hasToDiscard.value = false
+        discardCount = 0
     }
 
     fun onCheatAttempt(tileType: TileType, lobbyId: String) {

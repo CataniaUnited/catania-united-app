@@ -9,6 +9,7 @@ import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.discard.DiscardLogic
 import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -77,6 +78,7 @@ class GameViewModelTest {
     private lateinit var mockLobbyLogic: LobbyLogic
     private lateinit var mockTradeLogic: TradeLogic
     private lateinit var mockCheatingLogic: CheatingLogic
+    private lateinit var mockDiscardLogic: DiscardLogic
     private lateinit var viewModel: GameViewModel
 
     private val validBoardJson = """
@@ -185,8 +187,8 @@ class GameViewModelTest {
             mockGameDataHandler,
             mockPlayerSessionManager,
             mockTradeLogic,
-            mockCheatingLogic
-
+            mockDiscardLogic,
+            mockCheatingLogic,
         )
     }
 
@@ -569,6 +571,7 @@ class GameViewModelTest {
             mockGameDataHandler,
             mockPlayerSessionManager,
             mockTradeLogic,
+            mockDiscardLogic,
             mockCheatingLogic,
         )
         val lobbyId = "lobby123"
@@ -587,6 +590,7 @@ class GameViewModelTest {
             mockGameDataHandler,
             mockPlayerSessionManager,
             mockTradeLogic,
+            mockDiscardLogic,
             mockCheatingLogic,
         )
 
@@ -1679,7 +1683,7 @@ class GameViewModelTest {
              playersMutableStateFlow.value = mapOf(testPlayerId to PlayerInfo(id = testPlayerId, username = "Test", resources = initialPlayerResources))
 
              // Recreate ViewModel to pick up the new playersState from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockDiscardLogic, mockCheatingLogic)
              advanceUntilIdle()
 
              assertEquals(initialPlayerResources, viewModel.playerResources.value)
@@ -1706,7 +1710,7 @@ class GameViewModelTest {
              val initialPlayers = mapOf("p1" to PlayerInfo(id = "p1", username = "Player One"))
              playersMutableStateFlow.value = initialPlayers // Simulate GameDataHandler having this state
              // Recreate ViewModel to pick up the new playersState from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockDiscardLogic, mockCheatingLogic)
              advanceUntilIdle()
              assertEquals(initialPlayers, viewModel.players.value)
          }
@@ -1716,7 +1720,7 @@ class GameViewModelTest {
              val initialVPs = mapOf("p1" to 5)
              victoryPointsMutableStateFlow.value = initialVPs // Simulate GameDataHandler having this state
              // Recreate ViewModel to pick up the new state from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockDiscardLogic, mockCheatingLogic)
              advanceUntilIdle()
              assertEquals(initialVPs, viewModel.victoryPoints.value)
          }
@@ -1793,7 +1797,7 @@ class GameViewModelTest {
             playersMutableStateFlow.value = initialPlayers
 
             // Recreate ViewModel to ensure it collects the initial player state
-            viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
+            viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockDiscardLogic, mockCheatingLogic)
         }
 
         @Test

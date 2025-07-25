@@ -61,6 +61,9 @@ class GameViewModel @Inject constructor(
     private val _hasToDiscard = MutableStateFlow(false)
     val hasToDiscard: StateFlow<Boolean> = _hasToDiscard.asStateFlow()
 
+    private val _discardCount = MutableStateFlow(0)
+    val discardCount: StateFlow<Int> = _discardCount.asStateFlow()
+
     private val _isTradeMenuOpen = MutableStateFlow(false)
     val isTradeMenuOpen: StateFlow<Boolean> = _isTradeMenuOpen.asStateFlow()
 
@@ -75,7 +78,6 @@ class GameViewModel @Inject constructor(
 
     private var hasPlacedSetupRoad = false
     private var hasPlacedSetupSettlement = false
-    private var discardCount = 0
 
     val snackbarMessage: StateFlow<Pair<String, String>?> = gameDataHandler.snackbarMessage
 
@@ -340,26 +342,38 @@ class GameViewModel @Inject constructor(
         }
     }
 
-    fun submitBankTrade(lobbyId: String) {
-        val (offered, target) = _tradeOffer.value
-        val tradeRequest = TradeRequest(offered, target)
-        tradeLogic.sendBankTrade(lobbyId, tradeRequest)
-        setTradeMenuOpen(false) // Close menu after submitting
+    fun updateDiscardResource(resource: TileType, delta: Int){
+        val currentResources = _playerResources.value.toMutableMap()
+        val currentCount = currentResources[resource] ?: 0
+        val newCount = currentCount + delta
+
+        if (newCount in 0..(players.value[playerId]?.resources?.get(resource) ?: 0)){
+            currentResources[resource] = newCount
+            _playerResources.value = currentResources
+            _discardCount.value = _discardCount.value - delta * (-1)
+        }
     }
 
     fun triggerDiscardResources(player: PlayerInfo) {
         val totalResources = player.resources.values.sum()
         if(totalResources > 7){
-            discardCount = totalResources / 2
+            _discardCount.value = totalResources / 2
             _hasToDiscard.value = true
         }
     }
 
-    fun getDiscardCount(): Int = discardCount
+    fun getDiscardCount(): Int = _discardCount.value
 
     fun submitDiscardResources() {
         _hasToDiscard.value = false
-        discardCount = 0
+        _discardCount.value = 0
+    }
+
+    fun submitBankTrade(lobbyId: String) {
+        val (offered, target) = _tradeOffer.value
+        val tradeRequest = TradeRequest(offered, target)
+        tradeLogic.sendBankTrade(lobbyId, tradeRequest)
+        setTradeMenuOpen(false) // Close menu after submitting
     }
 
     fun onCheatAttempt(tileType: TileType, lobbyId: String) {

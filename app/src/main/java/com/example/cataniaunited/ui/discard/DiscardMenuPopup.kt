@@ -13,14 +13,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.ui.theme.catanClay
-import com.example.cataniaunited.ui.trade.ResourceSelector
 
 @Composable
 fun DiscardMenuPopup (
     discardCount : Int,
+    resources: Map<TileType, Int>,
+    onDiscard: (TileType, Int) -> Unit,
     onSubmit: (Map<TileType, Int>) -> Unit
 ) {
     val selected = remember { mutableStateMapOf<TileType, Int>() }
+    val displayOrder = listOf(TileType.WOOD, TileType.CLAY, TileType.SHEEP, TileType.WHEAT, TileType.ORE)
 
     Dialog(onDismissRequest = { /* no dismiss by outside click */ }) {
         Column(
@@ -31,24 +33,27 @@ fun DiscardMenuPopup (
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text("Discard $discardCount cards", color = Color.White)
-            Spacer(Modifier.height(8.dp))
-            TileType.entries.forEach { resource ->
-                ResourceSelector(
-                    resource = resource,
-                    count = selected[resource] ?: 0,
-                    onIncrement = {
-                        if (selected.values.sum() < discardCount)
-                            selected[resource] = (selected[resource] ?: 0) + 0
-                    },
-                    onDecrement = {
-                        selected[resource] = maxOf(0, (selected[resource] ?: 0) - 1)
-                    }
-                )
+            Spacer(Modifier.height(4.dp))
+            displayOrder.forEach { resource ->
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    DiscardSelector(
+                        resource = resource,
+                        count = resources[resource] ?: 0,
+                        onDecrement = { onDiscard(resource, -1) },
+                        onIncrement = { onDiscard(resource, 1) }
+                    )
+                }
             }
-            Spacer(Modifier.height(12.dp))
+
+            Spacer(Modifier.height(8.dp))
+
             Button(
                 onClick = { onSubmit(selected) },
-                enabled = selected.values.sum() == discardCount
+                enabled = discardCount == 0
             ) {
                 Text("Confirm Discard")
             }

@@ -10,6 +10,7 @@ import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.discard.DiscardLogic
+import com.example.cataniaunited.logic.dto.DiscardRequest
 import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -364,7 +365,10 @@ class GameViewModel @Inject constructor(
 
     fun getDiscardCount(): Int = _discardCount.value
 
-    fun submitDiscardResources() {
+    fun submitDiscardResources(lobbyId: String, discardResources: Map<TileType, Int>) {
+        Log.d("GameViewModel", "submitDiscardResources: $discardResources") //send remaining resources to server
+        val request = DiscardRequest(discardResources)                      // not amount of resources to discard
+        discardLogic.sendDiscardResources(lobbyId, request)
         _hasToDiscard.value = false
         _discardCount.value = 0
     }

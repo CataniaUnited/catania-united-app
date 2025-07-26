@@ -151,8 +151,8 @@ fun GameScreen(
                 onDiscard = { resource, delta ->
                     gameViewModel.updateDiscardResource(resource, delta)
                 },
-                onSubmit = { selected ->
-                    gameViewModel.submitDiscardResources()
+                onSubmit = { playerResources ->
+                    gameViewModel.submitDiscardResources(lobbyId, playerResources)
                     showDiscardPopup.value = false
                 }
             )

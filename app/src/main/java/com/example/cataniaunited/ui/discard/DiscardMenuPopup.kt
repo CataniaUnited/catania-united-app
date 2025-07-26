@@ -21,7 +21,6 @@ fun DiscardMenuPopup (
     onDiscard: (TileType, Int) -> Unit,
     onSubmit: (Map<TileType, Int>) -> Unit
 ) {
-    val selected = remember { mutableStateMapOf<TileType, Int>() }
     val displayOrder = listOf(TileType.WOOD, TileType.CLAY, TileType.SHEEP, TileType.WHEAT, TileType.ORE)
 
     Dialog(onDismissRequest = { /* no dismiss by outside click */ }) {
@@ -52,7 +51,7 @@ fun DiscardMenuPopup (
             Spacer(Modifier.height(8.dp))
 
             Button(
-                onClick = { onSubmit(selected) },
+                onClick = { onSubmit(resources) },
                 enabled = discardCount == 0
             ) {
                 Text("Confirm Discard")

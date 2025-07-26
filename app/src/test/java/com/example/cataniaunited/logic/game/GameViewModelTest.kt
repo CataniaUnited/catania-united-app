@@ -134,6 +134,7 @@ class GameViewModelTest {
         mockGameBoardLogic = mockk(relaxed = true)
         mockLobbyLogic = mockk(relaxed = true)
         mockTradeLogic = mockk(relaxed = true)
+        mockDiscardLogic = mockk(relaxed = true)
         mockCheatingLogic = mockk(relaxed = true)
         mockPlayerSessionManager = mockk(relaxed = true)
         every { mockPlayerSessionManager.getPlayerId() } returns testPlayerId

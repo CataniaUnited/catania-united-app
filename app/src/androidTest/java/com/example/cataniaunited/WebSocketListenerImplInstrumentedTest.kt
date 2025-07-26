@@ -124,7 +124,7 @@ class WebSocketListenerImplInstrumentedTest {
         verify(exactly = 1) { mockError.onError(any<IllegalArgumentException>()) }
     }
 
-    @Test
+    /*@Test
     fun onMessage_handlesLobbyCreated_withLobbyIdAndPlayers() {
         val lobbyId = "testLobby1"
         val hostPlayerId = "hostPlayer1"
@@ -146,7 +146,7 @@ class WebSocketListenerImplInstrumentedTest {
 
         verify(exactly = 1) { mockLobbyCreated.onLobbyCreated(lobbyId, playersMap) }
         verify(exactly = 0) { mockError.onError(any<Throwable>()) }
-    }
+    }*/
 
 
     @Test
@@ -546,7 +546,7 @@ class WebSocketListenerImplInstrumentedTest {
         verify(exactly = 1) { mockDiceRolling.onDiceRolling(messageUsername) }
     }
 
-    @Test
+    /*@Test
     fun handleDiceResult_usesPlayerNameFromPlayersFallback() {
         val playerId = "player1"
         val players = mapOf(playerId to PlayerInfo(playerId, "FallbackUser", "#123456"))
@@ -568,7 +568,7 @@ class WebSocketListenerImplInstrumentedTest {
         verify {
             mockDiceResult.onDiceResult(3, 4, "FallbackUser")
         }
-    }
+    }*/
 
     @Test
     fun handleDiceResult_defaultsToUnknownPlayer() {

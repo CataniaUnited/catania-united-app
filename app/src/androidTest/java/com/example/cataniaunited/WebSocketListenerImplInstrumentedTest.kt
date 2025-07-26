@@ -1,6 +1,5 @@
 package com.example.cataniaunited
 
-import android.util.Log
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.exception.GameException
@@ -549,7 +548,8 @@ class WebSocketListenerImplInstrumentedTest {
 
     @Test
     fun handleDiceResult_usesPlayerNameFromPlayersFallback() {
-        val players = mapOf("player1" to PlayerInfo("player1", "FallbackUser", "#123456"))
+        val playerId = "player1"
+        val players = mapOf(playerId to PlayerInfo(playerId, "FallbackUser", "#123456"))
         val message = buildJsonObject {
             put("dice1", 3)
             put("dice2", 4)
@@ -557,7 +557,7 @@ class WebSocketListenerImplInstrumentedTest {
         }
         val dto = MessageDTO(
             type = MessageType.DICE_RESULT,
-            player = "player1",
+            player = playerId,
             lobbyId = "lobbyX",
             players = players,
             message = message

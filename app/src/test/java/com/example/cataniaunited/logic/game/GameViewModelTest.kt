@@ -10,6 +10,7 @@ import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.discard.DiscardLogic
+import com.example.cataniaunited.logic.dto.DiscardRequest
 import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -1909,7 +1910,7 @@ class GameViewModelTest {
     inner class DiscardResourceTests {
 
         @Test
-        fun updateDiscardResource_decrementsCorrectly() = runTest { //TODO: muss noch überarbeitet werden
+        fun updateDiscardResource_decrementsCorrectlyAndNotBelowZero() = runTest {
             val testPlayer = PlayerInfo(
                 id = testPlayerId,
                 username = "Discarder",
@@ -1990,6 +1991,43 @@ class GameViewModelTest {
             (discardCountField.get(viewModel) as MutableStateFlow<Int>).value = 4
 
             assertEquals(4, viewModel.getDiscardCount())
+        }
+
+        @Test
+        fun submitDiscardResources_resetsState() = runTest {
+
+            val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
+            discardCountField.isAccessible = true
+            (discardCountField.get(viewModel) as MutableStateFlow<Int>).value = 0
+
+            val hasToDiscardField = GameViewModel::class.java.getDeclaredField("_hasToDiscard")
+            hasToDiscardField.isAccessible = true
+            val hasToDiscard = (hasToDiscardField.get(viewModel) as MutableStateFlow<Boolean>).value
+            assertFalse(hasToDiscard)
+
+            assertEquals(0, viewModel.getDiscardCount())
+        }
+
+        @Test
+        fun onDiscardingDelegatesToDiscardLogic() = runTest {
+            val mockDiscardLogic = mockk<DiscardLogic>(relaxed = true)
+            val viewModel = GameViewModel(
+                mockGameBoardLogic,
+                mockLobbyLogic,
+                mockGameDataHandler,
+                mockPlayerSessionManager,
+                mockTradeLogic, mockDiscardLogic,
+                mockCheatingLogic)
+
+            val lobbyId = "lobby123"
+            val remainingResources = mapOf(
+                TileType.WOOD to 1, TileType.CLAY to 2, TileType.SHEEP to 1,
+                TileType.WHEAT to 0, TileType.ORE to 0
+            )
+
+            viewModel.submitDiscardResources(lobbyId, remainingResources)
+            advanceUntilIdle()
+            verify(exactly = 1) { mockDiscardLogic.sendDiscardResources(lobbyId, DiscardRequest(remainingResources)) }
         }
     }
 }

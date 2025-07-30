@@ -1928,6 +1928,11 @@ class GameViewModelTest {
             viewModel.updateDiscardResource(TileType.ORE, - 1) //amount of ore minus 1
             assertEquals(2, viewModel.playerResources.value[TileType.ORE])
             assertEquals(4, viewModel.getDiscardCount())
+
+            //Resource not allowed below zero
+            viewModel.updateDiscardResource(TileType.WHEAT, - 1) //amount of wheat minus 1
+            assertEquals(0, viewModel.playerResources.value[TileType.WHEAT])
+            assertEquals(4, viewModel.getDiscardCount())
         }
 
         @Test

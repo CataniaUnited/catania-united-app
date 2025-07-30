@@ -42,8 +42,7 @@ fun DiscardMenuPopup (
                     DiscardSelector(
                         resource = resource,
                         count = resources[resource] ?: 0,
-                        onDecrement = { onDiscard(resource, -1) },
-                        onIncrement = { onDiscard(resource, 1) }
+                        onDecrement = { onDiscard(resource, -1) }
                     )
                 }
             }

@@ -1903,4 +1903,88 @@ class GameViewModelTest {
             assertFalse(viewModel.isTradeMenuOpen.value)
         }
     }
+
+    @Nested
+    @DisplayName("Discard Resource Handling")
+    inner class DiscardResourceTests {
+
+        @Test
+        fun updateDiscardResource_decrementsCorrectly() = runTest { //TODO: muss noch überarbeitet werden
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Discarder",
+                resources = mapOf(
+                    TileType.WOOD to 5, TileType.CLAY to 2, TileType.SHEEP to 1,
+                    TileType.WHEAT to 0, TileType.ORE to 3
+                ) //Sum is 11
+            )
+
+            viewModel.updatePlayerResources(testPlayer.resources)
+            assertEquals(0, viewModel.getDiscardCount())
+
+            viewModel.triggerDiscardResources(testPlayer)
+            assertEquals(5, viewModel.getDiscardCount())
+
+            viewModel.updateDiscardResource(TileType.ORE, - 1) //amount of ore minus 1
+            assertEquals(2, viewModel.playerResources.value[TileType.ORE])
+            assertEquals(4, viewModel.getDiscardCount())
+        }
+
+        @Test
+        fun triggerDiscardResources_setsCorrectDiscardCountAndFlag () = runTest{
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Discarder",
+                resources = mapOf(
+                    TileType.WOOD to 5, TileType.CLAY to 2, TileType.SHEEP to 1,
+                    TileType.WHEAT to 0, TileType.ORE to 3
+                ) //Sum is 11
+            )
+
+            viewModel.triggerDiscardResources(testPlayer)
+            assertEquals(5, viewModel.getDiscardCount())
+
+            val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
+            discardCountField.isAccessible = true
+            val discardCount = (discardCountField.get(viewModel) as MutableStateFlow<Int>).value
+            assertEquals(5, discardCount)
+
+            val hasToDiscardField = GameViewModel::class.java.getDeclaredField("_hasToDiscard")
+            hasToDiscardField.isAccessible = true
+            val hasToDiscard = (hasToDiscardField.get(viewModel) as MutableStateFlow<Boolean>).value
+            assertTrue(hasToDiscard)
+        }
+
+        @Test
+        fun triggerDiscardResources_doesNothingIfResourceCountIsSevenOrLess() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Saver",
+                resources = mapOf(TileType.SHEEP to 3, TileType.ORE to 4)
+            ) //Sum is just 7
+
+            viewModel.triggerDiscardResources(testPlayer)
+
+            assertEquals(0, viewModel.getDiscardCount())
+
+            val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
+            discardCountField.isAccessible = true
+            val discardCount = (discardCountField.get(viewModel) as MutableStateFlow<Int>).value
+            assertEquals(0, discardCount)
+
+            val hasToDiscardField = GameViewModel::class.java.getDeclaredField("_hasToDiscard")
+            hasToDiscardField.isAccessible = true
+            val hasToDiscard = (hasToDiscardField.get(viewModel) as MutableStateFlow<Boolean>).value
+            assertFalse(hasToDiscard)
+        }
+
+        @Test
+        fun getDiscardCount_returnsCurrentValue() = runTest {
+            val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
+            discardCountField.isAccessible = true
+            (discardCountField.get(viewModel) as MutableStateFlow<Int>).value = 4
+
+            assertEquals(4, viewModel.getDiscardCount())
+        }
+    }
 }

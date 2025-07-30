@@ -348,7 +348,7 @@ class GameViewModel @Inject constructor(
         val currentCount = currentResources[resource] ?: 0
         val newCount = currentCount + delta
 
-        if (newCount in 0..(players.value[playerId]?.resources?.get(resource) ?: 0)){
+        if (newCount in 0..(currentResources[resource] ?: 0)){
             currentResources[resource] = newCount
             _playerResources.value = currentResources
             _discardCount.value = _discardCount.value - delta * (-1)

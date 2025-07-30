@@ -29,7 +29,7 @@ fun DiscardSelector (
     resource: TileType,
     count: Int,
     onDecrement: () -> Unit,
-    onIncrement: () -> Unit
+    //onIncrement: () -> Unit
 ) {
     val iconRes = when (resource) {
         TileType.WOOD -> R.drawable.wood_icon
@@ -65,11 +65,5 @@ fun DiscardSelector (
                 modifier = Modifier.width(30.dp)
             )
         }
-
-        //Increment Button
-        IconButton(onClick = onIncrement) {
-            Icon(Icons.Default.AddCircleOutline, "Increment", tint = Color.White)
-        }
-
     }
 }

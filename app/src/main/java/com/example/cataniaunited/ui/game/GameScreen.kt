@@ -61,6 +61,7 @@ fun GameScreen(
     val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
 
     val isReportPopupOpen = remember { mutableStateOf(false) }
+    val showRobberLines = remember { mutableStateOf(false) }
 
     val density = LocalDensity.current
     val popupOffsetX = with(density) { selectedPlayerOffsetX.floatValue.toDp().roundToPx() }
@@ -198,12 +199,13 @@ fun GameScreen(
                                 roads = board.roads,
                                 ports = board.ports,
                                 isBuildMode = isBuildMenuOpen,
-                                isRobMode = isRobMenuOpen,
+                                isRobMode = showRobberLines.value,
                                 playerId = gameViewModel.playerId,
                                 isActivePlayer = player!!.isActivePlayer,
                                 onTileClicked = { tile ->
                                     Log.d("GameScreen", "Tile Clicked: ${tile.id}")
                                     gameViewModel.handleTileClick(tile, lobbyId)
+                                    showRobberLines.value = false
                                 },
                                 onSettlementClicked = { (settlementPos, isUpgrade) ->
                                     Log.d("GameScreen", "Settlement Clicked: ${settlementPos.id}")
@@ -235,12 +237,11 @@ fun GameScreen(
                                         enabled = player.canRollDice == false,
                                         onClick = { gameViewModel.setTradeMenuOpen(true) }
                                     )
-                                    RobberButton (
-                                        enabled = isRobMenuOpen,
-                                        isRobOpen = isRobMenuOpen,
-                                        onClick = { isRobOpen -> gameViewModel.setRobMenuOpen(isRobOpen) }
-                                    )
-
+                                    if(isRobMenuOpen){
+                                        RobberButton (
+                                            onClick = { showRobberLines.value = true }
+                                        )
+                                    }
                                 }
                             }
 

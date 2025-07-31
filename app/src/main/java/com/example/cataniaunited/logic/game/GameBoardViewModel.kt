@@ -54,7 +54,7 @@ class GameViewModel @Inject constructor(
     val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
 
     private val _isRobMenuOpen = MutableStateFlow(false)
-    val isRobMenuOpen: StateFlow<Boolean> = _isRobMenuOpen
+    val isRobMenuOpen: StateFlow<Boolean> = _isRobMenuOpen.asStateFlow()
 
     private val _isTradeMenuOpen = MutableStateFlow(false)
     val isTradeMenuOpen: StateFlow<Boolean> = _isTradeMenuOpen.asStateFlow()
@@ -92,7 +92,6 @@ class GameViewModel @Inject constructor(
                 if(playerInfo != null && !playerInfo.isActivePlayer){
                     //Close build and rob menu when player is not active player
                     setBuildMenuOpen(false)
-                    setRobMenuOpen(false)
                 }
             }
             Log.d("GameViewModel_Collect", "playersState collect FINISHED in ViewModelScope.")
@@ -125,10 +124,11 @@ class GameViewModel @Inject constructor(
         Log.d("GameViewModel", "handleTileClick: Tile ID=${tile.id}")
         Log.d("GameViewModel", "handleTileClick: _isRobMenuOpen=${_isRobMenuOpen.value}")
 
-        if (_isRobMenuOpen.value) {
+        if (_isRobMenuOpen.value == true) {
             Log.d("GameViewModel", "handleTileClick: Rob menu is open")
             gameBoardLogic.placeRobber(lobbyId, tile.id)
-            setRobMenuOpen(false)
+            _isRobMenuOpen.value = false
+            Log.d("GameViewModel", "handleTileClick: _isRobMenuOpen=${_isRobMenuOpen.value}")
         }
     }
 

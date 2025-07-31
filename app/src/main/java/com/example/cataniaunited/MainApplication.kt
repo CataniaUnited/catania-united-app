@@ -221,18 +221,6 @@ open class MainApplication : Application(),
         Log.d("MainApplication", "Processing dice result from server: $dice1, $dice2")
         applicationScope.launch {
             delay(1500)
-
-            var diceResult = dice1 + dice2
-            Log.d("MainApplication", "Dice result: $diceResult")
-            if (diceResult != 7){
-                gameViewModel?.setRobMenuOpen(false)
-                Log.d("MainApplication", "Dice result not 7, rob menu closed")
-            }
-            else {
-                gameViewModel?.setRobMenuOpen(true)
-                Log.d("MainApplication", "Dice result is 7, rob menu is open")
-            }
-
             gameViewModel?.showResult(playerName, dice1, dice2)
         }
     }

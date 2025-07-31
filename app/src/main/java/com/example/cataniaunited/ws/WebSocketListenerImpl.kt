@@ -246,6 +246,19 @@ open class WebSocketListenerImpl @Inject constructor(
         messageDTO.players?.let { players ->
             MainApplication.getInstance().applicationScope.launch {
                 gameDataHandler.updatePlayers(players)
+
+                var diceResult = dice1 + dice2
+                val currentPlayerId = MainApplication.getInstance().getPlayerId()
+                val currentPlayer = players[currentPlayerId]
+
+                if (diceResult == 7){
+                    if (currentPlayer != null && currentPlayer.isActivePlayer == true){
+                        MainApplication.getInstance().gameViewModel?.setRobMenuOpen(true)
+                        Log.d("WebSocketListenerImpl", "DiceResult = 7, RobMenu OPEN")
+                    } else {
+                        Log.d("WebSocketListenerImpl", "Active player not found in players map.")
+                    }
+                }
             }
             onPlayerResourcesReceived.onPlayerResourcesReceived(players)
         }

@@ -252,7 +252,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 val currentPlayer = players[currentPlayerId]
 
                 if (diceResult == 7){
-                    if (currentPlayer != null && currentPlayer.isActivePlayer == true){
+                    if (currentPlayer != null && currentPlayer.isActivePlayer){
                         MainApplication.getInstance().gameViewModel?.setRobMenuOpen(true)
                         Log.d("WebSocketListenerImpl", "DiceResult = 7, RobMenu OPEN")
                     } else {

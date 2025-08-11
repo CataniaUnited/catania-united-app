@@ -365,6 +365,8 @@ class GameViewModel @Inject constructor(
 
     fun getDiscardCount(): Int = _discardCount.value
 
+    fun getHasToDiscard(): Boolean = _hasToDiscard.value
+
     fun submitDiscardResources(lobbyId: String, discardResources: Map<TileType, Int>) {
         Log.d("GameViewModel", "submitDiscardResources: $discardResources") //send remaining resources to server
         val request = DiscardRequest(discardResources)                      // not amount of resources to discard

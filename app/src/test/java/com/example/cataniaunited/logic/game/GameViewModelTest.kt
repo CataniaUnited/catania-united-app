@@ -1949,16 +1949,8 @@ class GameViewModelTest {
 
             viewModel.triggerDiscardResources(testPlayer)
             assertEquals(5, viewModel.getDiscardCount())
+            assertTrue(viewModel.getHasToDiscard())
 
-            val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
-            discardCountField.isAccessible = true
-            val discardCount = (discardCountField.get(viewModel) as MutableStateFlow<Int>).value
-            assertEquals(5, discardCount)
-
-            val hasToDiscardField = GameViewModel::class.java.getDeclaredField("_hasToDiscard")
-            hasToDiscardField.isAccessible = true
-            val hasToDiscard = (hasToDiscardField.get(viewModel) as MutableStateFlow<Boolean>).value
-            assertTrue(hasToDiscard)
         }
 
         @Test
@@ -1973,7 +1965,9 @@ class GameViewModelTest {
 
             assertEquals(0, viewModel.getDiscardCount())
 
-            val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
+            assertFalse(viewModel.getHasToDiscard())
+
+            /*val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
             discardCountField.isAccessible = true
             val discardCount = (discardCountField.get(viewModel) as MutableStateFlow<Int>).value
             assertEquals(0, discardCount)
@@ -1981,7 +1975,7 @@ class GameViewModelTest {
             val hasToDiscardField = GameViewModel::class.java.getDeclaredField("_hasToDiscard")
             hasToDiscardField.isAccessible = true
             val hasToDiscard = (hasToDiscardField.get(viewModel) as MutableStateFlow<Boolean>).value
-            assertFalse(hasToDiscard)
+            assertFalse(hasToDiscard)*/
         }
 
         @Test

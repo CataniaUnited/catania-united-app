@@ -9,6 +9,8 @@ import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.discard.DiscardLogic
+import com.example.cataniaunited.logic.dto.DiscardRequest
 import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -30,6 +32,7 @@ class GameViewModel @Inject constructor(
     private val gameDataHandler: GameDataHandler,
     private val sessionManager: PlayerSessionManager,
     private val tradeLogic: TradeLogic,
+    private val discardLogic: DiscardLogic,
     private val cheatingLogic: CheatingLogic,
 ) : ViewModel() {
 
@@ -55,6 +58,12 @@ class GameViewModel @Inject constructor(
 
     private val _players = MutableStateFlow<Map<String, PlayerInfo>>(emptyMap())
     val players: StateFlow<Map<String, PlayerInfo>> = _players.asStateFlow()
+
+    private val _hasToDiscard = MutableStateFlow(false)
+    val hasToDiscard: StateFlow<Boolean> = _hasToDiscard.asStateFlow()
+
+    private val _discardCount = MutableStateFlow(0)
+    val discardCount: StateFlow<Int> = _discardCount.asStateFlow()
 
     private val _isTradeMenuOpen = MutableStateFlow(false)
     val isTradeMenuOpen: StateFlow<Boolean> = _isTradeMenuOpen.asStateFlow()
@@ -99,7 +108,7 @@ class GameViewModel @Inject constructor(
                 Log.d("GameViewModel_Collect", "RECEIVED playersState in collect: $it")
                 _players.value = it
 
-                val playerInfo: PlayerInfo? = it[playerId];
+                val playerInfo: PlayerInfo? = it[playerId]
                 if(playerInfo != null && !playerInfo.isActivePlayer){
                     //Close build menu when player is not active player
                     setBuildMenuOpen(false)
@@ -332,6 +341,38 @@ class GameViewModel @Inject constructor(
             }
             _tradeOffer.value = Pair(_tradeOffer.value.first, currentTarget)
         }
+    }
+
+    fun updateDiscardResource(resource: TileType, delta: Int){
+        val currentResources = _playerResources.value.toMutableMap()
+        val currentCount = currentResources[resource] ?: 0
+        val newCount = currentCount + delta
+
+        if (newCount in 0..(currentResources[resource] ?: 0)){
+            currentResources[resource] = newCount
+            _playerResources.value = currentResources
+            _discardCount.value = _discardCount.value - delta * (-1)
+        }
+    }
+
+    fun triggerDiscardResources(player: PlayerInfo) {
+        val totalResources = player.resources.values.sum()
+        if(totalResources > 7){
+            _discardCount.value = totalResources / 2
+            _hasToDiscard.value = true
+        }
+    }
+
+    fun getDiscardCount(): Int = _discardCount.value
+
+    fun getHasToDiscard(): Boolean = _hasToDiscard.value
+
+    fun submitDiscardResources(lobbyId: String, discardResources: Map<TileType, Int>) {
+        Log.d("GameViewModel", "submitDiscardResources: $discardResources") //send remaining resources to server
+        val request = DiscardRequest(discardResources)                      // not amount of resources to discard
+        discardLogic.sendDiscardResources(lobbyId, request)
+        _hasToDiscard.value = false
+        _discardCount.value = 0
     }
 
     fun submitBankTrade(lobbyId: String) {

@@ -170,7 +170,7 @@ open class MainApplication : Application(),
 
         Log.d("MainApplication", "Lobby update received: lobby = $lobbyId, players = $players")
         if (currentLobbyId == null) {
-            currentLobbyId = lobbyId;
+            currentLobbyId = lobbyId
         }
         setPlayers(players)
     }
@@ -207,8 +207,6 @@ open class MainApplication : Application(),
         }
     }
 
-
-
     override fun onDiceRolling(playerName: String) {
         Log.d("MainApplication", "Player $playerName is rolling dice")
         applicationScope.launch {
@@ -241,7 +239,7 @@ open class MainApplication : Application(),
         Log.d("MainApplication", "Callback: onPlayerResourcesReceived. Players: $players")
         applicationScope.launch {
             gameViewModel?.let {
-                val resources: Map<TileType, Int>? = players[_playerId]?.resources;
+                val resources: Map<TileType, Int>? = players[_playerId]?.resources
                 if (resources != null) {
                     it.updatePlayerResources(resources)
                     Log.d(

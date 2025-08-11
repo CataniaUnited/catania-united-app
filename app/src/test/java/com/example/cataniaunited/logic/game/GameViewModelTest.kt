@@ -9,6 +9,8 @@ import com.example.cataniaunited.data.model.Road
 import com.example.cataniaunited.data.model.SettlementPosition
 import com.example.cataniaunited.data.model.Tile
 import com.example.cataniaunited.data.model.TileType
+import com.example.cataniaunited.logic.discard.DiscardLogic
+import com.example.cataniaunited.logic.dto.DiscardRequest
 import com.example.cataniaunited.logic.dto.TradeRequest
 import com.example.cataniaunited.logic.lobby.LobbyLogic
 import com.example.cataniaunited.logic.player.PlayerSessionManager
@@ -77,6 +79,7 @@ class GameViewModelTest {
     private lateinit var mockLobbyLogic: LobbyLogic
     private lateinit var mockTradeLogic: TradeLogic
     private lateinit var mockCheatingLogic: CheatingLogic
+    private lateinit var mockDiscardLogic: DiscardLogic
     private lateinit var viewModel: GameViewModel
 
     private val validBoardJson = """
@@ -132,6 +135,7 @@ class GameViewModelTest {
         mockGameBoardLogic = mockk(relaxed = true)
         mockLobbyLogic = mockk(relaxed = true)
         mockTradeLogic = mockk(relaxed = true)
+        mockDiscardLogic = mockk(relaxed = true)
         mockCheatingLogic = mockk(relaxed = true)
         mockPlayerSessionManager = mockk(relaxed = true)
         every { mockPlayerSessionManager.getPlayerId() } returns testPlayerId
@@ -185,8 +189,8 @@ class GameViewModelTest {
             mockGameDataHandler,
             mockPlayerSessionManager,
             mockTradeLogic,
-            mockCheatingLogic
-
+            mockDiscardLogic,
+            mockCheatingLogic,
         )
     }
 
@@ -569,6 +573,7 @@ class GameViewModelTest {
             mockGameDataHandler,
             mockPlayerSessionManager,
             mockTradeLogic,
+            mockDiscardLogic,
             mockCheatingLogic,
         )
         val lobbyId = "lobby123"
@@ -587,6 +592,7 @@ class GameViewModelTest {
             mockGameDataHandler,
             mockPlayerSessionManager,
             mockTradeLogic,
+            mockDiscardLogic,
             mockCheatingLogic,
         )
 
@@ -1679,7 +1685,7 @@ class GameViewModelTest {
              playersMutableStateFlow.value = mapOf(testPlayerId to PlayerInfo(id = testPlayerId, username = "Test", resources = initialPlayerResources))
 
              // Recreate ViewModel to pick up the new playersState from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockDiscardLogic, mockCheatingLogic)
              advanceUntilIdle()
 
              assertEquals(initialPlayerResources, viewModel.playerResources.value)
@@ -1706,7 +1712,7 @@ class GameViewModelTest {
              val initialPlayers = mapOf("p1" to PlayerInfo(id = "p1", username = "Player One"))
              playersMutableStateFlow.value = initialPlayers // Simulate GameDataHandler having this state
              // Recreate ViewModel to pick up the new playersState from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockDiscardLogic, mockCheatingLogic)
              advanceUntilIdle()
              assertEquals(initialPlayers, viewModel.players.value)
          }
@@ -1716,7 +1722,7 @@ class GameViewModelTest {
              val initialVPs = mapOf("p1" to 5)
              victoryPointsMutableStateFlow.value = initialVPs // Simulate GameDataHandler having this state
              // Recreate ViewModel to pick up the new state from GameDataHandler during init
-             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
+             viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockDiscardLogic, mockCheatingLogic)
              advanceUntilIdle()
              assertEquals(initialVPs, viewModel.victoryPoints.value)
          }
@@ -1793,7 +1799,7 @@ class GameViewModelTest {
             playersMutableStateFlow.value = initialPlayers
 
             // Recreate ViewModel to ensure it collects the initial player state
-            viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockCheatingLogic)
+            viewModel = GameViewModel(mockGameBoardLogic, mockLobbyLogic, mockGameDataHandler, mockPlayerSessionManager, mockTradeLogic, mockDiscardLogic, mockCheatingLogic)
         }
 
         @Test
@@ -1896,6 +1902,126 @@ class GameViewModelTest {
 
             verify(exactly = 1) { mockTradeLogic.sendBankTrade(lobbyId, expectedRequest) }
             assertFalse(viewModel.isTradeMenuOpen.value)
+        }
+    }
+
+    @Nested
+    @DisplayName("Discard Resource Handling")
+    inner class DiscardResourceTests {
+
+        @Test
+        fun updateDiscardResource_decrementsCorrectlyAndNotBelowZero() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Discarder",
+                resources = mapOf(
+                    TileType.WOOD to 5, TileType.CLAY to 2, TileType.SHEEP to 1,
+                    TileType.WHEAT to 0, TileType.ORE to 3
+                ) //Sum is 11
+            )
+
+            viewModel.updatePlayerResources(testPlayer.resources)
+            assertEquals(0, viewModel.getDiscardCount())
+
+            viewModel.triggerDiscardResources(testPlayer)
+            assertEquals(5, viewModel.getDiscardCount())
+
+            viewModel.updateDiscardResource(TileType.ORE, - 1) //amount of ore minus 1
+            assertEquals(2, viewModel.playerResources.value[TileType.ORE])
+            assertEquals(4, viewModel.getDiscardCount())
+
+            //Resource not allowed below zero
+            viewModel.updateDiscardResource(TileType.WHEAT, - 1) //amount of wheat minus 1
+            assertEquals(0, viewModel.playerResources.value[TileType.WHEAT])
+            assertEquals(4, viewModel.getDiscardCount())
+        }
+
+        @Test
+        fun triggerDiscardResources_setsCorrectDiscardCountAndFlag () = runTest{
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Discarder",
+                resources = mapOf(
+                    TileType.WOOD to 5, TileType.CLAY to 2, TileType.SHEEP to 1,
+                    TileType.WHEAT to 0, TileType.ORE to 3
+                ) //Sum is 11
+            )
+
+            viewModel.triggerDiscardResources(testPlayer)
+            assertEquals(5, viewModel.getDiscardCount())
+            assertTrue(viewModel.getHasToDiscard())
+
+        }
+
+        @Test
+        fun triggerDiscardResources_doesNothingIfResourceCountIsSevenOrLess() = runTest {
+            val testPlayer = PlayerInfo(
+                id = testPlayerId,
+                username = "Saver",
+                resources = mapOf(TileType.SHEEP to 3, TileType.ORE to 4)
+            ) //Sum is just 7
+
+            viewModel.triggerDiscardResources(testPlayer)
+
+            assertEquals(0, viewModel.getDiscardCount())
+
+            assertFalse(viewModel.getHasToDiscard())
+
+            /*val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
+            discardCountField.isAccessible = true
+            val discardCount = (discardCountField.get(viewModel) as MutableStateFlow<Int>).value
+            assertEquals(0, discardCount)
+
+            val hasToDiscardField = GameViewModel::class.java.getDeclaredField("_hasToDiscard")
+            hasToDiscardField.isAccessible = true
+            val hasToDiscard = (hasToDiscardField.get(viewModel) as MutableStateFlow<Boolean>).value
+            assertFalse(hasToDiscard)*/
+        }
+
+        @Test
+        fun getDiscardCount_returnsCurrentValue() = runTest {
+            val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
+            discardCountField.isAccessible = true
+            (discardCountField.get(viewModel) as MutableStateFlow<Int>).value = 4
+
+            assertEquals(4, viewModel.getDiscardCount())
+        }
+
+        @Test
+        fun submitDiscardResources_resetsState() = runTest {
+
+            val discardCountField = GameViewModel::class.java.getDeclaredField("_discardCount")
+            discardCountField.isAccessible = true
+            (discardCountField.get(viewModel) as MutableStateFlow<Int>).value = 0
+
+            val hasToDiscardField = GameViewModel::class.java.getDeclaredField("_hasToDiscard")
+            hasToDiscardField.isAccessible = true
+            val hasToDiscard = (hasToDiscardField.get(viewModel) as MutableStateFlow<Boolean>).value
+            assertFalse(hasToDiscard)
+
+            assertEquals(0, viewModel.getDiscardCount())
+        }
+
+        @Test
+        fun onDiscardingDelegatesToDiscardLogic() = runTest {
+            val mockDiscardLogic = mockk<DiscardLogic>(relaxed = true)
+            val viewModel = GameViewModel(
+                mockGameBoardLogic,
+                mockLobbyLogic,
+                mockGameDataHandler,
+                mockPlayerSessionManager,
+                mockTradeLogic, mockDiscardLogic,
+                mockCheatingLogic)
+
+            val lobbyId = "lobby123"
+            val remainingResources = mapOf(
+                TileType.WOOD to 1, TileType.CLAY to 2, TileType.SHEEP to 1,
+                TileType.WHEAT to 0, TileType.ORE to 0
+            )
+
+            viewModel.submitDiscardResources(lobbyId, remainingResources)
+            advanceUntilIdle()
+            verify(exactly = 1) { mockDiscardLogic.sendDiscardResources(lobbyId, DiscardRequest(remainingResources)) }
         }
     }
 }

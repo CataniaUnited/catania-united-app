@@ -258,6 +258,17 @@ open class WebSocketListenerImpl @Inject constructor(
         messageDTO.players?.let { players ->
             MainApplication.getInstance().applicationScope.launch {
                 gameDataHandler.updatePlayers(players)
+
+                if (dice1 + dice2 == 7){
+                    val currentPlayerId = MainApplication.getInstance().getPlayerId()
+                    val currentPlayer = players[currentPlayerId]
+                    if (currentPlayer != null) {
+                        Log.d("WebSocketListener", "Triggering discard check for player $playerName")
+                        MainApplication.getInstance().gameViewModel?.triggerDiscardResources(currentPlayer)
+                    } else {
+                        Log.e("WebSocketListener", "Current player not found in players map.")
+                    }
+                }
             }
             onPlayerResourcesReceived.onPlayerResourcesReceived(players)
         }

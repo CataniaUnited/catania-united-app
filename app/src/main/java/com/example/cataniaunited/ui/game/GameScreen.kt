@@ -30,6 +30,7 @@ import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.logic.game.GameViewModel
 import com.example.cataniaunited.ui.dice.DiceRollerPopup
 import com.example.cataniaunited.ui.dice.ShakeDetector
+import com.example.cataniaunited.ui.discard.DiscardMenuPopup
 import com.example.cataniaunited.ui.game_board.board.CatanBoard
 import com.example.cataniaunited.ui.game_board.playerinfo.LivePlayerVictoryBar
 import com.example.cataniaunited.ui.game_end.GameEndScreen
@@ -51,6 +52,8 @@ fun GameScreen(
     val showDicePopup by gameViewModel.showDicePopup.collectAsState()
     val diceState by gameViewModel.diceState.collectAsState()
     val playerResources by gameViewModel.playerResources.collectAsState()
+    val hasToDiscard by gameViewModel.hasToDiscard.collectAsState()
+    val discardCount by gameViewModel.discardCount.collectAsState()
     val gameWonState by application.gameWonState.collectAsState()
     val players by gameViewModel.players.collectAsState()
     val player: PlayerInfo? = players[gameViewModel.playerId]
@@ -63,6 +66,7 @@ fun GameScreen(
     val selectedPlayerOffsetX = remember { mutableFloatStateOf(0f) }
 
     val isReportPopupOpen = remember { mutableStateOf(false) }
+    val showDiscardPopup = remember { mutableStateOf(false) }
 
     val density = LocalDensity.current
     val popupOffsetX = with(density) { selectedPlayerOffsetX.floatValue.toDp().roundToPx() }
@@ -91,15 +95,23 @@ fun GameScreen(
     }
 
     Box(Modifier.fillMaxSize()) {
-        Box(
+        Column(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(start = 20.dp, bottom = 275.dp)
+                .padding(start = 30.dp, bottom = 275.dp)
                 .zIndex(12f)
         ) {
             ReportButton(
                 onClick = { isReportPopupOpen.value = true }
             )
+            Spacer(Modifier.height(8.dp))
+            if (hasToDiscard) {
+                Button(
+                    onClick = { showDiscardPopup.value = true }
+                ) {
+                    Text("Discard $discardCount resources")
+                }
+            }
         }
 
         if (isReportPopupOpen.value) {
@@ -130,6 +142,20 @@ fun GameScreen(
                     onDismiss = { isReportPopupOpen.value = false }
                 )
             }
+        }
+
+        if (showDiscardPopup.value) {
+            DiscardMenuPopup(
+                discardCount = discardCount,
+                resources = playerResources,
+                onDiscard = { resource, delta ->
+                    gameViewModel.updateDiscardResource(resource, delta)
+                },
+                onSubmit = { playerResources ->
+                    gameViewModel.submitDiscardResources(lobbyId, playerResources)
+                    showDiscardPopup.value = false
+                }
+            )
         }
 
         Scaffold(

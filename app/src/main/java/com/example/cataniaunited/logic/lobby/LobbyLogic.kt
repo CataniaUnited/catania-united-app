@@ -126,4 +126,13 @@ class LobbyLogic @Inject constructor(
         }
     }
 
+    fun getLobbies(){
+        val webSocketClient = MainApplication.getInstance().getWebSocketClient()
+        if (webSocketClient.isConnected()) {
+            webSocketClient.sendMessage(MessageDTO(type = MessageType.GET_LOBBIES))
+        } else {
+            Log.e("LobbyLogic", "WS not connected for getLobbies")
+        }
+    }
+
 }

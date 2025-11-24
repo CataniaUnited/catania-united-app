@@ -1,5 +1,6 @@
 package com.example.cataniaunited.ws.callback
 
+import com.example.cataniaunited.data.model.LobbyInfo
 import com.example.cataniaunited.data.model.PlayerInfo
 
 fun interface OnConnectionSuccess {
@@ -40,4 +41,8 @@ fun interface OnDiceRolling {
 
 fun interface OnPlayerResourcesReceived {
     fun onPlayerResourcesReceived(players: Map<String, PlayerInfo>)
+}
+
+fun interface OnLobbyListReceived {
+    fun onLobbyListReceived(lobbies: List<LobbyInfo>)
 }

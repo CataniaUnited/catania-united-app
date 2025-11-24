@@ -3,6 +3,7 @@ package com.example.cataniaunited.data.util
 import android.util.Log
 import kotlinx.serialization.json.Json
 import com.example.cataniaunited.data.model.GameBoardModel
+import com.example.cataniaunited.data.model.LobbyInfo
 
 
 val jsonParser = Json {

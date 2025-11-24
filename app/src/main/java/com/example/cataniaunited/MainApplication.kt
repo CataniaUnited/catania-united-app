@@ -3,6 +3,7 @@ package com.example.cataniaunited
 import android.app.Application
 import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
+import com.example.cataniaunited.data.model.LobbyInfo
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.data.model.TileType
 import com.example.cataniaunited.logic.game.GameViewModel
@@ -13,6 +14,7 @@ import com.example.cataniaunited.ws.callback.OnDiceResult
 import com.example.cataniaunited.ws.callback.OnDiceRolling
 import com.example.cataniaunited.ws.callback.OnGameBoardReceived
 import com.example.cataniaunited.ws.callback.OnLobbyCreated
+import com.example.cataniaunited.ws.callback.OnLobbyListReceived
 import com.example.cataniaunited.ws.callback.OnLobbyUpdated
 import com.example.cataniaunited.ws.callback.OnPlayerJoined
 import com.example.cataniaunited.ws.callback.OnPlayerResourcesReceived
@@ -44,6 +46,7 @@ open class MainApplication : Application(),
     OnDiceResult,
     OnDiceRolling,
     OnPlayerResourcesReceived,
+    OnLobbyListReceived,
     WebSocketErrorProvider {
 
     val applicationScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -54,6 +57,7 @@ open class MainApplication : Application(),
     internal lateinit var webSocketClient: WebSocketClient
     private var _playerId: String? = null
     val players = mutableStateListOf<PlayerInfo>()
+    val lobbies = mutableStateListOf<LobbyInfo>()
     val _navigateToLobbyChannel = Channel<String>(Channel.BUFFERED)
     val navigateToLobbyFlow = _navigateToLobbyChannel.receiveAsFlow()
     val _navigateToGameChannel = Channel<String>(Channel.BUFFERED)
@@ -254,6 +258,12 @@ open class MainApplication : Application(),
 
             } ?: Log.w("MainApplication", "gameViewModel was null — skipping update.")
         }
+    }
+
+    override fun onLobbyListReceived(updatedLobbies: List<LobbyInfo>) {
+        Log.d("MainApplication", "Callback: onLobbyListReceived. Lobbies: $lobbies")
+        lobbies.clear()
+        lobbies.addAll(updatedLobbies)
     }
 
 }

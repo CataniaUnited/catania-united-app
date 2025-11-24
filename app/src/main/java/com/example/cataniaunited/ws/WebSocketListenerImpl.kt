@@ -2,6 +2,7 @@ package com.example.cataniaunited.ws
 
 import android.util.Log
 import com.example.cataniaunited.MainApplication
+import com.example.cataniaunited.data.model.LobbyInfo
 import com.example.cataniaunited.data.model.PlayerInfo
 import com.example.cataniaunited.exception.GameException
 import com.example.cataniaunited.logic.dto.MessageDTO
@@ -87,6 +88,7 @@ open class WebSocketListenerImpl @Inject constructor(
                 MessageType.DICE_RESULT -> handleDiceResult(messageDTO)
                 MessageType.ROLL_DICE -> handleDiceRolling(messageDTO)
                 MessageType.GAME_WON -> handleGameWon(messageDTO)
+                MessageType.LOBBY_LIST -> handleLobbyList(messageDTO)
 
                 MessageType.ERROR -> {
                     Log.e(
@@ -279,6 +281,21 @@ open class WebSocketListenerImpl @Inject constructor(
             }
         } else {
             Log.w("WebSocketListener", "Player update message missing lobbyId or players map")
+        }
+    }
+
+    private fun handleLobbyList(messageDTO: MessageDTO){
+        try {
+            val lobbies = messageDTO.message?.get("lobbies")?.jsonArray
+
+            if (lobbies != null) {
+                val lobbies: List<LobbyInfo> = jsonParser.decodeFromString(lobbies.toString())
+                MainApplication.getInstance().applicationScope.launch {
+                    MainApplication.getInstance().onLobbyListReceived(lobbies)
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("WebSocketListener", "Error processing GAME_WON message", e)
         }
     }
 }

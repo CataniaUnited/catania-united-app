@@ -32,6 +32,7 @@ import com.example.cataniaunited.ui.game.GameScreen
 import com.example.cataniaunited.ui.host_and_join.HostAndJoinScreen
 import com.example.cataniaunited.ui.host_and_join.JoinGameScreen
 import com.example.cataniaunited.ui.lobby.LobbyScreen
+import com.example.cataniaunited.ui.lobby.browser.LobbyBrowserScreen
 import com.example.cataniaunited.ui.startingpage.StartingScreen
 import com.example.cataniaunited.ui.theme.CataniaUnitedTheme
 import com.example.cataniaunited.ui.tutorial.TutorialScreen
@@ -184,7 +185,20 @@ class MainActivity : ComponentActivity() {
                                 onBackClick = { navController.navigateUp() },
                                 onJoinClick = { lobbyId ->
                                     hostJoinLogic.sendJoinLobby(lobbyId)
+                                },
+                                onBrowseClick = {
+                                    navController.navigate("lobbies")
                                 }
+                            )
+                        }
+                        composable(route = "lobbies") {
+                            LobbyBrowserScreen(
+                                lobbies = application.lobbies,
+                                onJoinLobbyClick = { lobbyId ->
+                                    hostJoinLogic.sendJoinLobby(lobbyId)
+                                },
+                                onBackClick = { navController.navigateUp() },
+                                onRefreshClick = { lobbyLogic.getLobbies() }
                             )
                         }
                         composable(

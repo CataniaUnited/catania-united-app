@@ -29,7 +29,8 @@ import com.example.cataniaunited.ui.theme.catanRessourceBar
 @Composable
 fun JoinGameScreen(
     onBackClick: () -> Unit,
-    onJoinClick: (String) -> Unit
+    onJoinClick: (String) -> Unit,
+    onBrowseClick: () -> Unit
 ) {
     var gameCode by remember { mutableStateOf("") }
 
@@ -61,24 +62,15 @@ fun JoinGameScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
-                .offset(y = (-40).dp),
+                .padding(16.dp),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Text(
-                text = "ENTER GAME ID",
-                style = MaterialTheme.typography.titleLarge.copy(fontSize = 22.sp, fontWeight = FontWeight.Bold),
-                color = MaterialTheme.colorScheme.onPrimary,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(bottom = 20.dp)
-            )
-
             OutlinedTextField(
                 value = gameCode,
                 onValueChange = { gameCode = it },
-                placeholder = { Text("Game Code") },
+                placeholder = { Text("Enter Lobby Id") },
                 singleLine = true,
                 shape = RoundedCornerShape(40.dp),
                 modifier = Modifier
@@ -89,7 +81,7 @@ fun JoinGameScreen(
                     unfocusedBorderColor = catanGold,
                     focusedTextColor = Color.Black,
                     unfocusedTextColor = Color.Black,
-                    cursorColor = Color.Black
+                    cursorColor = Color.Black,
                 )
             )
 
@@ -103,7 +95,7 @@ fun JoinGameScreen(
                 colors = ButtonDefaults.buttonColors(containerColor = catanGold),
                 border = BorderStroke(1.dp, Color.Black),
                 modifier = Modifier
-                    .width(300.dp)
+                    .width(320.dp)
                     .height(56.dp)
                     .shadow(
                         elevation = 13.dp,
@@ -114,6 +106,35 @@ fun JoinGameScreen(
             ) {
                 Text(
                     text = "JOIN",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onPrimary
+                )
+            }
+
+            Text(
+                text = "OR",
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
+            )
+
+            Button(
+                onClick = onBrowseClick,
+                shape = buttonShape,
+                colors = ButtonDefaults.buttonColors(containerColor = catanGold),
+                border = BorderStroke(1.dp, Color.Black),
+                modifier = Modifier
+                    .width(320.dp)
+                    .height(56.dp)
+                    .shadow(
+                        elevation = 13.dp,
+                        shape = buttonShape,
+                        ambientColor = Color.Black,
+                        spotColor = Color.Black
+                    )
+            ) {
+                Text(
+                    text = "BROWSE",
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onPrimary
                 )
